@@ -58,6 +58,13 @@ docker build -t jodit-connector-nodejs .
 docker run --rm -p 3000:3000 jodit-connector-nodejs
 ```
 
+### API Documentation
+```bash
+npm run docs:generate  # Generate OpenAPI docs
+
+# Open docs/index.html in browser to view Swagger UI
+```
+
 ## Project Structure
 
 ```
@@ -320,6 +327,13 @@ npm run test:coverage   # With coverage
 - Middleware-based validation
 - Handler-specific validation
 - Separation of concerns (v1 handlers, middlewares, schemas)
+
+### ✅ OpenAPI Documentation
+- **Auto-generated** from Zod schemas
+- Schemas annotated with `.openapi()` metadata
+- Generates `openapi.yaml`, `openapi.json`, and Swagger UI HTML
+- Single source of truth - schemas used for validation AND documentation
+- Run `npm run docs:generate` to update
 
 ## Docker Deployment
 

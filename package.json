@@ -14,7 +14,8 @@
     "lint": "eslint src/ && tsc --noEmit",
     "lint:fix": "eslint src/ --fix",
     "docker:build": "docker build -t jodit-connector-nodejs .",
-    "docker:run": "docker run --rm -p 3000:3000 jodit-connector-nodejs"
+    "docker:run": "docker run --rm -p 3000:3000 jodit-connector-nodejs",
+    "docs:generate": "ts-node scripts/generate-openapi.ts"
   },
   "keywords": [
     "jodit",
@@ -32,6 +33,7 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.1.0",
     "@eslint/js": "^9.37.0",
     "@types/express": "^5.0.3",
     "@types/hapi__boom": "^7.4.1",
@@ -48,8 +50,10 @@
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "supertest": "^7.1.4",
+    "swagger-ui-dist": "^5.29.3",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "yaml": "^2.8.1"
   }
 }
