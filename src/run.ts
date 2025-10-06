@@ -15,7 +15,10 @@ if (process.env.CONFIG !== undefined && process.env.CONFIG.length > 0) {
     logger.error('Failed to parse CONFIG environment variable:', error);
     process.exit(1);
   }
-} else if (process.env.CONFIG_FILE !== undefined && process.env.CONFIG_FILE.length > 0) {
+} else if (
+  process.env.CONFIG_FILE !== undefined &&
+  process.env.CONFIG_FILE.length > 0
+) {
   try {
     const configPath = path.resolve(process.env.CONFIG_FILE);
     const configContent = fs.readFileSync(configPath, 'utf-8');
@@ -28,10 +31,13 @@ if (process.env.CONFIG !== undefined && process.env.CONFIG.length > 0) {
 }
 
 // Parse PORT environment variable
-const port = process.env.PORT !== undefined ? parseInt(process.env.PORT, 10) : 3000;
+const port =
+  process.env.PORT !== undefined ? parseInt(process.env.PORT, 10) : 3000;
 
 if (isNaN(port) || port <= 0 || port > 65535) {
-  logger.error('Invalid PORT environment variable. Must be a number between 1 and 65535.');
+  logger.error(
+    'Invalid PORT environment variable. Must be a number between 1 and 65535.'
+  );
   process.exit(1);
 }
 

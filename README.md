@@ -346,13 +346,23 @@ The config is validated with Zod schemas and will return 400 if invalid.
 ## Implemented Functions
 
 - ✅ **actionFiles** - get list of files
-- ⏳ actionFileUpload - upload files
-- ⏳ actionFileRemove - remove files
-- ⏳ actionFileMove - move files
-- ⏳ actionFileRename - rename files
-- ⏳ actionFolderCreate - create folders
-- ⏳ actionImageCrop - crop images
-- ⏳ actionImageResize - resize images
+- ✅ **actionFileUpload** - upload files
+- ✅ **actionFileUploadRemote** - upload file from remote URL
+- ✅ **actionFileRemove** - remove files
+- ✅ **actionFileMove** - move files
+- ✅ **actionFileRename** - rename files
+- ✅ **actionFileDownload** - download file
+- ✅ **actionGetLocalFileByUrl** - resolve local file by URL
+- ✅ **actionFolderCreate** - create folders
+- ✅ **actionFolderRemove** - remove folders
+- ✅ **actionFolderMove** - move folders
+- ✅ **actionFolderRename** - rename folders
+- ✅ **actionFolders** - get folder tree
+- ✅ **actionPermissions** - get permissions
+- ✅ **actionImageResize** - resize images
+- ✅ **actionImageCrop** - crop images
+- ✅ **actionGenerateDocx** - generate DOCX documents from HTML
+- ✅ **actionGeneratePdf** - generate PDF documents from HTML
 
 ## Tests
 

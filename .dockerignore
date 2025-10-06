@@ -1,11 +1,12 @@
 node_modules
+.github
+scripts
 dist
+docs
 files
 *.log
 .git
 .gitignore
-.env
-.npmrc
 README.md
 jest.config.js
 .prettierrc

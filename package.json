@@ -5,7 +5,7 @@
   "description": "Jodit FileBrowser and Uploader connector for Node.js",
   "main": "dist/index.js",
   "scripts": {
-    "start": "node dist/run.js",
+    "start": "node --env-file=.env dist/run.js",
     "dev": "nodemon --exec node --env-file=.env -r ts-node/register src/run.ts",
     "build": "npm run clean && tsc",
     "clean": "rm -rf dist",
@@ -27,16 +27,18 @@
   "author": "Chupurnov Valeriy <chupurnov@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.1.0",
     "@hapi/boom": "^10.0.1",
+    "@turbodocx/html-to-docx": "^1.15.3",
     "express": "^5.1.0",
     "express-async-handler": "^1.2.0",
     "multer": "^2.0.2",
+    "puppeteer": "^24.23.0",
     "sharp": "^0.34.4",
     "winston": "^3.18.3",
     "zod": "^4.1.11"
   },
   "devDependencies": {
-    "@asteasolutions/zod-to-openapi": "^8.1.0",
     "@eslint/js": "^9.37.0",
     "@types/express": "^5.0.3",
     "@types/hapi__boom": "^7.4.1",

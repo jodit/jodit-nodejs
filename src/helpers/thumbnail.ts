@@ -121,10 +121,11 @@ export async function makeThumb(
       const svgPath = thumbPath.replace(path.extname(thumbPath), '.svg');
       await generateFileIcon(path.basename(filePath), svgPath);
       countThumbs.count++;
-      return getRelativeThumbPath(filePath, sourceRoot, thumbFolderName).replace(
-        path.extname(filePath),
-        '.svg'
-      );
+      return getRelativeThumbPath(
+        filePath,
+        sourceRoot,
+        thumbFolderName
+      ).replace(path.extname(filePath), '.svg');
     }
 
     countThumbs.count++;

@@ -1,7 +1,7 @@
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 import { OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
 import { registry } from './registry';
-import * as path from 'path';
-import * as fs from 'fs';
 
 interface PackageJson {
   name: string;
@@ -52,8 +52,8 @@ export function generateOpenApiSpec(): ReturnType<
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'Local development server'
+        url: 'https://xdsoft.net/jodit/finder/',
+        description: 'Test server'
       }
     ]
   });
