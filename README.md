@@ -1,7 +1,7 @@
 # Jodit Connector Application (Node.js)
 
 [![CI/CD](https://github.com/xdan/jodit-nodejs/actions/workflows/connector.yml/badge.svg)](https://github.com/xdan/jodit-nodejs/actions/workflows/connector.yml)
-[![Documentation](https://github.com/xdan/jodit-nodejs/actions/workflows/docs.yml/badge.svg)](https://xdan.github.io/jodit-nodejs/)
+[![Documentation](https://github.com/xdan/jodit-nodejs/actions/workflows/docs.yml/badge.svg)](https://jodit.github.io/jodit-nodejs/)
 [![npm version](https://badge.fury.io/js/jodit-nodejs.svg)](https://www.npmjs.com/package/jodit-nodejs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -137,9 +137,9 @@ docker run --rm -p 8080:8080 \
 ### API Documentation
 
 **Online Documentation:**
-- 📖 [Swagger UI (GitHub Pages)](https://xdan.github.io/jodit-nodejs/)
-- 📄 [OpenAPI Spec (YAML)](https://xdan.github.io/jodit-nodejs/openapi.yaml)
-- 📄 [OpenAPI Spec (JSON)](https://xdan.github.io/jodit-nodejs/openapi.json)
+- 📖 [Swagger UI (GitHub Pages)](https://jodit.github.io/jodit-nodejs/)
+- 📄 [OpenAPI Spec (YAML)](https://jodit.github.io/jodit-nodejs/openapi.yaml)
+- 📄 [OpenAPI Spec (JSON)](https://jodit.github.io/jodit-nodejs/openapi.json)
 
 **Generate locally:**
 ```bash

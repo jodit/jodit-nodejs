@@ -192,4 +192,4 @@ start({
 
 For issues and questions:
 - GitHub Issues: https://github.com/xdan/jodit-nodejs/issues
-- Documentation: https://xdan.github.io/jodit-nodejs/
+- Documentation: https://jodit.github.io/jodit-nodejs/
