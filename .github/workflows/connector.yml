@@ -64,9 +64,9 @@ jobs:
           context: ./
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/jodit-connector-nodejs:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/jodit-connector-nodejs:${{ steps.version.outputs.VERSION }}
-          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/jodit-connector-nodejs:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/jodit-nodejs:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/jodit-nodejs:${{ steps.version.outputs.VERSION }}
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/jodit-nodejs:latest
           cache-to: type=inline
 
   publish:

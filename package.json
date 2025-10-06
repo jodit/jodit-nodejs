@@ -22,6 +22,9 @@
     "node": ">=18.0.0"
   },
   "scripts": {
+    "newversion": "npm version patch --no-git-tag-version && npm run dump-db && npm run newversiongit",
+    "git": "git add --all  && git commit -m \"New version $npm_package_version. Read more https://github.com/jodit/jodit-nodejs/releases/tag/$npm_package_version \" && git tag $npm_package_version",
+    "newversiongit": "npm run git && git push --tags origin HEAD:main",
     "start": "node --env-file=.env dist/run.js",
     "dev": "nodemon --exec node --env-file=.env -r ts-node/register src/run.ts",
     "build": "npm run clean && tsc",
@@ -32,8 +35,8 @@
     "lint": "eslint src/ && tsc --noEmit",
     "lint:fix": "eslint src/ --fix",
     "format": "prettier --write ./src",
-    "docker:build": "docker build -t jodit-connector-nodejs .",
-    "docker:run": "docker run --rm -p 3000:3000 jodit-connector-nodejs",
+    "docker:build": "docker build -t jodit-nodejs .",
+    "docker:run": "docker run --rm -p 3000:3000 jodit-nodejs",
     "docs:generate": "ts-node scripts/generate-openapi.ts"
   },
   "keywords": [

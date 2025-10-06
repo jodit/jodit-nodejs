@@ -1,5 +1,10 @@
 # Jodit Connector Application (Node.js)
 
+[![CI/CD](https://github.com/xdan/jodit-nodejs/actions/workflows/connector.yml/badge.svg)](https://github.com/xdan/jodit-nodejs/actions/workflows/connector.yml)
+[![Documentation](https://github.com/xdan/jodit-nodejs/actions/workflows/docs.yml/badge.svg)](https://xdan.github.io/jodit-nodejs/)
+[![npm version](https://badge.fury.io/js/jodit-nodejs.svg)](https://www.npmjs.com/package/jodit-nodejs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Node.js/TypeScript implementation of the Jodit File Browser and Uploader connector.
 
 Analog of the PHP version: [jodit-connector-application](https://github.com/xdan/jodit-connectors)
@@ -95,14 +100,14 @@ npm run docker:build # Build Docker image
 npm run docker:run   # Run container (port 3000)
 
 # Or manually:
-docker build -t jodit-connector-nodejs .
-docker run --rm -p 3000:3000 jodit-connector-nodejs
+docker build -t jodit-nodejs .
+docker run --rm -p 3000:3000 jodit-nodejs
 
 # With custom config file (recommended approach):
 docker run --rm -p 3000:3000 \
   -v /host/path/to/config.json:/usr/src/app/config.json \
   -v /host/path/to/files:/usr/src/app/files \
-  jodit-connector-nodejs
+  jodit-nodejs
 
 # With environment variables:
 docker run --rm -p 8080:8080 \
@@ -110,18 +115,18 @@ docker run --rm -p 8080:8080 \
   -e SOURCE_NAME="Production Files" \
   -e SOURCE_ROOT="/var/www/uploads" \
   -e SOURCE_BASEURL="https://cdn.example.com/uploads/" \
-  jodit-connector-nodejs
+  jodit-nodejs
 
 # With volume mount for files:
 docker run --rm -p 3000:3000 \
   -v /host/path/to/files:/usr/src/app/files \
-  jodit-connector-nodejs
+  jodit-nodejs
 
 # Override with inline JSON config:
 docker run --rm -p 8080:8080 \
   -e PORT=8080 \
   -e CONFIG='{"debug":false,"allowCrossOrigin":true,"sources":{"production":{"title":"Production","root":"/usr/src/app/files","baseurl":"https://cdn.example.com/files/"}}}' \
-  jodit-connector-nodejs
+  jodit-nodejs
 ```
 
 **Configuration Priority:**
@@ -130,6 +135,13 @@ docker run --rm -p 8080:8080 \
 3. Default configuration from code
 
 ### API Documentation
+
+**Online Documentation:**
+- 📖 [Swagger UI (GitHub Pages)](https://xdan.github.io/jodit-nodejs/)
+- 📄 [OpenAPI Spec (YAML)](https://xdan.github.io/jodit-nodejs/openapi.yaml)
+- 📄 [OpenAPI Spec (JSON)](https://xdan.github.io/jodit-nodejs/openapi.json)
+
+**Generate locally:**
 ```bash
 npm run docs:generate  # Generate OpenAPI docs
 
@@ -137,6 +149,8 @@ npm run docs:generate  # Generate OpenAPI docs
 ```
 
 **Note:** Due to the action-based API design (all endpoints on `/?action=X`), the auto-generated OpenAPI documentation may show only the last registered endpoint per HTTP method. For complete API documentation, refer to the "API Endpoints" and "Implemented Functions" sections below.
+
+**Documentation is automatically deployed to GitHub Pages** on every push to main branch that modifies source files.
 
 ## Project Structure
 
@@ -734,8 +748,8 @@ npm run docker:build
 npm run docker:run
 
 # Or manually
-docker build -t jodit-connector-nodejs .
-docker run --rm -p 3000:3000 jodit-connector-nodejs
+docker build -t jodit-nodejs .
+docker run --rm -p 3000:3000 jodit-nodejs
 ```
 
 ### Docker Image Details
@@ -751,15 +765,25 @@ docker run --rm -p 3000:3000 jodit-connector-nodejs
 
 ## CI/CD
 
-GitHub Actions workflow runs on:
+### Workflows
+
+**`connector.yml`** - Main CI/CD pipeline:
 - **Push to main** - runs tests and linter
 - **Pull requests** - runs tests and linter
 - **Tags** - builds and pushes Docker image to DockerHub, publishes to npm
 
-### Workflow Jobs
+Jobs:
 1. **test** - Runs linter, tests, and build
 2. **docker** - Builds multi-arch image and pushes to DockerHub (only on tags)
 3. **publish** - Publishes package to npm registry (only on tags)
+
+**`docs.yml`** - Documentation deployment:
+- **Push to main** (if source files changed) - generates and deploys OpenAPI docs to GitHub Pages
+- **Manual trigger** - can be triggered manually from Actions tab
+
+Jobs:
+1. **build** - Generates OpenAPI documentation
+2. **deploy** - Deploys to GitHub Pages
 
 ### Required Secrets
 - `DOCKERHUB_USERNAME` - DockerHub username
@@ -770,6 +794,11 @@ GitHub Actions workflow runs on:
 1. Login to npm: `npm login`
 2. Create automation token: `npm token create --type=automation`
 3. Add token to GitHub repository secrets as `NPM_TOKEN`
+
+**How to enable GitHub Pages:**
+1. Go to repository Settings → Pages
+2. Under "Build and deployment", select "Source: GitHub Actions"
+3. The documentation will be automatically deployed on next push to main
 
 ### Release Process
 ```bash
@@ -789,7 +818,7 @@ git push origin v1.0.1
 
 **Published package:**
 - npm: `npm install jodit-nodejs`
-- DockerHub: `docker pull <username>/jodit-connector-nodejs:latest`
+- DockerHub: `docker pull chupurnov/jodit-nodejs:latest`
 
 ## Differences from PHP Version
 
