@@ -25,6 +25,19 @@ export const PdfConfigSchema = z.object({
     .describe('Paper configuration')
 });
 
+// Access Control Rule schema
+export const AccessControlRuleSchema = z
+  .object({
+    role: z.string().optional().describe('User role (* for all roles)'),
+    path: z.string().optional().describe('Path restriction'),
+    extensions: z
+      .union([z.string(), z.array(z.string())])
+      .optional()
+      .describe('Allowed file extensions')
+  })
+  .catchall(z.union([z.boolean(), z.function()]))
+  .describe('Access control rule with action permissions');
+
 // App configuration schema
 export const AppConfigSchema = z.object({
   title: z.string().optional().describe('Application title'),
@@ -60,7 +73,9 @@ export const AppConfigSchema = z.object({
   sourceClassName: z
     .string()
     .describe('Source class name for custom implementations'),
-  accessControl: z.array(z.unknown()).describe('Access control rules'),
+  accessControl: z
+    .array(AccessControlRuleSchema)
+    .describe('Access control rules'),
   roleSessionVar: z.string().describe('Session variable name for user role'),
   defaultRole: z.string().describe('Default user role'),
   allowReplaceSourceFile: z

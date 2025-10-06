@@ -141,8 +141,78 @@ describe('Generate PDF (GET /?action=generatePdf)', () => {
 
     expect(response.status).toBe(200);
     expect(response.headers['content-length']).toBeDefined();
-    expect(parseInt(response.headers['content-length'] || '0')).toBeGreaterThan(
+    expect(parseInt(response.headers['content-length'] ?? '0')).toBeGreaterThan(
       0
     );
+  });
+
+  describe('PDF options', () => {
+    it('should generate PDF with A3 format', async () => {
+      const html = '<p>Test document</p>';
+
+      const response = await request(app).get('/').query({
+        action: 'generatePdf',
+        html,
+        'options[format]': 'A3'
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toBe('application/pdf');
+
+      // Check PDF signature
+      const pdfSignature = response.body.toString('utf8', 0, 4);
+      expect(pdfSignature).toBe('%PDF');
+
+      // A3 should produce a different file size than A4
+      expect(response.body.length).toBeGreaterThan(0);
+    });
+
+    it('should generate PDF with landscape orientation', async () => {
+      const html = '<p>Landscape document</p>';
+
+      const response = await request(app).get('/').query({
+        action: 'generatePdf',
+        html,
+        'options[page_orientation]': 'landscape'
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toBe('application/pdf');
+
+      // Check PDF signature
+      const pdfSignature = response.body.toString('utf8', 0, 4);
+      expect(pdfSignature).toBe('%PDF');
+    });
+
+    it('should generate PDF with both format and orientation options', async () => {
+      const html = '<p>Test with options</p>';
+
+      const response = await request(app).get('/').query({
+        action: 'generatePdf',
+        html,
+        'options[format]': 'A3',
+        'options[page_orientation]': 'landscape'
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toBe('application/pdf');
+
+      // Check PDF signature
+      const pdfSignature = response.body.toString('utf8', 0, 4);
+      expect(pdfSignature).toBe('%PDF');
+    });
+
+    it('should generate PDF with Letter format', async () => {
+      const html = '<p>Letter format document</p>';
+
+      const response = await request(app).get('/').query({
+        action: 'generatePdf',
+        html,
+        'options[format]': 'Letter'
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toBe('application/pdf');
+    });
   });
 });

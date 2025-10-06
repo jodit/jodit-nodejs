@@ -27,6 +27,8 @@ import { generatePdfHandler } from './v1/generate-pdf';
 import { validateQuery } from './middlewares/validate-query';
 import { customConfigMiddleware } from './middlewares/custom-config';
 import { corsMiddleware } from './middlewares/cors';
+import { authMiddleware } from './middlewares/auth';
+import { accessControlMiddleware } from './middlewares/access-control';
 import { BaseActionQueryPassthroughSchema, AppConfigSchema } from './schemas';
 
 export function createApp(customConfig?: Partial<AppConfig>): Application {
@@ -64,22 +66,37 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
   // Apply middlewares
   app.use(corsMiddleware);
   app.use(customConfigMiddleware);
+  app.use(authMiddleware);
+  app.use(accessControlMiddleware);
 
   // Routes
   app.get('/ping', pingHandler);
 
-  // POST endpoint for file uploads
+  // POST endpoint for file uploads and other actions
   app.post(
     '/',
-    upload.array('files'),
+    (req: Request, res: Response, next: NextFunction) => {
+      // Check if this is a multipart request (file upload)
+      const contentType = req.headers['content-type'] ?? '';
+      if (contentType.includes('multipart/form-data')) {
+        // For multipart requests, always use multer
+        upload.array('files')(req, res, next);
+      } else {
+        // For JSON requests, skip multer
+        next();
+      }
+    },
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         // For POST requests, action can come from query or body
-        const action = (req.query.action || req.body.action) as string;
+        const action = (req.query.action ?? req.body?.action) as string;
 
         switch (action) {
           case 'fileUpload':
             await fileUploadHandler(req, res);
+            break;
+          case 'files':
+            await filesHandler(req, res);
             break;
           default: {
             const boomError = Boom.notFound(`Action "${action}" not found`);

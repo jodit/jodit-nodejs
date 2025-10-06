@@ -40,7 +40,7 @@ export async function fileDownloadHandler(
   const realTargetPath = await fs.realpath(targetPath).catch(() => null);
   const realSourceRoot = await fs.realpath(sourceConfig.root);
 
-  if (!realTargetPath || !realTargetPath.startsWith(realSourceRoot)) {
+  if (realTargetPath?.startsWith(realSourceRoot) !== true) {
     const boomError = Boom.notFound('File or directory not exists');
     boomError.output.payload.messages = [
       `File or directory not exists ${sourcePath}${query.name}`

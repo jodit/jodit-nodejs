@@ -22,6 +22,31 @@ export type BaseActionQueryParams = z.infer<typeof BaseActionQuerySchema>;
 // Passthrough version that allows unknown keys
 export const BaseActionQueryPassthroughSchema = BaseActionQuerySchema.loose();
 
+// Mods schema for files query
+export const FilesModsSchema = z.object({
+  withFolders: z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform(val => val === true || val === 'true'),
+  sortBy: z
+    .enum(['name-asc', 'name-desc', 'changed-asc', 'changed-desc'])
+    .optional()
+    .describe('Sort order'),
+  limit: z
+    .union([z.number(), z.string()])
+    .optional()
+    .transform(val => (typeof val === 'string' ? parseInt(val, 10) : val)),
+  offset: z
+    .union([z.number(), z.string()])
+    .optional()
+    .transform(val => (typeof val === 'string' ? parseInt(val, 10) : val)),
+  onlyImages: z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform(val => val === true || val === 'true'),
+  foldersPosition: z.enum(['top', 'bottom']).optional()
+});
+
 // Files action query schema
 export const FilesQuerySchema = z
   .object({
@@ -39,9 +64,9 @@ export const FilesQuerySchema = z
       default: '/'
     }),
     mods: z
-      .string()
+      .union([z.string(), FilesModsSchema])
       .optional()
-      .describe('Modifiers (e.g., "withFolders")')
+      .describe('Modifiers (e.g., "withFolders" or object with filters)')
       .openapi({
         description: 'Modifiers (e.g., "withFolders")',
         example: 'withFolders'
@@ -50,3 +75,4 @@ export const FilesQuerySchema = z
   .openapi('FilesQuery');
 
 export type FilesQueryParams = z.infer<typeof FilesQuerySchema>;
+export type FilesModsParams = z.infer<typeof FilesModsSchema>;

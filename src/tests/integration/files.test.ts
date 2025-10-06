@@ -25,6 +25,13 @@ describe('Files API', () => {
     await fs.writeFile(path.join(testFilesPath, 'image.png'), 'fake image');
     await fs.mkdir(path.join(testFilesPath, 'subfolder'), { recursive: true });
 
+    // Create additional test files for sorting tests
+    await fs.writeFile(path.join(testFilesPath, 'file-a.txt'), 'a');
+    await fs.writeFile(path.join(testFilesPath, 'file-z.txt'), 'z');
+    await fs.writeFile(path.join(testFilesPath, 'file-m.txt'), 'm');
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await fs.writeFile(path.join(testFilesPath, 'newer.txt'), 'newer');
+
     [server] = await startTestServer(app);
   });
 
@@ -239,6 +246,228 @@ describe('Files API', () => {
           messages: expect.arrayContaining([expect.stringContaining('baseurl')])
         }
       });
+    });
+  });
+
+  describe('Sorting and filtering', () => {
+    it('should sort files by name ascending', async () => {
+      const response = await request(app)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'name-asc'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+
+      // Check that files are sorted alphabetically
+      for (let i = 1; i < files.length; i++) {
+        expect(files[i].file.toLowerCase() >= files[i - 1].file.toLowerCase()).toBe(true);
+      }
+    });
+
+    it('should sort files by name descending', async () => {
+      const response = await request(app)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'name-desc'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+
+      // Check that files are sorted reverse alphabetically
+      for (let i = 1; i < files.length; i++) {
+        expect(files[i].file.toLowerCase() <= files[i - 1].file.toLowerCase()).toBe(true);
+      }
+    });
+
+    it('should sort files by changed time ascending', async () => {
+      const response = await request(app)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'changed-asc'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+
+      // Check that files are sorted by modification time
+      for (let i = 1; i < files.length; i++) {
+        expect(files[i].changed >= files[i - 1].changed).toBe(true);
+      }
+    });
+
+    it('should sort files by changed time descending', async () => {
+      const response = await request(app)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'changed-desc'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+
+      // Check that files are sorted by modification time descending
+      for (let i = 1; i < files.length; i++) {
+        expect(files[i].changed <= files[i - 1].changed).toBe(true);
+      }
+    });
+
+    it('should filter only images', async () => {
+      const response = await request(app)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            onlyImages: true
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+
+      // All returned files should be images
+      files.forEach((file: { isImage: boolean }) => {
+        expect(file.isImage).toBe(true);
+      });
+    });
+
+    it('should apply limit to results', async () => {
+      const response = await request(app)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            limit: 2
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+      expect(files.length).toBe(2);
+    });
+
+    it('should apply offset and limit', async () => {
+      const allResponse = await request(app)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'name-asc'
+          }
+        });
+
+      const offsetResponse = await request(app)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'name-asc',
+            offset: 1,
+            limit: 2
+          }
+        });
+
+      expect(offsetResponse.status).toBe(200);
+      const allFiles = allResponse.body.data.sources[0].files;
+      const offsetFiles = offsetResponse.body.data.sources[0].files;
+
+      expect(offsetFiles.length).toBe(2);
+      expect(offsetFiles[0].file).toBe(allFiles[1].file);
+      expect(offsetFiles[1].file).toBe(allFiles[2].file);
+    });
+
+    it('should combine sorting, filtering, and limiting', async () => {
+      const response = await request(app)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'name-desc',
+            onlyImages: true,
+            limit: 1
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+
+      expect(files.length).toBe(1);
+      expect(files[0].isImage).toBe(true);
+    });
+  });
+
+  describe('Invalid actions and edge cases', () => {
+    it('should return 404 for unknown action', async () => {
+      const response = await request(app)
+        .get('/')
+        .query({ action: 'unknownAction' });
+
+      expect(response.status).toBe(404);
+      expect(response.body).toMatchObject({
+        success: false,
+        data: {
+          code: 404,
+          messages: expect.arrayContaining([
+            expect.stringContaining('not found')
+          ])
+        }
+      });
+    });
+
+    it('should handle XSS attempt in action parameter', async () => {
+      const response = await request(app)
+        .get('/')
+        .query({ action: '<script>alert(1)</script>' });
+
+      expect(response.status).toBe(404);
+      expect(response.body).toMatchObject({
+        success: false,
+        data: {
+          code: 404
+        }
+      });
+    });
+  });
+
+  describe('Null sources configuration', () => {
+    it('should handle null sources in custom config', async () => {
+      const customConfig = {
+        sources: null
+      };
+
+      const response = await request(app)
+        .get('/')
+        .query({
+          action: 'files',
+          custom_config: JSON.stringify(customConfig)
+        });
+
+      // Should use default source when sources is null
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
     });
   });
 

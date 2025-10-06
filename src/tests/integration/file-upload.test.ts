@@ -36,8 +36,8 @@ describe('File Upload API', () => {
 
   describe('POST /?action=fileUpload', () => {
     it('should upload multiple files successfully', async () => {
-      const testImagePath = path.join(__dirname, '../test-image.png');
-      const testCsvPath = path.join(__dirname, '../test-file.csv');
+      const testImagePath = path.join(testFilesPath, './test-image.png');
+      const testCsvPath = path.join(testFilesPath, './test-file.csv');
 
       // Create test files
       await fs.writeFile(testImagePath, 'fake image content');
@@ -66,7 +66,7 @@ describe('File Upload API', () => {
     });
 
     it('should reject upload of forbidden file extensions', async () => {
-      const testPhpPath = path.join(__dirname, '../test.php');
+      const testPhpPath = path.join(testFilesPath, './test.php');
       await fs.writeFile(testPhpPath, '<?php echo "test"; ?>');
 
       const response = await request(app)
@@ -103,7 +103,7 @@ describe('File Upload API', () => {
     });
 
     it('should return 404 for non-existent source', async () => {
-      const testImagePath = path.join(__dirname, '../test-upload.png');
+      const testImagePath = path.join(testFilesPath, './test-upload.png');
       await fs.writeFile(testImagePath, 'fake image');
 
       const response = await request(app)
@@ -125,7 +125,7 @@ describe('File Upload API', () => {
     });
 
     it('should handle same filename with replace strategy', async () => {
-      const testFilePath = path.join(__dirname, '../test-same.txt');
+      const testFilePath = path.join(testFilesPath, './test-same.txt');
       await fs.writeFile(testFilePath, 'content 1');
 
       // Upload first time
@@ -177,8 +177,8 @@ describe('File Upload API', () => {
       await fs.unlink(testFilePath);
     });
 
-    it('should handle same filename with addNumber strategy', async () => {
-      const testFilePath = path.join(__dirname, '../test-number.txt');
+    it.only('should handle same filename with addNumber strategy', async () => {
+      const testFilePath = path.join(testFilesPath, './test-number.txt');
       await fs.writeFile(testFilePath, 'content');
 
       // Upload first time

@@ -15,7 +15,7 @@ describe('Generate DOCX (GET /?action=generateDocx)', () => {
   });
 
   // Helper to make request with binary response
-  const requestDocx = (html: string) => {
+  const requestDocx = (html: string): Promise<request.Response> => {
     return request(app)
       .get('/')
       .query({

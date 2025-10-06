@@ -3,6 +3,7 @@ import type { AppConfig } from '../types';
 import Boom from '@hapi/boom';
 import { logger } from '../helpers/logger';
 import { AppConfigSchema } from '../schemas';
+import { mergeWithoutNulls } from '../helpers/merge-without-nulls';
 
 export function customConfigMiddleware(
   req: Request,
@@ -30,7 +31,7 @@ export function customConfigMiddleware(
         return;
       }
 
-      const mergedConfig = { ...currentConfig, ...parsedConfig };
+      const mergedConfig = mergeWithoutNulls(currentConfig, parsedConfig);
 
       // Validate merged config
       const validation = AppConfigSchema.safeParse(mergedConfig);
@@ -48,7 +49,7 @@ export function customConfigMiddleware(
       }
 
       // Apply validated config
-      req.app.locals.config = validation.data;
+      req.app.locals.config = validation.data as AppConfig;
       logger.debug(`Custom config applied: ${customConfigParam}`);
     } catch (error) {
       logger.warn(

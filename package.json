@@ -9,7 +9,7 @@
     "dev": "nodemon --exec node --env-file=.env -r ts-node/register src/run.ts",
     "build": "npm run clean && tsc",
     "clean": "rm -rf dist",
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --detectOpenHandles",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint src/ && tsc --noEmit",

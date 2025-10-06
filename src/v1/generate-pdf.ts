@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import Boom from '@hapi/boom';
 import puppeteer from 'puppeteer';
-import { GeneratePdfQuerySchema } from '../schemas';
+import { GeneratePdfQuerySchema, PdfOptionsSchema } from '../schemas';
 import { logger } from '../helpers/logger';
+import type { PdfOptions } from '../schemas/generate-pdf.schema';
 
 /**
  * Handler for generating PDF documents from HTML using Puppeteer
@@ -31,6 +32,15 @@ export async function generatePdfHandler(
     throw boomError;
   }
 
+  // Parse options parameter
+  let options: PdfOptions = {};
+  if (typeof query.options === 'object') {
+    const optionsValidation = PdfOptionsSchema.safeParse(query.options);
+    if (optionsValidation.success) {
+      options = optionsValidation.data;
+    }
+  }
+
   logger.debug('Generating PDF document from HTML using Puppeteer');
 
   let browser;
@@ -48,9 +58,10 @@ export async function generatePdfHandler(
       waitUntil: 'networkidle0'
     });
 
-    // Generate PDF
+    // Generate PDF with options
     const pdfBuffer = await page.pdf({
-      format: 'A4',
+      format: options.format ?? 'A4',
+      landscape: options.page_orientation === 'landscape',
       printBackground: true,
       margin: {
         top: '1cm',
@@ -69,7 +80,7 @@ export async function generatePdfHandler(
 
     res.send(pdfBuffer);
   } catch (error) {
-    if (browser) {
+    if (browser != null) {
       await browser.close().catch(() => {
         /* ignore */
       });

@@ -1,5 +1,6 @@
 import type { Server } from 'http';
 import type { AppConfig } from './types';
+import type { AuthCallback } from './middlewares/auth';
 import { version } from '../package.json';
 import { logger } from './helpers/logger';
 import { createApp } from './app';
@@ -8,19 +9,43 @@ let server: Server | null = null;
 
 // Re-export createApp for direct use
 export { createApp };
+export type { AuthCallback };
+
+export interface StartOptions {
+  port?: number;
+  config?: Partial<AppConfig>;
+  checkAuthentication?: AuthCallback;
+}
 
 export async function start(
-  port?: number,
+  options?: StartOptions | number,
   customConfig?: Partial<AppConfig>
 ): Promise<Server> {
-  const PORT: number = port ?? parseInt(process.env.PORT ?? '3000', 10);
+  // Support both old signature (port, config) and new (options object)
+  let PORT: number;
+  let config: Partial<AppConfig> | undefined;
+  let checkAuthentication: AuthCallback | undefined;
+
+  if (typeof options === 'object') {
+    PORT = options.port ?? parseInt(process.env.PORT ?? '3000', 10);
+    config = options.config;
+    checkAuthentication = options.checkAuthentication;
+  } else {
+    PORT = options ?? parseInt(process.env.PORT ?? '3000', 10);
+    config = customConfig;
+  }
 
   if (isNaN(PORT) || PORT < 1 || PORT > 65535) {
     logger.error('Invalid PORT. Must be a number between 1 and 65535.');
     throw new Error('Invalid PORT');
   }
 
-  const app = createApp(customConfig);
+  const app = createApp(config);
+
+  // Set checkAuthentication in app.locals if provided
+  if (checkAuthentication !== undefined) {
+    app.locals.checkAuthentication = checkAuthentication;
+  }
 
   return new Promise((resolve, reject) => {
     server = app.listen(PORT, (): void => {

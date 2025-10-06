@@ -32,7 +32,9 @@ import {
   ImageCropQuerySchema,
   ImageCropSuccessResponseSchema,
   GenerateDocxQuerySchema,
-  GeneratePdfQuerySchema
+  GeneratePdfQuerySchema,
+  FileUploadQuerySchema,
+  FileUploadSuccessResponseSchema
 } from '../schemas';
 
 export const registry = new OpenAPIRegistry();
@@ -58,6 +60,80 @@ registry.registerPath({
     },
     400: {
       description: 'Bad request - validation error',
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema
+        }
+      }
+    },
+    404: {
+      description: 'Source not found',
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema
+        }
+      }
+    },
+    500: {
+      description: 'Internal server error',
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema
+        }
+      }
+    }
+  }
+});
+
+// Register POST /?action=fileUpload
+registry.registerPath({
+  method: 'post',
+  path: '/',
+  summary: 'Upload files',
+  description: 'Upload one or more files to the specified source via multipart/form-data',
+  tags: ['Files'],
+  request: {
+    query: FileUploadQuerySchema,
+    body: {
+      content: {
+        'multipart/form-data': {
+          schema: {
+            type: 'object',
+            properties: {
+              files: {
+                type: 'array',
+                items: {
+                  type: 'string',
+                  format: 'binary'
+                },
+                description: 'Files to upload'
+              }
+            },
+            required: ['files']
+          }
+        }
+      }
+    }
+  },
+  responses: {
+    200: {
+      description: 'Files successfully uploaded',
+      content: {
+        'application/json': {
+          schema: FileUploadSuccessResponseSchema
+        }
+      }
+    },
+    400: {
+      description: 'Bad request - validation error or no files uploaded',
+      content: {
+        'application/json': {
+          schema: ErrorResponseSchema
+        }
+      }
+    },
+    403: {
+      description: 'Forbidden - file extension not allowed',
       content: {
         'application/json': {
           schema: ErrorResponseSchema

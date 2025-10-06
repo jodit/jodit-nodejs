@@ -136,6 +136,8 @@ npm run docs:generate  # Generate OpenAPI docs
 # Open docs/index.html in browser to view Swagger UI
 ```
 
+**Note:** Due to the action-based API design (all endpoints on `/?action=X`), the auto-generated OpenAPI documentation may show only the last registered endpoint per HTTP method. For complete API documentation, refer to the "API Endpoints" and "Implemented Functions" sections below.
+
 ## Project Structure
 
 ```
@@ -168,7 +170,7 @@ jodit-connector-application-nodejs/
 
 ```typescript
 import { start, stop, createApp } from 'jodit-connector-application-nodejs';
-import type { AppConfig } from 'jodit-connector-application-nodejs/types';
+import type { AppConfig, AuthCallback } from 'jodit-connector-application-nodejs';
 
 // Start server with default config
 const server = await start(3000);
@@ -186,6 +188,22 @@ const customConfig: Partial<AppConfig> = {
   }
 };
 const server = await start(3000, customConfig);
+
+// Start server with authentication middleware
+const checkAuth: AuthCallback = async (req) => {
+  const token = req.headers.authorization;
+  if (!token) throw new Error('Unauthorized');
+
+  // Validate token and return user role
+  const user = await validateToken(token);
+  return user.role; // e.g., 'admin', 'editor', 'guest'
+};
+
+const server = await start({
+  port: 3000,
+  config: customConfig,
+  checkAuthentication: checkAuth
+});
 
 // Or create Express app directly
 const app = createApp(customConfig);
@@ -256,6 +274,139 @@ Health check endpoint.
 ```json
 {
   "success": true
+}
+```
+
+## Authentication & Access Control
+
+### Custom Authentication Middleware
+
+You can provide a custom authentication callback to validate requests and set user roles:
+
+```typescript
+import { start, type AuthCallback } from 'jodit-connector-application-nodejs';
+
+const checkAuth: AuthCallback = async (req) => {
+  // Read authentication token from headers
+  const token = req.headers.authorization?.replace('Bearer ', '');
+
+  if (!token) {
+    throw new Error('No authorization token provided');
+  }
+
+  // Validate token (example with JWT)
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    return payload.role; // Return user role
+  } catch (error) {
+    throw new Error('Invalid token');
+  }
+};
+
+await start({
+  port: 3000,
+  config: {
+    defaultRole: 'guest', // Fallback role
+    accessControl: [
+      // Define access rules (see below)
+    ]
+  },
+  checkAuthentication: checkAuth
+});
+```
+
+**How it works:**
+- The `checkAuthentication` callback receives Express `Request` object
+- It should return a user role (string) or throw an error
+- Supports both synchronous and asynchronous callbacks
+- If callback throws, the request fails with error
+- If no callback provided, uses `config.defaultRole`
+- The role is set in `req.userRole` for use by access control
+
+### Access Control Rules
+
+Define fine-grained permissions based on role, path, and file extensions:
+
+```typescript
+const customConfig: Partial<AppConfig> = {
+  defaultRole: 'guest',
+  accessControl: [
+    // General rules first (less specific)
+    {
+      role: 'guest',
+      FILES: true,
+      FILE_UPLOAD: false,
+      FILE_REMOVE: false
+    },
+    // Specific rules last (more specific, will override general)
+    {
+      role: 'guest',
+      path: '/private',
+      FILES: false // Deny access to /private folder
+    },
+    {
+      role: 'admin',
+      FILES: true,
+      FILE_UPLOAD: true,
+      FILE_REMOVE: true,
+      FOLDER_CREATE: true
+    },
+    {
+      role: 'editor',
+      extensions: ['jpg', 'png', 'gif'], // Only images
+      FILE_UPLOAD: true,
+      FILE_REMOVE: false // Can upload but not delete
+    },
+    {
+      role: '*', // Wildcard - matches all roles
+      path: '/public',
+      FILES: true
+    }
+  ]
+};
+```
+
+**Available Actions:**
+- `FILES` - list files
+- `FILE_UPLOAD` - upload files
+- `FILE_UPLOAD_REMOTE` - upload from URL
+- `FILE_REMOVE` - delete files
+- `FILE_MOVE` - move files
+- `FILE_RENAME` - rename files
+- `FILE_DOWNLOAD` - download files
+- `FOLDERS` - list folders
+- `FOLDER_CREATE` - create folders
+- `FOLDER_REMOVE` - delete folders
+- `FOLDER_MOVE` - move folders
+- `FOLDER_RENAME` - rename folders
+- `IMAGE_RESIZE` - resize images
+- `IMAGE_CROP` - crop images
+- `GENERATE_PDF` - generate PDF
+- `GENERATE_DOCX` - generate DOCX
+
+**Rule Matching:**
+- Rules are processed in order (general → specific)
+- Later rules override earlier ones for the same role/action
+- `role` - user role (`'guest'`, `'admin'`, `'*'` for all)
+- `path` - path restriction (matches if request path starts with rule path)
+- `extensions` - file extension filter (array or comma-separated string)
+- Action - boolean or function returning boolean
+
+**Example with function:**
+```typescript
+{
+  role: 'editor',
+  extensions: (action, rule, path, ext) => {
+    // Custom logic for allowed extensions
+    if (path.startsWith('/images')) {
+      return ['jpg', 'png', 'gif'];
+    }
+    return ['*']; // Allow all in other folders
+  },
+  FILE_UPLOAD: (action, rule, path, ext) => {
+    // Custom logic for upload permission
+    return path !== '/protected';
+  }
 }
 ```
 

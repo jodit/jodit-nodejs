@@ -35,7 +35,7 @@ describe('File Upload Remote (GET /?action=fileUploadRemote)', () => {
     await new Promise<void>(resolve => {
       mockServer.listen(0, () => {
         const address = mockServer.address();
-        if (address && typeof address !== 'string') {
+        if (address != null && typeof address !== 'string') {
           mockServerPort = address.port;
         }
         resolve();
@@ -46,7 +46,7 @@ describe('File Upload Remote (GET /?action=fileUploadRemote)', () => {
   afterAll(async () => {
     await new Promise<void>((resolve, reject) => {
       mockServer.close(err => {
-        if (err) reject(err);
+        if (err != null) reject(err);
         else resolve();
       });
     });
