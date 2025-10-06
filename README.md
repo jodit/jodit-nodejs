@@ -35,6 +35,37 @@ npm run build        # Compile TypeScript
 npm start            # Run compiled application
 ```
 
+### Environment Variables
+
+You can configure the default source using environment variables:
+
+```bash
+# Set custom source name
+SOURCE_NAME="My Files" npm start
+
+# Set custom source root directory
+SOURCE_ROOT="/path/to/files" npm start
+
+# Set custom source base URL
+SOURCE_BASEURL="http://example.com/files/" npm start
+
+# Set custom port (default: 3000)
+PORT=8080 npm start
+
+# Combine multiple variables
+SOURCE_NAME="Production Files" \
+SOURCE_ROOT="/var/www/uploads" \
+SOURCE_BASEURL="https://cdn.example.com/uploads/" \
+PORT=8080 \
+npm start
+```
+
+**Environment Variables:**
+- `SOURCE_NAME` - Display name for the default source (default: "Test Files")
+- `SOURCE_ROOT` - Absolute path to the files directory (default: "./files/test")
+- `SOURCE_BASEURL` - Base URL for accessing files (default: "http://localhost:3000/files/test/")
+- `PORT` - Server port (default: 3000)
+
 ### Testing
 ```bash
 npm test             # Run all tests
@@ -56,6 +87,20 @@ npm run docker:run   # Run container (port 3000)
 # Or manually:
 docker build -t jodit-connector-nodejs .
 docker run --rm -p 3000:3000 jodit-connector-nodejs
+
+# With environment variables:
+docker run --rm -p 8080:8080 \
+  -e PORT=8080 \
+  -e SOURCE_NAME="Production Files" \
+  -e SOURCE_ROOT="/var/www/uploads" \
+  -e SOURCE_BASEURL="https://cdn.example.com/uploads/" \
+  jodit-connector-nodejs
+
+# With volume mount:
+docker run --rm -p 3000:3000 \
+  -v /host/path/to/files:/app/files \
+  -e SOURCE_ROOT="/app/files" \
+  jodit-connector-nodejs
 ```
 
 ### API Documentation

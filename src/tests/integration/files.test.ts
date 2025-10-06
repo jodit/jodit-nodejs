@@ -1,9 +1,9 @@
-import type * as http from 'http';
-import { startTestServer, stopTestServer } from '../test-server';
+import type * as http from 'node:http';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import request from 'supertest';
+import { startTestServer, stopTestServer } from '../test-server';
 import { createApp } from '../../app';
-import fs from 'fs/promises';
-import path from 'path';
 
 describe('Files API', () => {
   let server: http.Server;
@@ -23,7 +23,7 @@ describe('Files API', () => {
   afterAll(async () => {
     await stopTestServer(server);
     // Clean up test files
-    await fs.rm(path.join(__dirname, '../../../files'), {
+    await fs.rm(path.join(__dirname, '../../../files/test'), {
       recursive: true,
       force: true
     });

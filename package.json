@@ -31,6 +31,7 @@
     "express": "^5.1.0",
     "express-async-handler": "^1.2.0",
     "multer": "^2.0.2",
+    "sharp": "^0.34.4",
     "winston": "^3.18.3",
     "zod": "^4.1.11"
   },

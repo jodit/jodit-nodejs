@@ -11,9 +11,14 @@ export const config: AppConfig = {
   debug: true,
   sources: {
     test: {
-      title: 'Test Files',
-      root: path.join(__dirname, '../../files/test'),
-      baseurl: 'http://localhost:3000/files/test/'
+      title: process.env.SOURCE_NAME ?? 'Test Files',
+      root:
+        process.env.SOURCE_ROOT != null
+          ? path.resolve(process.env.SOURCE_ROOT)
+          : path.resolve(process.cwd(), './files/'),
+      baseurl:
+        process.env.SOURCE_BASEURL ??
+        `http://localhost:${process.env.PORT}/files/test/`
     }
   },
   datetimeFormat: 'M/D/YYYY h:mm A',
