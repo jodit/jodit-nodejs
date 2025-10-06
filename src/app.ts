@@ -11,14 +11,17 @@ import { corsMiddleware } from './middlewares/cors';
 import { BaseActionQueryPassthroughSchema, AppConfigSchema } from './schemas';
 
 export function createApp(customConfig?: Partial<AppConfig>): Application {
-  const config: AppConfig = customConfig !== undefined
-    ? { ...defaultConfig, ...customConfig }
-    : defaultConfig;
+  const config: AppConfig =
+    customConfig !== undefined
+      ? { ...defaultConfig, ...customConfig }
+      : defaultConfig;
 
   // Validate config on startup
   const validation = AppConfigSchema.safeParse(config);
   if (!validation.success) {
-    const errors = validation.error.issues.map((err) => `${err.path.join('.')}: ${err.message}`);
+    const errors = validation.error.issues.map(
+      err => `${err.path.join('.')}: ${err.message}`
+    );
     logger.error(`Invalid application config: ${errors.join(', ')}`);
     throw new Error(`Invalid application config: ${errors.join(', ')}`);
   }
@@ -39,24 +42,28 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
   app.get('/ping', pingHandler);
 
   // Main API endpoint with validation
-  app.get('/', validateQuery(BaseActionQueryPassthroughSchema), async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const action = req.query.action as string;
+  app.get(
+    '/',
+    validateQuery(BaseActionQueryPassthroughSchema),
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const action = req.query.action as string;
 
-      switch (action) {
-        case 'files':
-          await filesHandler(req, res);
-          break;
-        default: {
-          const boomError = Boom.notFound(`Action "${action}" not found`);
-          boomError.output.payload.messages = [boomError.message];
-          throw boomError;
+        switch (action) {
+          case 'files':
+            await filesHandler(req, res);
+            break;
+          default: {
+            const boomError = Boom.notFound(`Action "${action}" not found`);
+            boomError.output.payload.messages = [boomError.message];
+            throw boomError;
+          }
         }
+      } catch (error) {
+        next(error);
       }
-    } catch (error) {
-      next(error);
     }
-  });
+  );
 
   // Error handler
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
@@ -68,7 +75,8 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
     // Check if it's a Boom error
     if (Boom.isBoom(err)) {
       const statusCode = err.output.statusCode;
-      const messages = (err.output.payload as { messages?: string[] }).messages ?? [err.message];
+      const messages = (err.output.payload as { messages?: string[] })
+        .messages ?? [err.message];
 
       res.status(statusCode).json({
         success: false,

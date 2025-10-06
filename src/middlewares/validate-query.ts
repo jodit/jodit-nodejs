@@ -9,7 +9,7 @@ export function validateQuery(schema: ZodType) {
 
     if (!result.success) {
       const zodError = result.error as ZodError;
-      const errors = zodError.issues.map((err) => err.message);
+      const errors = zodError.issues.map(err => err.message);
       logger.debug(`Validation error: ${errors.join(', ')}`);
 
       const boomError = Boom.badRequest('Validation failed');

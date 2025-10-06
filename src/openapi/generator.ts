@@ -9,7 +9,8 @@ export function generateOpenApiSpec() {
     info: {
       version: '1.0.0',
       title: 'Jodit Connector API',
-      description: 'Node.js/TypeScript implementation of Jodit File Browser and Uploader connector',
+      description:
+        'Node.js/TypeScript implementation of Jodit File Browser and Uploader connector',
       contact: {
         name: 'Chupurnov Valeriy',
         email: 'chupurnov@gmail.com'

@@ -4,7 +4,11 @@ import Boom from '@hapi/boom';
 import { logger } from '../helpers/logger';
 import { AppConfigSchema } from '../schemas';
 
-export function customConfigMiddleware(req: Request, _res: Response, next: NextFunction): void {
+export function customConfigMiddleware(
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): void {
   const currentConfig = req.app.locals.config as AppConfig;
 
   // Only allow custom_config in debug mode
@@ -32,7 +36,9 @@ export function customConfigMiddleware(req: Request, _res: Response, next: NextF
       const validation = AppConfigSchema.safeParse(mergedConfig);
 
       if (!validation.success) {
-        const errors = validation.error.issues.map((err) => `${err.path.join('.')}: ${err.message}`);
+        const errors = validation.error.issues.map(
+          err => `${err.path.join('.')}: ${err.message}`
+        );
         logger.warn(`Invalid custom_config: ${errors.join(', ')}`);
 
         const boomError = Boom.badRequest('Invalid custom_config');
@@ -45,10 +51,14 @@ export function customConfigMiddleware(req: Request, _res: Response, next: NextF
       req.app.locals.config = validation.data;
       logger.debug(`Custom config applied: ${customConfigParam}`);
     } catch (error) {
-      logger.warn(`Failed to parse custom_config: ${error instanceof Error ? error.message : String(error)}`);
+      logger.warn(
+        `Failed to parse custom_config: ${error instanceof Error ? error.message : String(error)}`
+      );
 
       const boomError = Boom.badRequest('Failed to parse custom_config');
-      boomError.output.payload.messages = [error instanceof Error ? error.message : String(error)];
+      boomError.output.payload.messages = [
+        error instanceof Error ? error.message : String(error)
+      ];
       next(boomError);
       return;
     }

@@ -9,7 +9,10 @@ let server: Server | null = null;
 // Re-export createApp for direct use
 export { createApp };
 
-export async function start(port?: number, customConfig?: Partial<AppConfig>): Promise<Server> {
+export async function start(
+  port?: number,
+  customConfig?: Partial<AppConfig>
+): Promise<Server> {
   const PORT: number = port ?? parseInt(process.env.PORT ?? '3000', 10);
 
   if (isNaN(PORT) || PORT < 1 || PORT > 65535) {

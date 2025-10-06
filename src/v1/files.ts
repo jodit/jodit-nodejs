@@ -5,16 +5,13 @@ import { getFileItems } from '../helpers/file-system';
 import { FilesQuerySchema } from '../schemas';
 import path from 'path';
 
-export async function filesHandler(
-  req: Request,
-  res: Response
-): Promise<void> {
+export async function filesHandler(req: Request, res: Response): Promise<void> {
   const config = req.app.locals.config as AppConfig;
 
   // Validate files-specific query params
   const filesValidation = FilesQuerySchema.safeParse(req.query);
   if (!filesValidation.success) {
-    const errors = filesValidation.error.issues.map((err) => err.message);
+    const errors = filesValidation.error.issues.map(err => err.message);
     const boomError = Boom.badRequest('Validation failed');
     boomError.output.payload.messages = errors;
     throw boomError;
@@ -47,7 +44,11 @@ export async function filesHandler(
     if (sourceConfig === null || sourceConfig === undefined) continue;
 
     const fullPath = path.join(sourceConfig.root, sourcePath);
-    const files = await getFileItems(fullPath, withFolders, config.imageExtensions);
+    const files = await getFileItems(
+      fullPath,
+      withFolders,
+      config.imageExtensions
+    );
 
     const sourceData: SourceData = {
       name,

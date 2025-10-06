@@ -30,7 +30,9 @@ const format = winston.format.combine(
     ? [winston.format.colorize({ all: true })]
     : []),
   // Define format of logs
-  winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+  winston.format.printf(
+    info => `${info.timestamp} ${info.level}: ${info.message}`
+  )
 );
 
 // Define which transports the logger must use
@@ -54,8 +56,7 @@ const transports = [
 export const logger = winston.createLogger({
   level: process.env.LOG_LEVEL ?? 'info',
   levels,
-  silent:
-    process.env.LOGGER !== 'yes' && process.env.NODE_ENV === 'test',
+  silent: process.env.LOGGER !== 'yes' && process.env.NODE_ENV === 'test',
   format,
   transports,
   // Do not exit on handled exceptions

@@ -11,7 +11,10 @@ export async function isDirectory(filePath: string): Promise<boolean> {
   }
 }
 
-export function isImageFile(fileName: string, imageExtensions: string[]): boolean {
+export function isImageFile(
+  fileName: string,
+  imageExtensions: string[]
+): boolean {
   const ext = path.extname(fileName).toLowerCase().replace('.', '');
   return imageExtensions.includes(ext);
 }

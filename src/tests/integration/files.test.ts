@@ -107,7 +107,9 @@ describe('Files API', () => {
         success: false,
         data: {
           code: 404,
-          messages: expect.arrayContaining([expect.stringContaining('not found')])
+          messages: expect.arrayContaining([
+            expect.stringContaining('not found')
+          ])
         }
       });
     });
@@ -187,7 +189,9 @@ describe('Files API', () => {
         success: false,
         data: {
           code: 404,
-          messages: expect.arrayContaining([expect.stringContaining('not found')])
+          messages: expect.arrayContaining([
+            expect.stringContaining('not found')
+          ])
         }
       });
     });
@@ -198,7 +202,7 @@ describe('Files API', () => {
           invalid: {
             title: 'Invalid Source',
             root: testFilesPath,
-            baseurl: 'not-a-valid-url'  // Invalid URL
+            baseurl: 'not-a-valid-url' // Invalid URL
           }
         }
       };
@@ -215,9 +219,7 @@ describe('Files API', () => {
         success: false,
         data: {
           code: 400,
-          messages: expect.arrayContaining([
-            expect.stringContaining('baseurl')
-          ])
+          messages: expect.arrayContaining([expect.stringContaining('baseurl')])
         }
       });
     });

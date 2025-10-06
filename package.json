@@ -13,6 +13,7 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint src/ && tsc --noEmit",
     "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write ./src",
     "docker:build": "docker build -t jodit-connector-nodejs .",
     "docker:run": "docker run --rm -p 3000:3000 jodit-connector-nodejs",
     "docs:generate": "ts-node scripts/generate-openapi.ts"
