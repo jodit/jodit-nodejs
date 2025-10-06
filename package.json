@@ -1,5 +1,6 @@
 {
   "name": "jodit-connector-application-nodejs",
+  "displayName": "Jodit Connector API for Node.js",
   "version": "1.0.0",
   "description": "Jodit FileBrowser and Uploader connector for Node.js",
   "main": "dist/index.js",
