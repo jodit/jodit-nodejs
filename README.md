@@ -820,6 +820,8 @@ git push origin v1.0.1
 - npm: `npm install jodit-nodejs`
 - DockerHub: `docker pull chupurnov/jodit-nodejs:latest`
 
+**For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)**
+
 ## Differences from PHP Version
 
 - **Async/await** instead of synchronous operations
