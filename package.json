@@ -1,7 +1,7 @@
 {
   "name": "jodit-nodejs",
   "displayName": "Jodit Connector API for Node.js",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Jodit FileBrowser and Uploader connector for Node.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,7 +22,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "newversion": "npm version patch --no-git-tag-version && npm run dump-db && npm run newversiongit",
+    "newversion": "npm version patch --no-git-tag-version && npm run newversiongit",
     "git": "git add --all  && git commit -m \"New version $npm_package_version. Read more https://github.com/jodit/jodit-nodejs/releases/tag/$npm_package_version \" && git tag $npm_package_version",
     "newversiongit": "npm run git && git push --tags origin HEAD:main",
     "start": "node --env-file=.env dist/run.js",
