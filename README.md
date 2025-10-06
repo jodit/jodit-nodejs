@@ -141,22 +141,30 @@ npm run docs:generate  # Generate OpenAPI docs
 ## Project Structure
 
 ```
-jodit-connector-application-nodejs/
+jodit-nodejs/
 ├── src/
 │   ├── v1/                  # API handlers (files, ping, etc.)
 │   ├── config/              # Application configuration
-│   ├── helpers/             # Utility functions (logger, file-system)
-│   ├── middlewares/         # Express middleware (validation, custom-config)
+│   ├── helpers/             # Utility functions (logger, file-system, access-control)
+│   ├── middlewares/         # Express middleware (auth, access-control, validation)
 │   ├── schemas/             # Zod validation schemas
 │   ├── types/               # TypeScript types and interfaces
+│   ├── openapi/             # OpenAPI spec generator
 │   ├── tests/               # Tests
 │   │   ├── integration/     # Integration tests
 │   │   └── test-server.ts   # Test server utilities
 │   ├── app.ts               # Express application factory
 │   ├── index.ts             # Entry point (exports start/stop/createApp)
 │   └── run.ts               # Default app launcher for development
+├── examples/                # Usage examples
+│   ├── basic-js.js          # Basic JavaScript example
+│   └── with-auth-js.js      # Example with authentication
 ├── files/                   # Files directory (gitignored)
 ├── dist/                    # Compiled code (gitignored)
+├── docs/                    # Generated OpenAPI documentation
+├── .github/
+│   └── workflows/
+│       └── connector.yml    # CI/CD workflow (test, docker, npm publish)
 ├── package.json
 ├── tsconfig.json
 ├── jest.config.js
@@ -164,13 +172,38 @@ jodit-connector-application-nodejs/
 └── .prettierrc
 ```
 
+## Installation
+
+```bash
+npm install jodit-nodejs
+```
+
+## Quick Start Examples
+
+Check the `examples/` directory for complete working examples:
+
+- **`examples/basic-js.js`** - Simple server setup with CommonJS
+- **`examples/with-auth-js.js`** - Server with authentication and access control
+
+Run examples:
+```bash
+# Build the package first
+npm run build
+
+# Run basic example
+node examples/basic-js.js
+
+# Run with authentication example
+node examples/with-auth-js.js
+```
+
 ## API Usage
 
-### As NPM Package
+### As NPM Package (TypeScript)
 
 ```typescript
-import { start, stop, createApp } from 'jodit-connector-application-nodejs';
-import type { AppConfig, AuthCallback } from 'jodit-connector-application-nodejs';
+import { start, stop, createApp } from 'jodit-nodejs';
+import type { AppConfig, AuthCallback } from 'jodit-nodejs';
 
 // Start server with default config
 const server = await start(3000);
@@ -208,6 +241,127 @@ const server = await start({
 // Or create Express app directly
 const app = createApp(customConfig);
 app.listen(3000);
+
+// Stop server
+await stop();
+```
+
+### As NPM Package (JavaScript/CommonJS)
+
+```javascript
+const { start, stop, createApp } = require('jodit-nodejs');
+
+// Start server with default config
+async function main() {
+  const server = await start(3000);
+  console.log('Server running on port 3000');
+}
+
+// Start server with custom config
+async function startWithConfig() {
+  const customConfig = {
+    debug: false,
+    allowCrossOrigin: true,
+    sources: {
+      myfiles: {
+        title: 'My Files',
+        root: '/path/to/files',
+        baseurl: 'http://localhost:3000/files/'
+      }
+    }
+  };
+
+  const server = await start(3000, customConfig);
+
+  // Stop on SIGINT
+  process.on('SIGINT', async () => {
+    await stop();
+    process.exit(0);
+  });
+}
+
+// Start server with authentication
+async function startWithAuth() {
+  const checkAuth = async (req) => {
+    const token = req.headers.authorization;
+    if (!token) throw new Error('Unauthorized');
+
+    // Validate token and return user role
+    const user = await validateToken(token);
+    return user.role; // e.g., 'admin', 'editor', 'guest'
+  };
+
+  const server = await start({
+    port: 3000,
+    config: {
+      defaultRole: 'guest',
+      accessControl: [
+        { role: 'guest', FILES: true, FILE_UPLOAD: false },
+        { role: 'admin', FILES: true, FILE_UPLOAD: true }
+      ]
+    },
+    checkAuthentication: checkAuth
+  });
+}
+
+// Or create Express app directly
+function createCustomApp() {
+  const app = createApp({
+    debug: true,
+    sources: {
+      uploads: {
+        title: 'Uploads',
+        root: '/var/www/uploads',
+        baseurl: 'https://example.com/uploads/'
+      }
+    }
+  });
+
+  app.listen(3000, () => {
+    console.log('Server started on port 3000');
+  });
+}
+
+main().catch(console.error);
+```
+
+### As NPM Package (JavaScript/ES Modules)
+
+```javascript
+import { start, stop, createApp } from 'jodit-nodejs';
+
+// Start server with default config
+const server = await start(3000);
+
+// Start server with custom config
+const customConfig = {
+  debug: false,
+  allowCrossOrigin: true,
+  sources: {
+    myfiles: {
+      title: 'My Files',
+      root: '/path/to/files',
+      baseurl: 'http://localhost:3000/files/'
+    }
+  }
+};
+const server = await start(3000, customConfig);
+
+// Start server with authentication middleware
+const checkAuth = async (req) => {
+  const token = req.headers.authorization;
+  if (!token) throw new Error('Unauthorized');
+
+  // Validate token and return user role
+  const user = await validateToken(token);
+  return user.role;
+};
+
+const serverWithAuth = await start({
+  port: 3000,
+  config: customConfig,
+  checkAuthentication: checkAuth
+});
 
 // Stop server
 await stop();
@@ -284,7 +438,7 @@ Health check endpoint.
 You can provide a custom authentication callback to validate requests and set user roles:
 
 ```typescript
-import { start, type AuthCallback } from 'jodit-connector-application-nodejs';
+import { start, type AuthCallback } from 'jodit-nodejs';
 
 const checkAuth: AuthCallback = async (req) => {
   // Read authentication token from headers
@@ -600,27 +754,42 @@ docker run --rm -p 3000:3000 jodit-connector-nodejs
 GitHub Actions workflow runs on:
 - **Push to main** - runs tests and linter
 - **Pull requests** - runs tests and linter
-- **Tags** - builds and pushes Docker image to DockerHub
+- **Tags** - builds and pushes Docker image to DockerHub, publishes to npm
 
 ### Workflow Jobs
 1. **test** - Runs linter, tests, and build
 2. **docker** - Builds multi-arch image and pushes to DockerHub (only on tags)
+3. **publish** - Publishes package to npm registry (only on tags)
 
 ### Required Secrets
 - `DOCKERHUB_USERNAME` - DockerHub username
 - `DOCKERHUB_TOKEN` - DockerHub access token
+- `NPM_TOKEN` - npm access token with publish permissions
+
+**How to create npm token:**
+1. Login to npm: `npm login`
+2. Create automation token: `npm token create --type=automation`
+3. Add token to GitHub repository secrets as `NPM_TOKEN`
 
 ### Release Process
 ```bash
-# Create and push a tag
-git tag v1.0.0
-git push origin v1.0.0
+# 1. Update version in package.json
+npm version patch  # or minor, major
+
+# 2. Create and push a tag
+git tag v1.0.1
+git push origin v1.0.1
 
 # GitHub Actions will automatically:
 # - Run tests
 # - Build Docker image
-# - Push to DockerHub as latest and v1.0.0
+# - Push to DockerHub as latest and v1.0.1
+# - Publish to npm registry with provenance
 ```
+
+**Published package:**
+- npm: `npm install jodit-nodejs`
+- DockerHub: `docker pull <username>/jodit-connector-nodejs:latest`
 
 ## Differences from PHP Version
 

@@ -9,7 +9,7 @@ let server: Server | null = null;
 
 // Re-export createApp for direct use
 export { createApp };
-export type { AuthCallback };
+export type { AuthCallback, AppConfig };
 
 export interface StartOptions {
   port?: number;

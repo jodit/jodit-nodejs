@@ -1,9 +1,26 @@
 {
-  "name": "jodit-connector-application-nodejs",
+  "name": "jodit-nodejs",
   "displayName": "Jodit Connector API for Node.js",
   "version": "1.0.0",
   "description": "Jodit FileBrowser and Uploader connector for Node.js",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xdan/jodit-nodejs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xdan/jodit-nodejs/issues"
+  },
+  "homepage": "https://github.com/xdan/jodit-nodejs#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "start": "node --env-file=.env dist/run.js",
     "dev": "nodemon --exec node --env-file=.env -r ts-node/register src/run.ts",
