@@ -46,8 +46,14 @@ export async function filesHandler(req: Request, res: Response): Promise<void> {
     const fullPath = path.join(sourceConfig.root, sourcePath);
     const files = await getFileItems(
       fullPath,
+      sourceConfig.root,
       withFolders,
-      config.imageExtensions
+      config.imageExtensions,
+      config.createThumb,
+      config.thumbFolderName,
+      config.thumbSize,
+      config.quality,
+      config.safeThumbsCountInOneTime
     );
 
     const sourceData: SourceData = {

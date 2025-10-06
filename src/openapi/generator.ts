@@ -18,7 +18,7 @@ function loadPackageJson(): PackageJson {
   return JSON.parse(packageContent) as PackageJson;
 }
 
-function parseAuthor(author: string): { name: string; email: string } {
+function parseAuthor(author: string): { name: string; email: string } | never {
   const match = /^([^<]+)\s*(?:<([^>]+)>)?/.exec(author);
   if (match !== null) {
     return {
@@ -29,7 +29,9 @@ function parseAuthor(author: string): { name: string; email: string } {
   return { name: author, email: '' };
 }
 
-export function generateOpenApiSpec() {
+export function generateOpenApiSpec(): ReturnType<
+  typeof OpenApiGeneratorV3.prototype.generateDocument
+> {
   const pkg = loadPackageJson();
   const author = parseAuthor(pkg.author);
   const generator = new OpenApiGeneratorV3(registry.definitions);

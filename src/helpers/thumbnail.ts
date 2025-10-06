@@ -129,7 +129,7 @@ export async function makeThumb(
 
     countThumbs.count++;
     return getRelativeThumbPath(filePath, sourceRoot, thumbFolderName);
-  } catch (error) {
+  } catch {
     // If thumbnail generation fails, return undefined
     return undefined;
   }

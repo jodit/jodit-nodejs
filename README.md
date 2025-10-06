@@ -37,7 +37,7 @@ npm start            # Run compiled application
 
 ### Environment Variables
 
-You can configure the default source using environment variables:
+You can configure the application using environment variables:
 
 ```bash
 # Set custom source name
@@ -58,6 +58,11 @@ SOURCE_ROOT="/var/www/uploads" \
 SOURCE_BASEURL="https://cdn.example.com/uploads/" \
 PORT=8080 \
 npm start
+
+# Or provide full configuration via JSON
+CONFIG='{"debug":false,"allowCrossOrigin":true,"sources":{"production":{"title":"Production Files","root":"/var/www/uploads","baseurl":"https://cdn.example.com/uploads/"}}}' \
+PORT=8080 \
+npm start
 ```
 
 **Environment Variables:**
@@ -65,6 +70,8 @@ npm start
 - `SOURCE_ROOT` - Absolute path to the files directory (default: "./files/test")
 - `SOURCE_BASEURL` - Base URL for accessing files (default: "http://localhost:3000/files/test/")
 - `PORT` - Server port (default: 3000)
+- `CONFIG` - Full configuration as JSON string (highest priority, overrides CONFIG_FILE and default config)
+- `CONFIG_FILE` - Path to JSON configuration file (overrides default config)
 
 ### Testing
 ```bash
@@ -80,6 +87,9 @@ npm run lint:fix     # Auto-fix issues
 ```
 
 ### Docker
+
+The Docker image includes a default configuration file at `/usr/src/app/config.json` that can be customized.
+
 ```bash
 npm run docker:build # Build Docker image
 npm run docker:run   # Run container (port 3000)
@@ -87,6 +97,12 @@ npm run docker:run   # Run container (port 3000)
 # Or manually:
 docker build -t jodit-connector-nodejs .
 docker run --rm -p 3000:3000 jodit-connector-nodejs
+
+# With custom config file (recommended approach):
+docker run --rm -p 3000:3000 \
+  -v /host/path/to/config.json:/usr/src/app/config.json \
+  -v /host/path/to/files:/usr/src/app/files \
+  jodit-connector-nodejs
 
 # With environment variables:
 docker run --rm -p 8080:8080 \
@@ -96,12 +112,22 @@ docker run --rm -p 8080:8080 \
   -e SOURCE_BASEURL="https://cdn.example.com/uploads/" \
   jodit-connector-nodejs
 
-# With volume mount:
+# With volume mount for files:
 docker run --rm -p 3000:3000 \
-  -v /host/path/to/files:/app/files \
-  -e SOURCE_ROOT="/app/files" \
+  -v /host/path/to/files:/usr/src/app/files \
+  jodit-connector-nodejs
+
+# Override with inline JSON config:
+docker run --rm -p 8080:8080 \
+  -e PORT=8080 \
+  -e CONFIG='{"debug":false,"allowCrossOrigin":true,"sources":{"production":{"title":"Production","root":"/usr/src/app/files","baseurl":"https://cdn.example.com/files/"}}}' \
   jodit-connector-nodejs
 ```
+
+**Configuration Priority:**
+1. `CONFIG` environment variable (highest priority)
+2. `CONFIG_FILE` environment variable (default: `/usr/src/app/config.json` in Docker)
+3. Default configuration from code
 
 ### API Documentation
 ```bash

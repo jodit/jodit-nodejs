@@ -8,7 +8,15 @@ import { createApp } from '../../app';
 describe('Files API', () => {
   let server: http.Server;
   const testFilesPath = path.join(__dirname, '../../../files/test');
-  const app = createApp();
+  const app = createApp({
+    sources: {
+      test: {
+        title: 'Test Files',
+        root: testFilesPath,
+        baseurl: 'http://localhost:3000/files/test/'
+      }
+    }
+  });
 
   beforeAll(async () => {
     // Create test directory structure
@@ -164,7 +172,16 @@ describe('Files API', () => {
     });
 
     it('should NOT apply custom config when debug is false', async () => {
-      const appWithoutDebug = createApp({ debug: false });
+      const appWithoutDebug = createApp({
+        debug: false,
+        sources: {
+          test: {
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:3000/files/test/'
+          }
+        }
+      });
       const customConfig = {
         sources: {
           custom: {

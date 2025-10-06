@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/run.js",
-    "dev": "nodemon --exec ts-node src/run.ts",
+    "dev": "nodemon --exec node --env-file=.env -r ts-node/register src/run.ts",
     "build": "npm run clean && tsc",
     "clean": "rm -rf dist",
     "test": "jest --runInBand",

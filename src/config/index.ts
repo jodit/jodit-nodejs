@@ -18,7 +18,7 @@ export const config: AppConfig = {
           : path.resolve(process.cwd(), './files/'),
       baseurl:
         process.env.SOURCE_BASEURL ??
-        `http://localhost:${process.env.PORT}/files/test/`
+        `http://localhost:${process.env.PORT}/files/`
     }
   },
   datetimeFormat: 'M/D/YYYY h:mm A',
