@@ -1,0 +1,12 @@
+node_modules
+dist
+files
+*.log
+.git
+.gitignore
+.env
+.npmrc
+README.md
+jest.config.js
+.prettierrc
+eslint.config.js
