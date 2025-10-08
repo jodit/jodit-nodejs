@@ -191,5 +191,5 @@ start({
 ## Support
 
 For issues and questions:
-- GitHub Issues: https://github.com/xdan/jodit-nodejs/issues
+- GitHub Issues: https://github.com/jodit/jodit-nodejs/issues
 - Documentation: https://jodit.github.io/jodit-nodejs/

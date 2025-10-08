@@ -1,7 +1,7 @@
 # Jodit Connector Application (Node.js)
 
-[![CI/CD](https://github.com/xdan/jodit-nodejs/actions/workflows/connector.yml/badge.svg)](https://github.com/xdan/jodit-nodejs/actions/workflows/connector.yml)
-[![Documentation](https://github.com/xdan/jodit-nodejs/actions/workflows/docs.yml/badge.svg)](https://jodit.github.io/jodit-nodejs/)
+[![CI/CD](https://github.com/jodit/jodit-nodejs/actions/workflows/connector.yml/badge.svg)](https://github.com/jodit/jodit-nodejs/actions/workflows/connector.yml)
+[![Documentation](https://github.com/jodit/jodit-nodejs/actions/workflows/docs.yml/badge.svg)](https://jodit.github.io/jodit-nodejs/)
 [![npm version](https://badge.fury.io/js/jodit-nodejs.svg)](https://www.npmjs.com/package/jodit-nodejs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
