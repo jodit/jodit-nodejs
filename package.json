@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/jodit/jodit-nodejs/issues"
   },
-  "homepage": "https://github.com/jodit/jodit-nodejs#readme",
+  "homepage": "https://xdsoft.net/jodit/",
   "engines": {
     "node": ">=18.0.0"
   },
@@ -25,7 +25,7 @@
     "newversion": "npm version patch --no-git-tag-version && npm run newversiongit",
     "git": "git add --all  && git commit -m \"New version $npm_package_version. Read more https://github.com/jodit/jodit-nodejs/releases/tag/$npm_package_version \" && git tag $npm_package_version",
     "newversiongit": "npm run git && git push --tags origin HEAD:main",
-    "start": "node --env-file=.env dist/run.js",
+    "start": "npm run dev",
     "dev": "nodemon --exec node --env-file=.env -r ts-node/register src/run.ts",
     "build": "npm run clean && tsc",
     "clean": "rm -rf dist",
@@ -37,7 +37,8 @@
     "format": "prettier --write ./src",
     "docker:build": "docker build -t jodit-nodejs .",
     "docker:run": "docker run --rm -p 3000:3000 jodit-nodejs",
-    "docs:generate": "ts-node scripts/generate-openapi.ts"
+    "docs:generate": "node --no-warnings --loader ts-node/esm -r ts-node/register scripts/generate-openapi.ts",
+    "docs:serve": "npx http-server ./docs -p 8080"
   },
   "keywords": [
     "jodit",
@@ -50,16 +51,21 @@
     "@asteasolutions/zod-to-openapi": "^8.1.0",
     "@hapi/boom": "^10.0.1",
     "@turbodocx/html-to-docx": "^1.15.3",
+    "bytes": "^3.1.2",
+    "deepmerge": "^4.3.1",
     "express": "^5.1.0",
     "express-async-handler": "^1.2.0",
+    "filenamify": "^7.0.0",
     "multer": "^2.0.2",
     "puppeteer": "^24.23.0",
+    "sanitize-filename": "^1.6.3",
     "sharp": "^0.34.4",
     "winston": "^3.18.3",
     "zod": "^4.1.11"
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
+    "@types/bytes": "^3.1.5",
     "@types/express": "^5.0.3",
     "@types/hapi__boom": "^7.4.1",
     "@types/jest": "^30.0.0",

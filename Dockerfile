@@ -1,10 +1,35 @@
-FROM node:24-alpine AS builder
+FROM node:22-bookworm-slim AS deps
 
+ENV DEBIAN_FRONTEND=noninteractive;
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true;
+ENV NODE_ENV=production
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+WORKDIR /usr/src/app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+       chromium \
+       ca-certificates \
+       fonts-liberation fonts-noto-cjk fonts-noto-core \
+       libasound2 libatk1.0-0 libatk-bridge2.0-0 \
+       libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgbm1 \
+       libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 \
+       libx11-6 libx11-xcb1 libxcb1 libxcomposite1 \
+       libxcursor1 libxdamage1 libxext6 libxfixes3 \
+       libxi6 libxrandr2 libxrender1 libxss1 libxtst6
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+FROM node:22-bookworm-slim AS builder
 WORKDIR /usr/src/app
 
 COPY ./package.json ./
 COPY ./package-lock.json ./
 COPY ./.npmrc ./
+
+ENV PUPPETEER_SKIP_DOWNLOAD=true;
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true;
 RUN npm ci
 
 COPY ./tsconfig.json ./
@@ -13,7 +38,7 @@ RUN npm run build
 
 RUN NODE_NO_WARNINGS=1 npm prune --omit=dev
 
-FROM node:24-alpine
+FROM deps AS final
 WORKDIR /usr/src/app
 
 COPY --from=builder /usr/src/app/dist ./dist
@@ -28,4 +53,5 @@ RUN mkdir -p /usr/src/app/files
 # Set environment variable to read config from file
 ENV CONFIG_FILE=/usr/src/app/config.json
 
-CMD ["node", "--env-file=.env", "dist/run.js"]
+CMD ["du", "-sh", "node_modules"]
+# CMD ["node", "--env-file=.env", "dist/run.js"]

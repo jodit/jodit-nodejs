@@ -1,27 +1,28 @@
-#!/usr/bin/env ts-node
-
 import { generateOpenApiSpec } from '../src/openapi/generator';
 import fs from 'fs';
 import path from 'path';
 import YAML from 'yaml';
+import { logger } from '../src/helpers/logger';
 
-const spec = generateOpenApiSpec();
+generateOpenApiSpec().then(spec => {
+  // Create docs directory if it doesn't exist
+  const docsDir = path.join(__dirname, '../docs');
+  if (!fs.existsSync(docsDir)) {
+    fs.mkdirSync(docsDir, { recursive: true });
+  }
 
-// Create docs directory if it doesn't exist
-const docsDir = path.join(__dirname, '../docs');
-if (!fs.existsSync(docsDir)) {
-  fs.mkdirSync(docsDir, { recursive: true });
-}
+  // Save as YAML
+  const yamlSpec = YAML.stringify(spec);
+  fs.writeFileSync(path.join(docsDir, 'openapi.yaml'), yamlSpec);
 
-// Save as YAML
-const yamlSpec = YAML.stringify(spec);
-fs.writeFileSync(path.join(docsDir, 'openapi.yaml'), yamlSpec);
+  // Save as JSON
+  fs.writeFileSync(
+    path.join(docsDir, 'openapi.json'),
+    JSON.stringify(spec, null, 2)
+  );
 
-// Save as JSON
-fs.writeFileSync(path.join(docsDir, 'openapi.json'), JSON.stringify(spec, null, 2));
-
-// Generate Swagger UI HTML
-const swaggerHtml = `<!DOCTYPE html>
+  // Generate Swagger UI HTML
+  const swaggerHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -53,10 +54,13 @@ const swaggerHtml = `<!DOCTYPE html>
 </body>
 </html>`;
 
-fs.writeFileSync(path.join(docsDir, 'index.html'), swaggerHtml);
+  fs.writeFileSync(path.join(docsDir, 'index.html'), swaggerHtml);
 
-console.log('✅ OpenAPI documentation generated:');
-console.log('  - docs/openapi.yaml');
-console.log('  - docs/openapi.json');
-console.log('  - docs/index.html (Swagger UI)');
-console.log('\n📖 Open docs/index.html in your browser to view the API documentation');
+  logger.info('✅ OpenAPI documentation generated:');
+  logger.info('  - docs/openapi.yaml');
+  logger.info('  - docs/openapi.json');
+  logger.info('  - docs/index.html (Swagger UI)');
+  logger.info(
+    '\n📖 Open docs/index.html in your browser to view the API documentation'
+  );
+});

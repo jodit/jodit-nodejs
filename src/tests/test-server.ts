@@ -1,15 +1,44 @@
-import type { Application } from 'express';
 import type * as http from 'http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createApp } from '../app';
+import type { AppConfig } from '../types';
 
 const testFilesPath = path.join(__dirname, '../../files/test');
 
+export interface TestServer {
+  host: string;
+  server?: http.Server;
+}
+
+/**
+ * Start a real HTTP test server
+ * @param config Optional custom config for the app
+ * @returns Object with host URL, server instance, and port
+ */
 export async function startTestServer(
-  app: Application
-): Promise<[http.Server, number]> {
+  config?: Partial<AppConfig>
+): Promise<TestServer> {
+  await createTestDirectories();
+
+  const app = createApp({
+    sources: {
+      test: {
+        title: 'Test Files',
+        root: testFilesPath,
+        baseurl: 'http://localhost:3000/files/test/'
+      }
+    },
+    ...config
+  });
+
   return new Promise((resolve, reject) => {
+    if (process.env.TEST_SERVER_HOST != null) {
+      return resolve({
+        host: process.env.TEST_SERVER_HOST
+      });
+    }
+
     const server = app.listen(0, () => {
       const address = server.address();
       if (
@@ -20,16 +49,29 @@ export async function startTestServer(
         reject(new Error('Failed to get server port'));
         return;
       }
-      resolve([server, address.port]);
+
+      const port = address.port;
+      const host = `http://localhost:${port}`;
+
+      resolve({ host, server });
     });
 
     server.on('error', reject);
   });
 }
 
-export async function stopTestServer(server: http.Server): Promise<void> {
+/**
+ * Stop the test server
+ */
+export async function stopTestServer(testServer: TestServer): Promise<void> {
+  await cleanupTestFiles();
+
+  if (testServer.server == null) {
+    return;
+  }
+
   return new Promise((resolve, reject) => {
-    server.close(err => {
+    testServer.server?.close(err => {
       if (err !== null && err !== undefined) {
         reject(err);
       } else {
@@ -39,16 +81,9 @@ export async function stopTestServer(server: http.Server): Promise<void> {
   });
 }
 
-export function createTestApp(): Application {
-  return createApp({
-    sources: {
-      test: {
-        title: 'Test Files',
-        root: testFilesPath,
-        baseurl: 'http://localhost:3000/files/test/'
-      }
-    }
-  });
+export async function createTestDirectories(): Promise<void> {
+  await fs.mkdir(testFilesPath, { recursive: true });
+  await fs.mkdir(path.join(testFilesPath, 'subdir'), { recursive: true });
 }
 
 export async function cleanupTestFiles(): Promise<void> {
@@ -57,8 +92,6 @@ export async function cleanupTestFiles(): Promise<void> {
   } catch {
     // Ignore errors if directory doesn't exist
   }
-  await fs.mkdir(testFilesPath, { recursive: true });
-  await fs.mkdir(path.join(testFilesPath, 'subdir'), { recursive: true });
 }
 
 export async function createTestFile(

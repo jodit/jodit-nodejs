@@ -23,7 +23,7 @@ export function accessControlMiddleware(
   const role = req.userRole ?? config.defaultRole;
 
   // Get action from query or body
-  const action = (req.query.action ?? req.body?.action) as string | undefined;
+  const action = req.action
 
   if (action == null || action === '') {
     next();

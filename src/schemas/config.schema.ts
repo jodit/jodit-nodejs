@@ -48,7 +48,8 @@ export const AppConfigSchema = z.object({
   debug: z.boolean().describe('Enable debug mode'),
   sources: z
     .record(z.string(), SourceConfigSchema)
-    .describe('File sources configuration'),
+    .describe('File sources configuration')
+    .nullable(),
   datetimeFormat: z.string().describe('Format for datetime display'),
   quality: z.number().describe('Image quality (1-100)'),
   countInChunk: z.number().describe('Number of files to process in one chunk'),
@@ -63,7 +64,7 @@ export const AppConfigSchema = z.object({
   maxFileSize: z.string().describe('Maximum file size (e.g., "8mb")'),
   maxUploadFileSize: z
     .string()
-    .describe('Maximum upload file size (e.g., "8M")'),
+    .describe('Maximum upload file size (e.g., "8mb")'),
   memoryLimit: z.string().describe('PHP-style memory limit (e.g., "256M")'),
   timeoutLimit: z.number().describe('Request timeout in seconds'),
   allowCrossOrigin: z.boolean().describe('Enable CORS'),

@@ -605,7 +605,7 @@ export const config: AppConfig = {
   extensions: ['jpg', 'png', 'gif', 'pdf', 'doc', /* ... */],
   imageExtensions: ['jpg', 'png', 'gif', 'jpeg', 'bmp', 'svg', 'ico', 'webp'],
   maxFileSize: '8mb',
-  maxUploadFileSize: '8M',
+  maxUploadFileSize: '8mb',
 
   // Thumbnails
   createThumb: true,

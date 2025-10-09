@@ -1,15 +1,14 @@
 import fs from 'fs/promises';
 import path from 'path';
+import sanitize from 'sanitize-filename';
+import bytes from 'bytes';
 import type { AppConfig } from '../types';
 
 /**
  * Make filename safe by removing dangerous characters
  */
 export function makeSafeFilename(filename: string): string {
-  return filename
-    .replace(/[^a-zA-Z0-9._-]/g, '_')
-    .replace(/_{2,}/g, '_')
-    .replace(/^_+|_+$/g, '');
+  return sanitize(filename, { replacement: '_' });
 }
 
 /**
@@ -110,26 +109,14 @@ export async function validateUploadedFile(
  * Parse file size string to bytes
  */
 export function parseFileSize(sizeStr: string): number {
-  const units: Record<string, number> = {
-    b: 1,
-    kb: 1024,
-    mb: 1024 * 1024,
-    gb: 1024 * 1024 * 1024,
-    k: 1024,
-    m: 1024 * 1024,
-    g: 1024 * 1024 * 1024
-  };
+  const result = bytes.parse(sizeStr);
 
-  const match = /^(\d+(?:\.\d+)?)\s*([a-z]+)?$/i.exec(sizeStr.toLowerCase());
-
-  if (match === null) {
+  // bytes.parse returns null if parsing fails
+  if (result === null) {
     return 8 * 1024 * 1024; // Default 8MB
   }
 
-  const value = parseFloat(match[1] ?? '0');
-  const unit = (match[2] ?? 'b').toLowerCase();
-
-  return value * (units[unit] ?? 1);
+  return result;
 }
 
 /**
