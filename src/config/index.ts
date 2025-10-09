@@ -42,7 +42,7 @@ export const config: AppConfig = {
   defaultRole: 'guest',
   allowReplaceSourceFile: true,
   baseurl: '',
-  root: path.join(__dirname, '../../files'),
+  root: path.join(process.cwd(), './files'),
   extensions: [
     'jpg',
     'png',

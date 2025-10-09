@@ -5,7 +5,7 @@ import { start, stop, type AuthCallback } from '../../index';
 import { cleanupTestFiles, createTestFile } from '../test-server';
 
 describe('Authentication Middleware', () => {
-  const testFilesPath = path.join(__dirname, '../../../files/test');
+  const testFilesPath = path.join(process.cwd(), './files/test');
 
   beforeEach(async () => {
     await cleanupTestFiles();

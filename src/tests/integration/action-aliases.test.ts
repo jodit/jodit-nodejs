@@ -11,7 +11,8 @@ import {
 
 describe('Action route aliases', () => {
   let testServer: TestServer | null = null;
-  const testFilesRoot = path.join(__dirname, '../../../files/test/tmp');
+  const testFilesRoot = path.join(
+, '../../../files/test/tmp');
 
   beforeAll(async () => {
     testServer = await startTestServer();

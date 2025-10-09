@@ -3,13 +3,17 @@
   "displayName": "Jodit Connector API for Node.js",
   "version": "1.0.9",
   "description": "Jodit FileBrowser and Uploader connector for Node.js",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jodit/jodit-nodejs.git"
@@ -27,7 +31,7 @@
     "newversiongit": "npm run git && git push --tags origin HEAD:main",
     "start": "npm run dev",
     "dev": "nodemon --exec node --env-file=.env -r ts-node/register src/run.ts",
-    "build": "npm run clean && tsc",
+    "build": "npm run clean && tsup",
     "clean": "rm -rf dist",
     "test": "jest --runInBand --detectOpenHandles",
     "test:watch": "jest --watch",
@@ -84,7 +88,9 @@
     "swagger-ui-dist": "^5.29.3",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
+    "tsup": "^8.5.0",
     "typescript": "^5.9.3",
     "yaml": "^2.8.1"
-  }
+  },
+  "sideEffects": false
 }

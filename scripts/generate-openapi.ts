@@ -6,7 +6,7 @@ import { logger } from '../src/helpers/logger';
 
 generateOpenApiSpec().then(spec => {
   // Create docs directory if it doesn't exist
-  const docsDir = path.join(__dirname, '../docs');
+  const docsDir = path.join(process.cwd(), './docs');
   if (!fs.existsSync(docsDir)) {
     fs.mkdirSync(docsDir, { recursive: true });
   }

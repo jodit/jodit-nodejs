@@ -4,7 +4,7 @@ import path from 'node:path';
 import { createApp } from '../app';
 import type { AppConfig } from '../types';
 
-const testFilesPath = path.join(__dirname, '../../files/test');
+const testFilesPath = path.join(process.cwd(), './files/test');
 
 export interface TestServer {
   host: string;
