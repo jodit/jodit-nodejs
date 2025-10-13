@@ -14,7 +14,11 @@ export const PdfOptionsSchema = z.object({
   page_orientation: z
     .enum(['portrait', 'landscape'])
     .optional()
-    .describe('Page orientation')
+    .describe('Page orientation'),
+  defaultFont: z
+    .enum(['courier', 'helvetica', 'times'])
+    .optional()
+    .describe('Default font for PDF (only standard PDF fonts supported)')
 });
 
 /**

@@ -83,7 +83,7 @@ describe('File Upload Remote (GET /?action=fileUploadRemote)', () => {
       success: true,
       data: {
         code: 220,
-        baseurl: 'http://localhost:3000/files/test/',
+        baseurl: 'http://localhost:8081/files/test/',
         newfilename: 'test-image.png',
         isImage: true
       }

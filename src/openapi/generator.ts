@@ -44,7 +44,7 @@ export async function generateOpenApiSpec(): Promise<
         description: 'Demo server'
       },
       {
-        url: 'http://localhost:3000/',
+        url: 'http://localhost:8081/',
         description: 'Local development server'
       }
     ]

@@ -1,7 +1,12 @@
 import path from 'node:path';
 import type { Request, Response } from 'express';
 import Boom from '@hapi/boom';
-import type { FilesActionResponse, SourceData, AppConfig, FileItem } from '../../types';
+import type {
+  FilesActionResponse,
+  SourceData,
+  AppConfig,
+  FileItem
+} from '../../types';
 import { getFileItems } from '../../helpers/file-system';
 import { FilesQuerySchema, FilesModsSchema } from '../../schemas';
 
@@ -21,7 +26,6 @@ export async function filesHandler(req: Request, res: Response): Promise<void> {
   }
 
   const query = filesValidation.data;
-  const sourceName = query.source;
   const sourcePath = query.path ?? '/';
 
   // Parse mods parameter - can be string or object
@@ -41,20 +45,9 @@ export async function filesHandler(req: Request, res: Response): Promise<void> {
 
   const sources: SourceData[] = [];
 
-  // If source is specified, use only that source
-  if (
-    typeof sourceName === 'string' &&
-    sourceName.length > 0 &&
-    config.sources[sourceName] === undefined
-  ) {
-    const boomError = Boom.notFound('Source not found');
-    boomError.output.payload.messages = ['Source not found'];
-    throw boomError;
-  }
-
   const sourcesToProcess =
-    typeof sourceName === 'string' && sourceName.length > 0
-      ? { [sourceName]: config.sources[sourceName] }
+    typeof req.sourceName === 'string' && req.sourceName.length > 0
+      ? { [req.sourceName]: req.sourceConfig }
       : config.sources;
 
   for (const [name, sourceConfig] of Object.entries(sourcesToProcess)) {

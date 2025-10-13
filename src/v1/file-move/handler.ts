@@ -1,5 +1,4 @@
 import type { Request, Response } from 'express';
-import type { AppConfig } from '../../types';
 import Boom from '@hapi/boom';
 import { FileMoveQuerySchema } from '../../schemas';
 import path from 'path';
@@ -9,10 +8,7 @@ export async function fileMoveHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-  const config = req.app.locals.config as AppConfig;
-
-  // Validate query params
-  const queryValidation = FileMoveQuerySchema.safeParse(req.query);
+  const queryValidation = FileMoveQuerySchema.safeParse(req.params_data);
   if (queryValidation.success === false) {
     const errors = queryValidation.error.issues.map(err => err.message);
     const boomError = Boom.badRequest('Validation failed');
@@ -21,16 +17,7 @@ export async function fileMoveHandler(
   }
 
   const query = queryValidation.data;
-  const sourceName = query.source ?? config.defaultFilesKey;
 
-  // Check if source exists
-  if (config.sources[sourceName] === undefined) {
-    const boomError = Boom.notFound('Source not found');
-    boomError.output.payload.messages = ['Source not found'];
-    throw boomError;
-  }
-
-  const sourceConfig = config.sources[sourceName];
   const destinationPath = query.path ?? '/';
 
   if (query.from === '') {
@@ -40,13 +27,13 @@ export async function fileMoveHandler(
   }
 
   // Build source and destination paths
-  const sourceFullPath = path.join(sourceConfig.root, query.from);
-  const destDirPath = path.join(sourceConfig.root, destinationPath);
+  const sourceFullPath = path.join(req.sourceConfig.root, query.from);
+  const destDirPath = path.join(req.sourceConfig.root, destinationPath);
 
   // Security check: ensure paths are within source root
   const realSourcePath = await fs.realpath(sourceFullPath).catch(() => null);
   const realDestPath = await fs.realpath(destDirPath).catch(() => null);
-  const realSourceRoot = await fs.realpath(sourceConfig.root);
+  const realSourceRoot = await fs.realpath(req.sourceConfig.root);
 
   if (realSourcePath?.startsWith(realSourceRoot) !== true) {
     const boomError = Boom.notFound('Source file not found');

@@ -27,11 +27,11 @@ export async function start(
   let checkAuthentication: AuthCallback | undefined;
 
   if (typeof options === 'object') {
-    PORT = options.port ?? parseInt(process.env.PORT ?? '3000', 10);
+    PORT = options.port ?? parseInt(process.env.PORT ?? '8081', 10);
     config = options.config;
     checkAuthentication = options.checkAuthentication;
   } else {
-    PORT = options ?? parseInt(process.env.PORT ?? '3000', 10);
+    PORT = options ?? parseInt(process.env.PORT ?? '8081', 10);
     config = customConfig;
   }
 
@@ -51,6 +51,9 @@ export async function start(
     server = app.listen(PORT, (): void => {
       const message = `Jodit Connector v.${version} listening on port ${PORT}!`;
       logger.info(message);
+      if (process.env.NODE_ENV === 'development') {
+        logger.info('Open http://localhost:8080/demo/ in your browser');
+      }
       resolve(server as Server);
     });
 

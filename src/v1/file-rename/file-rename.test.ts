@@ -220,4 +220,37 @@ describe('File Rename (GET /?action=fileRename)', () => {
     expect(oldExists).toBe(false);
     expect(newExists).toBe(true);
   });
+
+  it('should auto-add safe extension when renaming to dangerous extension', async () => {
+    // Create test file
+    const oldName = 'safe-file.jpg';
+    const dangerousNewName = 'malicious.php';
+    await createTestFile(oldName, 'image content');
+
+    const response = await request(testServer!.host).get('/').query({
+      action: 'fileRename',
+      source: 'test',
+      name: oldName,
+      newname: dangerousNewName
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+
+    // Verify file was renamed with .jpg appended to dangerous extension
+    const expectedPath = path.join(testFilesPath, 'malicious.php.jpg');
+    const dangerousPath = path.join(testFilesPath, 'malicious.php');
+
+    const safeExists = await fs
+      .access(expectedPath)
+      .then(() => true)
+      .catch(() => false);
+    const dangerousExists = await fs
+      .access(dangerousPath)
+      .then(() => true)
+      .catch(() => false);
+
+    expect(safeExists).toBe(true);
+    expect(dangerousExists).toBe(false);
+  });
 });

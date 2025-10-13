@@ -17,12 +17,8 @@ export async function fileUploadHandler(
   res: Response
 ): Promise<void> {
   const config = req.app.locals.config as AppConfig;
-
-  // For POST requests, params can come from query or body
-  const params = { ...req.query, ...req.body };
-
   // Validate params
-  const queryValidation = FileUploadQuerySchema.safeParse(params);
+  const queryValidation = FileUploadQuerySchema.safeParse(req.params_data);
   if (queryValidation.success === false) {
     const errors = queryValidation.error.issues.map(err => err.message);
     const boomError = Boom.badRequest('Validation failed');
@@ -31,17 +27,7 @@ export async function fileUploadHandler(
   }
 
   const query = queryValidation.data;
-  const sourceName = query.source ?? config.defaultFilesKey;
   const sourcePath = query.path ?? '/';
-
-  // Check if source exists
-  if (config.sources[sourceName] === undefined) {
-    const boomError = Boom.notFound('Source not found');
-    boomError.output.payload.messages = ['Source not found'];
-    throw boomError;
-  }
-
-  const sourceConfig = config.sources[sourceName];
 
   // Check if files were uploaded
   if (
@@ -63,7 +49,7 @@ export async function fileUploadHandler(
     throw boomError;
   }
 
-  const targetDir = path.join(sourceConfig.root, sourcePath);
+  const targetDir = path.join(req.sourceConfig.root, sourcePath);
 
   // Ensure target directory exists
   try {
@@ -104,11 +90,24 @@ export async function fileUploadHandler(
 
     // Generate unique filename if needed
     const targetPath = path.join(targetDir, safeFilename);
-    const finalFilename = await generateUniqueFilename(
-      targetPath,
-      safeFilename,
-      config.saveSameFileNameStrategy
-    );
+    let finalFilename: string;
+    try {
+      finalFilename = await generateUniqueFilename(
+        targetPath,
+        safeFilename,
+        config.saveSameFileNameStrategy
+      );
+    } catch (error) {
+      // Remove temp file
+      await fs.unlink(file.path);
+
+      if (error instanceof Error && error.message === 'File already exists') {
+        const boomError = Boom.badRequest('File already exists');
+        boomError.output.payload.messages = ['File already exists'];
+        throw boomError;
+      }
+      throw error;
+    }
     const finalPath = path.join(targetDir, finalFilename);
 
     // Move file to target location
@@ -126,7 +125,7 @@ export async function fileUploadHandler(
       }
     }
 
-    const relativePath = getRelativePath(finalPath, sourceConfig.root);
+    const relativePath = getRelativePath(finalPath, req.sourceConfig.root);
     const isImage = isImageFile(finalFilename, config.imageExtensions);
 
     files.push(relativePath);
@@ -138,7 +137,7 @@ export async function fileUploadHandler(
     success: true,
     data: {
       code: 220,
-      baseurl: sourceConfig.baseurl,
+      baseurl: req.sourceConfig.baseurl,
       files,
       isImages,
       messages

@@ -35,7 +35,7 @@ export async function folderRemoveHandler(
   const config: AppConfig = req.app.locals.config;
 
   // Validate query parameters
-  const queryValidation = FolderRemoveQuerySchema.safeParse(req.query);
+  const queryValidation = FolderRemoveQuerySchema.safeParse(req.params_data);
   if (queryValidation.success === false) {
     const messages = queryValidation.error.issues.map(
       issue => `${issue.path.join('.')}: ${issue.message}`
@@ -46,26 +46,19 @@ export async function folderRemoveHandler(
   }
 
   const query = queryValidation.data;
-  const sourceName = query.source ?? config.defaultFilesKey;
-
-  // Get source configuration
-  const sourceConfig = config.sources?.[sourceName];
-  if (sourceConfig === undefined) {
-    throw Boom.notFound('Source not found', ['Source not found']);
-  }
 
   logger.debug(
-    `Removing folder: ${query.name} in ${sourceName}${query.path ?? '/'}`
+    `Removing folder: ${query.name} in ${req.sourceName}${query.path ?? '/'}`
   );
 
   // Construct folder path
   const requestPath = query.path ?? '/';
-  const targetDir = path.join(sourceConfig.root, requestPath);
+  const targetDir = path.join(req.sourceConfig.root, requestPath);
   const targetPath = path.join(targetDir, query.name);
 
   // Security check: ensure target path is within source root
   const realTargetPath = await fs.realpath(targetPath).catch(() => null);
-  const realSourceRoot = await fs.realpath(sourceConfig.root);
+  const realSourceRoot = await fs.realpath(req.sourceConfig.root);
 
   if (realTargetPath?.startsWith(realSourceRoot) !== true) {
     throw Boom.notFound('Directory not exists', ['Directory not exists']);

@@ -35,7 +35,7 @@ describe('Get Local File By URL (GET /?action=getLocalFileByUrl)', () => {
       .get('/')
       .query({
         action: 'getLocalFileByUrl',
-        url: `http://localhost:3000/files/test/${testFileName}`
+        url: `http://localhost:8081/files/test/${testFileName}`
       });
 
     expect(response.status).toBe(200);
@@ -57,7 +57,7 @@ describe('Get Local File By URL (GET /?action=getLocalFileByUrl)', () => {
 
     const response = await request(testServer!.host).get('/').query({
       action: 'getLocalFileByUrl',
-      url: 'http://localhost:3000/files/test/subdir/nested-file.txt'
+      url: 'http://localhost:8081/files/test/subdir/nested-file.txt'
     });
 
     expect(response.status).toBe(200);
@@ -90,7 +90,7 @@ describe('Get Local File By URL (GET /?action=getLocalFileByUrl)', () => {
   it('should return 400 when file does not exist', async () => {
     const response = await request(testServer!.host).get('/').query({
       action: 'getLocalFileByUrl',
-      url: 'http://localhost:3000/files/test/non-existent.txt'
+      url: 'http://localhost:8081/files/test/non-existent.txt'
     });
 
     expect(response.status).toBe(400);
@@ -115,7 +115,7 @@ describe('Get Local File By URL (GET /?action=getLocalFileByUrl)', () => {
 
     const response = await request(testServer!.host).get('/').query({
       action: 'getLocalFileByUrl',
-      url: 'http://localhost:3000/files/test/image.png?v=123'
+      url: 'http://localhost:8081/files/test/image.png?v=123'
     });
 
     expect(response.status).toBe(200);
@@ -126,7 +126,7 @@ describe('Get Local File By URL (GET /?action=getLocalFileByUrl)', () => {
   it('should reject path traversal in URL', async () => {
     const response = await request(testServer!.host).get('/').query({
       action: 'getLocalFileByUrl',
-      url: 'http://localhost:3000/files/test/../../../etc/passwd'
+      url: 'http://localhost:8081/files/test/../../../etc/passwd'
     });
 
     expect(response.status).toBe(400);
@@ -136,7 +136,7 @@ describe('Get Local File By URL (GET /?action=getLocalFileByUrl)', () => {
   it('should not resolve directories', async () => {
     const response = await request(testServer!.host).get('/').query({
       action: 'getLocalFileByUrl',
-      url: 'http://localhost:3000/files/test/subdir'
+      url: 'http://localhost:8081/files/test/subdir'
     });
 
     expect(response.status).toBe(400);

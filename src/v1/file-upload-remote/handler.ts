@@ -15,7 +15,7 @@ export async function fileUploadRemoteHandler(
   const config = req.app.locals.config as AppConfig;
 
   // Validate query params
-  const queryValidation = FileUploadRemoteQuerySchema.safeParse(req.query);
+  const queryValidation = FileUploadRemoteQuerySchema.safeParse(req.params_data);
   if (queryValidation.success === false) {
     const errors = queryValidation.error.issues.map(err => err.message);
     const boomError = Boom.badRequest('Validation failed');
@@ -24,7 +24,6 @@ export async function fileUploadRemoteHandler(
   }
 
   const query = queryValidation.data;
-  const sourceName = query.source ?? config.defaultFilesKey;
 
   if (query.url === '') {
     const boomError = Boom.badRequest('Need url parameter');
@@ -58,16 +57,8 @@ export async function fileUploadRemoteHandler(
     throw boomError;
   }
 
-  // Check if source exists
-  if (config.sources[sourceName] === undefined) {
-    const boomError = Boom.notFound('Source not found');
-    boomError.output.payload.messages = ['Source not found'];
-    throw boomError;
-  }
-
-  const sourceConfig = config.sources[sourceName];
   const sourcePath = query.path ?? '/';
-  const targetDir = path.join(sourceConfig.root, sourcePath);
+  const targetDir = path.join(req.sourceConfig.root, sourcePath);
 
   // Ensure target directory exists
   try {
@@ -143,7 +134,7 @@ export async function fileUploadRemoteHandler(
     success: true,
     data: {
       code: 220,
-      baseurl: sourceConfig.baseurl,
+      baseurl: req.sourceConfig.baseurl,
       newfilename: safeFilename,
       isImage
     }

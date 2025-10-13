@@ -18,7 +18,7 @@ export async function imageCropHandler(
   const config: AppConfig = req.app.locals.config;
 
   // Validate query parameters
-  const queryValidation = ImageCropQuerySchema.safeParse(req.query);
+  const queryValidation = ImageCropQuerySchema.safeParse(req.params_data);
   if (queryValidation.success === false) {
     const messages = queryValidation.error.issues.map(
       issue => `${issue.path.join('.')}: ${issue.message}`
@@ -29,13 +29,6 @@ export async function imageCropHandler(
   }
 
   const query = queryValidation.data;
-  const sourceName = query.source ?? config.defaultFilesKey;
-
-  // Get source configuration
-  const sourceConfig = config.sources?.[sourceName];
-  if (sourceConfig === undefined) {
-    throw Boom.notFound('Source not found', ['Source not found']);
-  }
 
   logger.debug(
     `Cropping image: ${query.name} at (${query.box.x}, ${query.box.y}) with size ${query.box.w}x${query.box.h}`
@@ -43,12 +36,12 @@ export async function imageCropHandler(
 
   // Construct file path
   const requestPath = query.path ?? '/';
-  const targetDir = path.join(sourceConfig.root, requestPath);
+  const targetDir = path.join(req.sourceConfig.root, requestPath);
   const targetPath = path.join(targetDir, query.name);
 
   // Security check: ensure target path is within source root
   const realTargetPath = await fs.realpath(targetPath).catch(() => null);
-  const realSourceRoot = await fs.realpath(sourceConfig.root);
+  const realSourceRoot = await fs.realpath(req.sourceConfig.root);
 
   if (realTargetPath?.startsWith(realSourceRoot) !== true) {
     throw Boom.notFound('File not exists', ['File not exists']);
@@ -62,21 +55,15 @@ export async function imageCropHandler(
 
   // Validate crop box parameters
   if (query.box.w == null || query.box.w <= 0) {
-    const boomError = Boom.badRequest('Width not specified');
-    boomError.output.payload.messages = ['Width not specified'];
-    throw boomError;
+    throw Boom.badRequest('Width not specified');
   }
 
   if (query.box.h == null || query.box.h <= 0) {
-    const boomError = Boom.badRequest('Height not specified');
-    boomError.output.payload.messages = ['Height not specified'];
-    throw boomError;
+    throw Boom.badRequest('Height not specified');
   }
 
   if (query.box.x < 0 || query.box.y < 0) {
-    const boomError = Boom.badRequest('Invalid crop coordinates');
-    boomError.output.payload.messages = ['Invalid crop coordinates'];
-    throw boomError;
+    throw Boom.badRequest('Invalid crop coordinates');
   }
 
   // Determine output filename

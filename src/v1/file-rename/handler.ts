@@ -1,5 +1,4 @@
 import type { Request, Response } from 'express';
-import type { AppConfig } from '../../types';
 import Boom from '@hapi/boom';
 import { FileRenameQuerySchema } from '../../schemas';
 import path from 'path';
@@ -10,10 +9,9 @@ export async function fileRenameHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-  const config = req.app.locals.config as AppConfig;
 
   // Validate query params
-  const queryValidation = FileRenameQuerySchema.safeParse(req.query);
+  const queryValidation = FileRenameQuerySchema.safeParse(req.params_data);
   if (queryValidation.success === false) {
     const errors = queryValidation.error.issues.map(err => err.message);
     const boomError = Boom.badRequest('Validation failed');
@@ -22,16 +20,7 @@ export async function fileRenameHandler(
   }
 
   const query = queryValidation.data;
-  const sourceName = query.source ?? config.defaultFilesKey;
 
-  // Check if source exists
-  if (config.sources[sourceName] === undefined) {
-    const boomError = Boom.notFound('Source not found');
-    boomError.output.payload.messages = ['Source not found'];
-    throw boomError;
-  }
-
-  const sourceConfig = config.sources[sourceName];
   const sourcePath = query.path ?? '/';
 
   // Make names safe
@@ -39,8 +28,8 @@ export async function fileRenameHandler(
   const safeNewName = makeSafeFilename(query.newname);
 
   // Build full paths
-  const fromPath = path.join(sourceConfig.root, sourcePath, safeName);
-  let toPath = path.join(sourceConfig.root, sourcePath, safeNewName);
+  const fromPath = path.join(req.sourceConfig.root, sourcePath, safeName);
+  let toPath = path.join(req.sourceConfig.root, sourcePath, safeNewName);
 
   // Check if source file/folder exists
   const sourceStats = await fs.stat(fromPath).catch(() => null);

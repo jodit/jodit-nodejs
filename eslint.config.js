@@ -28,14 +28,14 @@ export default [
       '@typescript-eslint/explicit-function-return-type': 'warn',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
-      '@typescript-eslint/prefer-nullish-coalescing': 'error',
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/prefer-optional-chain': 'error',
       '@typescript-eslint/strict-boolean-expressions': ['error', {
         'allowString': true,
         'allowNumber': false,
-        'allowNullableObject': false,
+        'allowNullableObject': true,
         'allowNullableBoolean': false,
-        'allowNullableString': false,
+        'allowNullableString': true,
         'allowNullableNumber': false,
         'allowAny': false
       }],

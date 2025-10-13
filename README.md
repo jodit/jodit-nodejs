@@ -54,7 +54,7 @@ SOURCE_ROOT="/path/to/files" npm start
 # Set custom source base URL
 SOURCE_BASEURL="http://example.com/files/" npm start
 
-# Set custom port (default: 3000)
+# Set custom port (default: 8081)
 PORT=8080 npm start
 
 # Combine multiple variables
@@ -73,8 +73,8 @@ npm start
 **Environment Variables:**
 - `SOURCE_NAME` - Display name for the default source (default: "Test Files")
 - `SOURCE_ROOT` - Absolute path to the files directory (default: "./files/test")
-- `SOURCE_BASEURL` - Base URL for accessing files (default: "http://localhost:3000/files/test/")
-- `PORT` - Server port (default: 3000)
+- `SOURCE_BASEURL` - Base URL for accessing files (default: "http://localhost:8081/files/test/")
+- `PORT` - Server port (default: 8081)
 - `CONFIG` - Full configuration as JSON string (highest priority, overrides CONFIG_FILE and default config)
 - `CONFIG_FILE` - Path to JSON configuration file (overrides default config)
 
@@ -97,14 +97,14 @@ The Docker image includes a default configuration file at `/usr/src/app/config.j
 
 ```bash
 npm run docker:build # Build Docker image
-npm run docker:run   # Run container (port 3000)
+npm run docker:run   # Run container (port 8081)
 
 # Or manually:
 docker build -t jodit-nodejs .
-docker run --rm -p 3000:3000 jodit-nodejs
+docker run --rm -p 8081:8081 jodit-nodejs
 
 # With custom config file (recommended approach):
-docker run --rm -p 3000:3000 \
+docker run --rm -p 8081:8081 \
   -v /host/path/to/config.json:/usr/src/app/config.json \
   -v /host/path/to/files:/usr/src/app/files \
   jodit-nodejs
@@ -118,7 +118,7 @@ docker run --rm -p 8080:8080 \
   jodit-nodejs
 
 # With volume mount for files:
-docker run --rm -p 3000:3000 \
+docker run --rm -p 8081:8081 \
   -v /host/path/to/files:/usr/src/app/files \
   jodit-nodejs
 
@@ -220,7 +220,7 @@ import { start, stop, createApp } from 'jodit-nodejs';
 import type { AppConfig, AuthCallback } from 'jodit-nodejs';
 
 // Start server with default config
-const server = await start(3000);
+const server = await start(8081);
 
 // Start server with custom config
 const customConfig: Partial<AppConfig> = {
@@ -230,11 +230,11 @@ const customConfig: Partial<AppConfig> = {
     myfiles: {
       title: 'My Files',
       root: '/path/to/files',
-      baseurl: 'http://localhost:3000/files/'
+      baseurl: 'http://localhost:8081/files/'
     }
   }
 };
-const server = await start(3000, customConfig);
+const server = await start(8081, customConfig);
 
 // Start server with authentication middleware
 const checkAuth: AuthCallback = async (req) => {
@@ -247,14 +247,14 @@ const checkAuth: AuthCallback = async (req) => {
 };
 
 const server = await start({
-  port: 3000,
+  port: 8081,
   config: customConfig,
   checkAuthentication: checkAuth
 });
 
 // Or create Express app directly
 const app = createApp(customConfig);
-app.listen(3000);
+app.listen(8081);
 
 // Stop server
 await stop();
@@ -267,8 +267,8 @@ const { start, stop, createApp } = require('jodit-nodejs');
 
 // Start server with default config
 async function main() {
-  const server = await start(3000);
-  console.log('Server running on port 3000');
+  const server = await start(8081);
+  console.log('Server running on port 8081');
 }
 
 // Start server with custom config
@@ -280,12 +280,12 @@ async function startWithConfig() {
       myfiles: {
         title: 'My Files',
         root: '/path/to/files',
-        baseurl: 'http://localhost:3000/files/'
+        baseurl: 'http://localhost:8081/files/'
       }
     }
   };
 
-  const server = await start(3000, customConfig);
+  const server = await start(8081, customConfig);
 
   // Stop on SIGINT
   process.on('SIGINT', async () => {
@@ -306,7 +306,7 @@ async function startWithAuth() {
   };
 
   const server = await start({
-    port: 3000,
+    port: 8081,
     config: {
       defaultRole: 'guest',
       accessControl: [
@@ -331,8 +331,8 @@ function createCustomApp() {
     }
   });
 
-  app.listen(3000, () => {
-    console.log('Server started on port 3000');
+  app.listen(8081, () => {
+    console.log('Server started on port 8081');
   });
 }
 
@@ -345,7 +345,7 @@ main().catch(console.error);
 import { start, stop, createApp } from 'jodit-nodejs';
 
 // Start server with default config
-const server = await start(3000);
+const server = await start(8081);
 
 // Start server with custom config
 const customConfig = {
@@ -355,11 +355,11 @@ const customConfig = {
     myfiles: {
       title: 'My Files',
       root: '/path/to/files',
-      baseurl: 'http://localhost:3000/files/'
+      baseurl: 'http://localhost:8081/files/'
     }
   }
 };
-const server = await start(3000, customConfig);
+const server = await start(8081, customConfig);
 
 // Start server with authentication middleware
 const checkAuth = async (req) => {
@@ -372,7 +372,7 @@ const checkAuth = async (req) => {
 };
 
 const serverWithAuth = await start({
-  port: 3000,
+  port: 8081,
   config: customConfig,
   checkAuthentication: checkAuth
 });
@@ -397,13 +397,13 @@ Get list of files from source.
 
 ```bash
 # Get all files from "test" source
-curl "http://localhost:3000/?action=files&source=test"
+curl "http://localhost:8081/?action=files&source=test"
 
 # Get files with folders
-curl "http://localhost:3000/?action=files&source=test&mods=withFolders"
+curl "http://localhost:8081/?action=files&source=test&mods=withFolders"
 
 # Get files from subfolder
-curl "http://localhost:3000/?action=files&source=test&path=/subfolder"
+curl "http://localhost:8081/?action=files&source=test&path=/subfolder"
 ```
 
 **Response:**
@@ -416,7 +416,7 @@ curl "http://localhost:3000/?action=files&source=test&path=/subfolder"
       {
         "name": "test",
         "title": "Test Files",
-        "baseurl": "http://localhost:3000/files/test/",
+        "baseurl": "http://localhost:8081/files/test/",
         "path": "/",
         "files": [
           {
@@ -472,7 +472,7 @@ const checkAuth: AuthCallback = async (req) => {
 };
 
 await start({
-  port: 3000,
+  port: 8081,
   config: {
     defaultRole: 'guest', // Fallback role
     accessControl: [
@@ -595,7 +595,7 @@ export const config: AppConfig = {
     test: {
       title: 'Test Files',
       root: path.join(__dirname, '../../files/test'),
-      baseurl: 'http://localhost:3000/files/test/'
+      baseurl: 'http://localhost:8081/files/test/'
     }
   },
 
@@ -657,7 +657,7 @@ Like the PHP version, you can pass custom config via `custom_config` query param
 
 ```bash
 # This works only in debug mode
-curl "http://localhost:3000/?action=files&custom_config={\"sources\":{\"custom\":{\"title\":\"Custom\",\"root\":\"/path\",\"baseurl\":\"http://...\"}}}"
+curl "http://localhost:8081/?action=files&custom_config={\"sources\":{\"custom\":{\"title\":\"Custom\",\"root\":\"/path\",\"baseurl\":\"http://...\"}}}"
 ```
 
 The config is validated with Zod schemas and will return 400 if invalid.
@@ -749,14 +749,14 @@ npm run docker:run
 
 # Or manually
 docker build -t jodit-nodejs .
-docker run --rm -p 3000:3000 jodit-nodejs
+docker run --rm -p 8081:8081 jodit-nodejs
 ```
 
 ### Docker Image Details
 - **Base image**: Node.js 24 (builder) → Node.js 24-alpine (runtime)
 - **Multi-stage build**: Reduces final image size
 - **Production optimized**: Prunes dev dependencies
-- **Port**: 3000 (exposed)
+- **Port**: 8081 (exposed)
 
 ### Dockerfile Stages
 1. **Builder stage**: Installs all deps, compiles TypeScript

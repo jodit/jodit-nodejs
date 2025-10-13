@@ -1,0 +1,231 @@
+{
+    "success": true,
+    "time": "2025-10-13 18:39:28",
+    "data": {
+        "sources": [
+            {
+                "name": "test",
+                "baseurl": "http://localhost:8081/files/",
+                "path": "",
+                "files": [
+                    {
+                        "file": "docs",
+                        "name": "docs",
+                        "type": "folder",
+                        "thumb": "_thumbs/docs.svg",
+                        "changed": null,
+                        "size": null,
+                        "isImage": false
+                    },
+                    {
+                        "file": "folder1",
+                        "name": "folder1",
+                        "type": "folder",
+                        "thumb": "_thumbs/folder1.svg",
+                        "changed": null,
+                        "size": null,
+                        "isImage": false
+                    },
+                    {
+                        "file": "images",
+                        "name": "images",
+                        "type": "folder",
+                        "thumb": "_thumbs/images.svg",
+                        "changed": null,
+                        "size": null,
+                        "isImage": false
+                    },
+                    {
+                        "file": "subfolder",
+                        "name": "subfolder",
+                        "type": "folder",
+                        "thumb": "_thumbs/subfolder.svg",
+                        "changed": null,
+                        "size": null,
+                        "isImage": false
+                    },
+                    {
+                        "file": "temp",
+                        "name": "temp",
+                        "type": "folder",
+                        "thumb": "_thumbs/temp.svg",
+                        "changed": null,
+                        "size": null,
+                        "isImage": false
+                    },
+                    {
+                        "file": "testMove",
+                        "name": "testMove",
+                        "type": "folder",
+                        "thumb": "_thumbs/testmove.svg",
+                        "changed": null,
+                        "size": null,
+                        "isImage": false
+                    },
+                    {
+                        "file": "test14826.jpg",
+                        "name": "test14826.jpg",
+                        "type": "image",
+                        "thumb": "_thumbs/test14826.jpg",
+                        "changed": "10/09/2025 4:58 PM",
+                        "size": "400.53kB",
+                        "isImage": true
+                    },
+                    {
+                        "file": "summer.txt",
+                        "name": "summer.txt",
+                        "type": "file",
+                        "thumb": "_thumbs/summer-txt.svg",
+                        "changed": "10/09/2025 4:58 PM",
+                        "size": "6.00B",
+                        "isImage": false
+                    },
+                    {
+                        "file": "regina-copy.png",
+                        "name": "regina-copy.png",
+                        "type": "image",
+                        "thumb": "_thumbs/regina-copy.png",
+                        "changed": "10/09/2025 4:58 PM",
+                        "size": "8.66kB",
+                        "isImage": true
+                    },
+                    {
+                        "file": "test.csv",
+                        "name": "test.csv",
+                        "type": "file",
+                        "thumb": "_thumbs/test-csv.svg",
+                        "changed": "10/09/2025 4:29 PM",
+                        "size": "7.00B",
+                        "isImage": false
+                    },
+                    {
+                        "file": "regina.png",
+                        "name": "regina.png",
+                        "type": "image",
+                        "thumb": "_thumbs/regina.png",
+                        "changed": "10/09/2025 4:29 PM",
+                        "size": "8.66kB",
+                        "isImage": true
+                    },
+                    {
+                        "file": "pexels-yuri-manei-2337448.jpg",
+                        "name": "pexels-yuri-manei-2337448.jpg",
+                        "type": "image",
+                        "thumb": "_thumbs/pexels-yuri-manei-2337448.jpg",
+                        "changed": "10/08/2025 9:44 PM",
+                        "size": "400.53kB",
+                        "isImage": true
+                    },
+                    {
+                        "file": "psalm.jpg",
+                        "name": "psalm.jpg",
+                        "type": "image",
+                        "thumb": "_thumbs/psalm.jpg",
+                        "changed": "10/08/2025 9:30 PM",
+                        "size": "377.54kB",
+                        "isImage": true
+                    },
+                    {
+                        "file": "check.svg",
+                        "name": "check.svg",
+                        "type": "image",
+                        "thumb": "check.svg",
+                        "changed": "05/24/2021 2:11 PM",
+                        "size": "698.00B",
+                        "isImage": true
+                    },
+                    {
+                        "file": "test15510.jpg",
+                        "name": "test15510.jpg",
+                        "type": "image",
+                        "thumb": "_thumbs/test15510.jpg",
+                        "changed": "03/24/2021 1:00 PM",
+                        "size": "400.53kB",
+                        "isImage": true
+                    },
+                    {
+                        "file": "test.xlsx",
+                        "name": "test.xlsx",
+                        "type": "file",
+                        "thumb": "_thumbs/test-xlsx.svg",
+                        "changed": "07/03/2019 6:56 PM",
+                        "size": "0.00B",
+                        "isImage": false
+                    },
+                    {
+                        "file": "test.txt",
+                        "name": "test.txt",
+                        "type": "file",
+                        "thumb": "_thumbs/test-txt.svg",
+                        "changed": "07/03/2019 6:56 PM",
+                        "size": "12.00B",
+                        "isImage": false
+                    },
+                    {
+                        "file": "droid-sans-mono.zip",
+                        "name": "droid-sans-mono.zip",
+                        "type": "file",
+                        "thumb": "_thumbs/droid-sans-mono-zip.svg",
+                        "changed": "07/03/2019 6:56 PM",
+                        "size": "77.88kB",
+                        "isImage": false
+                    },
+                    {
+                        "file": "Hello-world.docx",
+                        "name": "Hello-world.docx",
+                        "type": "file",
+                        "thumb": "_thumbs/hello-world-docx.svg",
+                        "changed": "07/03/2019 6:56 PM",
+                        "size": "0.00B",
+                        "isImage": false
+                    }
+                ]
+            },
+            {
+                "name": "folder1",
+                "baseurl": "http://localhost:8081/files/folder1/",
+                "path": "",
+                "files": [
+                    {
+                        "file": "subfolder",
+                        "name": "subfolder",
+                        "type": "folder",
+                        "thumb": "_thumbs/subfolder.svg",
+                        "changed": null,
+                        "size": null,
+                        "isImage": false
+                    },
+                    {
+                        "file": "subfolder with \u043f\u0440\u043e\u0431\u0435\u043b",
+                        "name": "subfolder with \u043f\u0440\u043e\u0431\u0435\u043b",
+                        "type": "folder",
+                        "thumb": "_thumbs/subfolder-with-probel.svg",
+                        "changed": null,
+                        "size": null,
+                        "isImage": false
+                    },
+                    {
+                        "file": "pexels-pixabay-248687.jpg",
+                        "name": "pexels-pixabay-248687.jpg",
+                        "type": "image",
+                        "thumb": "_thumbs/pexels-pixabay-248687.jpg",
+                        "changed": "05/24/2021 9:11 PM",
+                        "size": "413.74kB",
+                        "isImage": true
+                    },
+                    {
+                        "file": "\u0430\u043b\u0438\u043d\u0430 test15510.jpg",
+                        "name": "\u0430\u043b\u0438\u043d\u0430 test15510.jpg",
+                        "type": "image",
+                        "thumb": "_thumbs/alina-test15510.jpg",
+                        "changed": "03/24/2021 1:00 PM",
+                        "size": "400.53kB",
+                        "isImage": true
+                    }
+                ]
+            }
+        ],
+        "code": 220
+    },
+    "elapsedTime": 0.01830911636352539
+}

@@ -22,11 +22,12 @@ export async function startTestServer(
   await createTestDirectories();
 
   const app = createApp({
+    defaultFilesKey: 'test',
     sources: {
       test: {
         title: 'Test Files',
         root: testFilesPath,
-        baseurl: 'http://localhost:3000/files/test/'
+        baseurl: 'http://localhost:8081/files/test/'
       }
     },
     ...config

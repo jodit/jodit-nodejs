@@ -18,7 +18,7 @@ export async function imageResizeHandler(
   const config: AppConfig = req.app.locals.config;
 
   // Validate query parameters
-  const queryValidation = ImageResizeQuerySchema.safeParse(req.query);
+  const queryValidation = ImageResizeQuerySchema.safeParse(req.params_data);
   if (queryValidation.success === false) {
     const messages = queryValidation.error.issues.map(
       issue => `${issue.path.join('.')}: ${issue.message}`
@@ -29,13 +29,6 @@ export async function imageResizeHandler(
   }
 
   const query = queryValidation.data;
-  const sourceName = query.source ?? config.defaultFilesKey;
-
-  // Get source configuration
-  const sourceConfig = config.sources?.[sourceName];
-  if (sourceConfig == null) {
-    throw Boom.notFound('Source not found', ['Source not found']);
-  }
 
   logger.debug(
     `Resizing image: ${query.name} to ${query.box.w}x${query.box.h}`
@@ -43,12 +36,12 @@ export async function imageResizeHandler(
 
   // Construct file path
   const requestPath = query.path ?? '/';
-  const targetDir = path.join(sourceConfig.root, requestPath);
+  const targetDir = path.join(req.sourceConfig.root, requestPath);
   const targetPath = path.join(targetDir, query.name);
 
   // Security check: ensure target path is within source root
   const realTargetPath = await fs.realpath(targetPath).catch(() => null);
-  const realSourceRoot = await fs.realpath(sourceConfig.root);
+  const realSourceRoot = await fs.realpath(req.sourceConfig.root);
 
   if (realTargetPath?.startsWith(realSourceRoot) !== true) {
     throw Boom.notFound('File not exists', ['File not exists']);

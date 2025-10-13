@@ -6,11 +6,11 @@ const tmpDir = os.tmpdir();
 
 export const config: AppConfig = {
   title: '',
-  defaultFilesKey: 'files',
   saveSameFileNameStrategy: 'addNumber',
   debug: true,
+  defaultFilesKey: 'default',
   sources: {
-    test: {
+    default: {
       title: process.env.SOURCE_NAME ?? 'Test Files',
       root:
         process.env.SOURCE_ROOT != null

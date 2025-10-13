@@ -16,7 +16,7 @@ export const GetLocalFileByUrlQuerySchema = z
       }),
     url: z.string().describe('Full URL to resolve').openapi({
       description: 'Full URL to resolve to local file',
-      example: 'http://localhost:3000/files/test/image.png'
+      example: 'http://localhost:8081/files/test/image.png'
     })
   })
   .openapi('GetLocalFileByUrlQuery');

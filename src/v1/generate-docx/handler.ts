@@ -13,7 +13,7 @@ export async function generateDocxHandler(
   res: Response
 ): Promise<void> {
   // Validate query parameters
-  const queryValidation = GenerateDocxQuerySchema.safeParse(req.query);
+  const queryValidation = GenerateDocxQuerySchema.safeParse(req.params_data);
   if (queryValidation.success === false) {
     const messages = queryValidation.error.issues.map(
       issue => `${issue.path.join('.')}: ${issue.message}`

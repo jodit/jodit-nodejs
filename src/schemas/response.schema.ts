@@ -57,7 +57,7 @@ export const SourceDataSchema = z
       .openapi({ description: 'Source title', example: 'Test Files' }),
     baseurl: z.string().describe('Base URL for files').openapi({
       description: 'Base URL for files',
-      example: 'http://localhost:3000/files/test/'
+      example: 'http://localhost:8081/files/test/'
     }),
     path: z
       .string()

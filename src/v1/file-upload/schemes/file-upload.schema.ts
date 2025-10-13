@@ -39,7 +39,7 @@ export const FileUploadSuccessResponseSchema = z
           .openapi({ description: 'Response code', example: 220 }),
         baseurl: z.string().describe('Base URL for uploaded files').openapi({
           description: 'Base URL for uploaded files',
-          example: 'http://localhost:3000/files/test/'
+          example: 'http://localhost:8081/files/test/'
         }),
         files: z
           .array(z.string())

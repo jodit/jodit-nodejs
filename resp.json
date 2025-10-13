@@ -1,0 +1,147 @@
+{
+    "success": true,
+    "data": {
+        "code": 220,
+        "sources": [
+            {
+                "name": "default",
+                "title": "Jodit Connector Demo",
+                "baseurl": "http://localhost:8080/files",
+                "path": "",
+                "files": [
+                    {
+                        "file": "subfolder",
+                        "name": "subfolder",
+                        "type": "folder",
+                        "changed": "2025-10-06T15:31:10.398Z"
+                    },
+                    {
+                        "file": "images",
+                        "name": "images",
+                        "type": "folder",
+                        "changed": "2025-10-06T15:31:10.395Z"
+                    },
+                    {
+                        "file": "folder1",
+                        "name": "folder1",
+                        "type": "folder",
+                        "changed": "2025-10-06T15:31:10.392Z"
+                    },
+                    {
+                        "file": "docs",
+                        "name": "docs",
+                        "type": "folder",
+                        "changed": "2025-10-06T15:31:10.383Z"
+                    },
+                    {
+                        "file": "test.txt",
+                        "name": "test.txt",
+                        "type": "file",
+                        "size": 12,
+                        "changed": "2025-10-09T13:15:32.096Z",
+                        "isImage": false,
+                        "thumb": "_thumbs/test.svg"
+                    },
+                    {
+                        "file": "test.php",
+                        "name": "test.php",
+                        "type": "file",
+                        "size": 21,
+                        "changed": "2025-10-06T20:13:48.427Z",
+                        "isImage": false,
+                        "thumb": "_thumbs/test.svg"
+                    },
+                    {
+                        "file": "test15510.jpg",
+                        "name": "test15510.jpg",
+                        "type": "file",
+                        "size": 410141,
+                        "changed": "2025-10-06T15:31:10.400Z",
+                        "isImage": true,
+                        "thumb": "_thumbs/test15510.jpg"
+                    },
+                    {
+                        "file": "test.csv",
+                        "name": "test.csv",
+                        "type": "file",
+                        "size": 7,
+                        "changed": "2025-10-06T15:31:10.399Z",
+                        "isImage": false,
+                        "thumb": "_thumbs/test.svg"
+                    },
+                    {
+                        "file": "regina.png",
+                        "name": "regina.png",
+                        "type": "file",
+                        "size": 8868,
+                        "changed": "2025-10-06T15:31:10.398Z",
+                        "isImage": true,
+                        "thumb": "_thumbs/regina.png"
+                    },
+                    {
+                        "file": "pexels-yuri-manei-2337448.jpg",
+                        "name": "pexels-yuri-manei-2337448.jpg",
+                        "type": "file",
+                        "size": 410141,
+                        "changed": "2025-10-06T15:31:10.397Z",
+                        "isImage": true,
+                        "thumb": "_thumbs/pexels-yuri-manei-2337448.jpg"
+                    },
+                    {
+                        "file": "droid-sans-mono.zip",
+                        "name": "droid-sans-mono.zip",
+                        "type": "file",
+                        "size": 79748,
+                        "changed": "2025-10-06T15:31:10.385Z",
+                        "isImage": false,
+                        "thumb": "_thumbs/droid-sans-mono.svg"
+                    },
+                    {
+                        "file": "a-lots-files.sh",
+                        "name": "a-lots-files.sh",
+                        "type": "file",
+                        "size": 80,
+                        "changed": "2025-10-06T15:31:10.381Z",
+                        "isImage": false,
+                        "thumb": "_thumbs/a-lots-files.svg"
+                    },
+                    {
+                        "file": "check.svg",
+                        "name": "check.svg",
+                        "type": "file",
+                        "size": 698,
+                        "changed": "2025-10-06T15:31:10.381Z",
+                        "isImage": true,
+                        "thumb": "_thumbs/check.svg"
+                    },
+                    {
+                        "file": ".DS_Store",
+                        "name": ".DS_Store",
+                        "type": "file",
+                        "size": 10244,
+                        "changed": "2025-10-06T15:31:10.352Z",
+                        "isImage": false
+                    },
+                    {
+                        "file": "Hello-world.docx",
+                        "name": "Hello-world.docx",
+                        "type": "file",
+                        "size": 0,
+                        "changed": "2019-07-03T18:56:04.000Z",
+                        "isImage": false,
+                        "thumb": "_thumbs/Hello-world.svg"
+                    },
+                    {
+                        "file": "test.xlsx",
+                        "name": "test.xlsx",
+                        "type": "file",
+                        "size": 0,
+                        "changed": "2019-07-03T18:56:04.000Z",
+                        "isImage": false,
+                        "thumb": "_thumbs/test.svg"
+                    }
+                ]
+            }
+        ]
+    }
+}

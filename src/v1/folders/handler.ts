@@ -25,7 +25,7 @@ export async function foldersHandler(
   const config: AppConfig = req.app.locals.config;
 
   // Validate query parameters
-  const queryValidation = FoldersQuerySchema.safeParse(req.query);
+  const queryValidation = FoldersQuerySchema.safeParse(req.params_data);
   if (queryValidation.success === false) {
     const messages = queryValidation.error.issues.map(
       issue => `${issue.path.join('.')}: ${issue.message}`

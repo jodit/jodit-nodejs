@@ -198,5 +198,53 @@ describe('File Upload API', () => {
       // Cleanup
       await fs.unlink(testFilePath);
     });
+
+    it('should return error when file exists and strategy is error', async () => {
+      // Create file in subdir for uploading
+      const testFilePath = path.join(testFilesPath, './subdir/test-error.txt');
+      await fs.writeFile(testFilePath, 'original content');
+
+      // Upload first file successfully
+      const response1 = await request(testServer!.host)
+        .post(
+          '/?custom_config=' +
+            encodeURIComponent(
+              JSON.stringify({ saveSameFileNameStrategy: 'error' })
+            )
+        )
+        .field('action', 'fileUpload')
+        .field('source', 'test')
+        .attach('files', testFilePath);
+
+      expect(response1.status).toBe(200);
+      expect(response1.body.success).toBe(true);
+
+      // Try to upload again with same name - should fail
+      const response2 = await request(testServer!.host)
+        .post(
+          '/?custom_config=' +
+            encodeURIComponent(
+              JSON.stringify({ saveSameFileNameStrategy: 'error' })
+            )
+        )
+        .field('action', 'fileUpload')
+        .field('source', 'test')
+        .attach('files', testFilePath);
+
+      expect(response2.status).toBe(400);
+      expect(response2.body).toMatchObject({
+        success: false,
+        data: {
+          code: 400,
+          messages: expect.arrayContaining([
+            expect.stringContaining('already exists')
+          ])
+        }
+      });
+
+      // Cleanup
+      await fs.unlink(testFilePath).catch(() => {});
+      await fs.unlink(path.join(testFilesPath, 'test-error.txt')).catch(() => {});
+    });
   });
 });

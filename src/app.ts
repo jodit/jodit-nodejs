@@ -12,8 +12,11 @@ import { authMiddleware } from './middlewares/auth';
 import { accessControlMiddleware } from './middlewares/access-control';
 import { AppConfigSchema } from './schemas';
 import { resolveAction } from './middlewares/resolve-action';
+import { resolveParams } from './middlewares/resolve-params';
+import { resolveSource } from './middlewares/resolve-source';
 import { createMaybeApplyUploadMiddleware } from './middlewares/maybe-apply-upload';
 import { actions } from './v1';
+import bytes from 'bytes';
 
 export function createApp(customConfig?: Partial<AppConfig>): Application {
   const config: AppConfig =
@@ -27,9 +30,9 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
     const errors = validation.error.issues.map(
       err => `${err.path.join('.')}: ${err.message}`
     );
-    
+
     logger.error(`Invalid application config: ${errors.join(', ')}`);
-    
+
     throw Boom.badRequest(`Invalid application config: ${errors.join(', ')}`);
   }
 
@@ -37,7 +40,7 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
   const upload = multer({
     dest: os.tmpdir(),
     limits: {
-      fileSize: 100 * 1024 * 1024 // 100MB max
+      fileSize: bytes(config.maxUploadFileSize) ?? 0
     }
   });
 
@@ -46,7 +49,6 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
     .use(express.json())
     .use(express.urlencoded({ extended: true }));
 
-  // Attach config to app.locals for use in handlers
   app.locals.config = config;
 
   // Apply middlewares
@@ -85,14 +87,18 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
   app.post(
     '/',
     maybeApplyUploadMiddleware,
+    resolveParams,
     resolveAction,
+    resolveSource,
     accessControlMiddleware,
     postActionHandler
   );
   app.post(
     '/:action',
     maybeApplyUploadMiddleware,
+    resolveParams,
     resolveAction,
+    resolveSource,
     accessControlMiddleware,
     postActionHandler
   );
@@ -120,8 +126,22 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
   };
 
   // Main API endpoint with validation
-  app.get('/', resolveAction, accessControlMiddleware, getActionHandler);
-  app.get('/:action', resolveAction, accessControlMiddleware, getActionHandler);
+  app.get(
+    '/',
+    resolveParams,
+    resolveAction,
+    resolveSource,
+    accessControlMiddleware,
+    getActionHandler
+  );
+  app.get(
+    '/:action',
+    resolveParams,
+    resolveAction,
+    resolveSource,
+    accessControlMiddleware,
+    getActionHandler
+  );
 
   // Error handler
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

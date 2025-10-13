@@ -8,8 +8,16 @@
     <!-- Jodit CSS -->
     <link
       rel="stylesheet"
-      href="https://unpkg.com/jodit@4/es2021/jodit.min.css"
+      href="https://unpkg.com/jodit-pro@4/es2021/jodit.min.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/jodit-pro@4/es2021/plugins/finder/finder.min.css"
+    />
+
+    <!-- Jodit JS -->
+    <script src="https://unpkg.com/jodit-pro@4/es2021/jodit.min.js"></script>
+    <script src="https://unpkg.com/jodit-pro@4/es2021/plugins/finder/finder.min.js"></script>
 
     <style>
       body {
@@ -19,7 +27,7 @@
 
         box-sizing: border-box;
         * {
-            box-sizing: border-box;
+          box-sizing: border-box;
         }
       }
 
@@ -119,17 +127,14 @@
           <input
             type="url"
             id="serverUrl"
-            value="http://localhost:8080"
-            placeholder="http://localhost:8080"
+            value="http://localhost:8081"
+            placeholder="http://localhost:8081"
           />
         </div>
         <button onclick="initialize()">Initialize File Browser</button>
         <div class="status" id="status"></div>
       </div>
     </div>
-
-    <!-- Jodit JS -->
-    <script src="https://unpkg.com/jodit@4/es2021/jodit.min.js"></script>
 
     <script>
       let filebrowser = null;
@@ -168,7 +173,7 @@
         };
 
         // Initialize Jodit editor
-        filebrowser = new Jodit.modules.FileBrowser(config);
+        filebrowser = new Jodit.modules.FileBrowserPro(config);
         filebrowser.open();
 
         showStatus('Editor initialized successfully!', 'success');
@@ -178,7 +183,7 @@
       // Initialize editor on page load with default settings
       document.addEventListener('DOMContentLoaded', function () {
         // Check if server is running by making a ping request
-        fetch('http://localhost:8080/ping')
+        fetch('http://localhost:8081/ping')
           .then(response => response.json())
           .then(data => {
             if (data.success) {

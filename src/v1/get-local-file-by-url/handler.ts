@@ -13,7 +13,7 @@ export async function getLocalFileByUrlHandler(
   const config = req.app.locals.config as AppConfig;
 
   // Validate query params
-  const queryValidation = GetLocalFileByUrlQuerySchema.safeParse(req.query);
+  const queryValidation = GetLocalFileByUrlQuerySchema.safeParse(req.params_data);
   if (queryValidation.success === false) {
     const errors = queryValidation.error.issues.map(err => err.message);
     const boomError = Boom.badRequest('Validation failed');

@@ -40,6 +40,10 @@ export async function generateUniqueFilename(
     return filename;
   }
 
+  if (strategy === 'error') {
+    throw new Error('File already exists');
+  }
+
   // addNumber strategy
   const ext = path.extname(filename);
   const baseName = path.basename(filename, ext);

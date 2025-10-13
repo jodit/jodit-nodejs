@@ -45,7 +45,7 @@ export const FileUploadRemoteSuccessResponseSchema = z
           .openapi({ description: 'Response code', example: 220 }),
         baseurl: z.string().describe('Base URL for the file').openapi({
           description: 'Base URL for the file',
-          example: 'http://localhost:3000/files/test/'
+          example: 'http://localhost:8081/files/test/'
         }),
         newfilename: z.string().describe('Saved file name').openapi({
           description: 'Saved file name',

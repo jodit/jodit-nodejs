@@ -303,6 +303,62 @@ describe('Files API', () => {
       expect(files.length).toBe(1);
       expect(files[0].isImage).toBe(true);
     });
+
+    it('should place folders at top when foldersPosition=top', async () => {
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            withFolders: true,
+            foldersPosition: 'top'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+
+      // First item should be a folder
+      expect(files[0].type).toBe('folder');
+    });
+
+    it('should place folders at bottom when foldersPosition=bottom', async () => {
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            withFolders: true,
+            foldersPosition: 'bottom'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+
+      // Last item should be a folder
+      expect(files[files.length - 1].type).toBe('folder');
+    });
+
+    it('should get files from all sources when source param is omitted', async () => {
+      const response = await request(testServer!.host)
+        .get('/')
+        .query({ action: 'files' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.sources).toBeDefined();
+      expect(response.body.data.sources.length).toBeGreaterThan(0);
+
+      // Should include the test source
+      const testSource = response.body.data.sources.find(
+        (s: { name: string }) => s.name === 'test'
+      );
+      expect(testSource).toBeDefined();
+      expect(testSource.files).toBeDefined();
+    });
   });
 
   describe('Invalid actions and edge cases', () => {
@@ -386,7 +442,7 @@ describe('Files API custom config', () => {
           custom: {
             title: 'Custom Source',
             root: testFilesPath,
-            baseurl: 'http://localhost:3000/custom/'
+            baseurl: 'http://localhost:8081/custom/'
           }
         }
       };
@@ -424,7 +480,7 @@ describe('Files API custom config', () => {
           custom: {
             title: 'Custom Source',
             root: testFilesPath,
-            baseurl: 'http://localhost:3000/custom/'
+            baseurl: 'http://localhost:8081/custom/'
           }
         }
       };

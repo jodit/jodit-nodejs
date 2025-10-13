@@ -123,16 +123,16 @@ docker pull <username>/jodit-nodejs:latest
 
 ```bash
 # Basic run
-docker run -p 3000:3000 <username>/jodit-nodejs:latest
+docker run -p 8081:8081 <username>/jodit-nodejs:latest
 
 # With custom config
-docker run -p 3000:3000 \
+docker run -p 8081:8081 \
   -v /path/to/config.json:/usr/src/app/config.json \
   -v /path/to/files:/usr/src/app/files \
   <username>/jodit-nodejs:latest
 
 # With environment variables
-docker run -p 3000:3000 \
+docker run -p 8081:8081 \
   -e SOURCE_ROOT=/data \
   -e SOURCE_BASEURL=https://cdn.example.com/ \
   <username>/jodit-nodejs:latest
@@ -152,13 +152,13 @@ npm install jodit-nodejs
 const { start } = require('jodit-nodejs');
 
 start({
-  port: 3000,
+  port: 8081,
   config: {
     sources: {
       uploads: {
         title: 'Uploads',
         root: '/path/to/files',
-        baseurl: 'http://localhost:3000/files/'
+        baseurl: 'http://localhost:8081/files/'
       }
     }
   }

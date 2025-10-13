@@ -221,5 +221,32 @@ describe('Generate PDF (GET /?action=generatePdf)', () => {
       expect(response.status).toBe(200);
       expect(response.headers['content-type']).toBe('application/pdf');
     });
+
+    it('should return 400 for invalid font name', async () => {
+      const html = '<p>Test document</p>';
+
+      const response = await request(testServer!.host).get('/').query({
+        action: 'generatePdf',
+        html,
+        'options[defaultFont]': 'Arial' // Invalid font
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.code).toBe(400);
+    });
+
+    it('should generate PDF with valid default font', async () => {
+      const html = '<p>Test document</p>';
+
+      const response = await request(testServer!.host).get('/').query({
+        action: 'generatePdf',
+        html,
+        'options[defaultFont]': 'helvetica' // Valid font
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toBe('application/pdf');
+    });
   });
 });

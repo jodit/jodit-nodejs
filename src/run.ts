@@ -32,7 +32,7 @@ if (process.env.CONFIG !== undefined && process.env.CONFIG.length > 0) {
 
 // Parse PORT environment variable
 const port =
-  process.env.PORT !== undefined ? parseInt(process.env.PORT, 10) : 3000;
+  process.env.PORT !== undefined ? parseInt(process.env.PORT, 10) : 8081;
 
 if (isNaN(port) || port <= 0 || port > 65535) {
   logger.error(

@@ -44,7 +44,7 @@ export const FoldersQuerySchema = z
 const SourceFoldersSchema = z.object({
   name: z.string().openapi({ example: 'test' }),
   title: z.string().openapi({ example: 'Test Files' }),
-  baseurl: z.string().openapi({ example: 'http://localhost:3000/files/test/' }),
+  baseurl: z.string().openapi({ example: 'http://localhost:8081/files/test/' }),
   path: z.string().openapi({ example: '/' }),
   folders: z.array(z.string()).openapi({
     example: ['..', 'folder1', 'folder2']

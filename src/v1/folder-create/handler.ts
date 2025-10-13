@@ -4,7 +4,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import { FolderCreateQuerySchema } from '../../schemas';
 import { logger } from '../../helpers/logger';
-import type { AppConfig } from '../../types';
 
 /**
  * Handler for creating a new folder
@@ -14,10 +13,8 @@ export async function folderCreateHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-  const config: AppConfig = req.app.locals.config;
-
   // Validate query parameters
-  const queryValidation = FolderCreateQuerySchema.safeParse(req.query);
+  const queryValidation = FolderCreateQuerySchema.safeParse(req.params_data);
   if (queryValidation.success === false) {
     const messages = queryValidation.error.issues.map(
       issue => `${issue.path.join('.')}: ${issue.message}`
@@ -28,27 +25,21 @@ export async function folderCreateHandler(
   }
 
   const query = queryValidation.data;
-  const sourceName = query.source ?? config.defaultFilesKey;
 
-  // Get source configuration
-  const sourceConfig = config.sources?.[sourceName];
-  if (sourceConfig === undefined) {
-    throw Boom.notFound('Source not found', ['Source not found']);
-  }
 
   logger.debug(
-    `Creating folder: ${query.name} in ${sourceName}${query.path ?? '/'}`
+    `Creating folder: ${query.name} in ${req.sourceName}${query.path ?? '/'}`
   );
 
   // Construct destination path
   const requestPath = query.path ?? '/';
-  const destinationDir = path.join(sourceConfig.root, requestPath);
+  const destinationDir = path.join(req.sourceConfig.root, requestPath);
 
   // Security check: ensure destination directory is within source root
   const realDestinationDir = await fs
     .realpath(destinationDir)
     .catch(() => null);
-  const realSourceRoot = await fs.realpath(sourceConfig.root);
+  const realSourceRoot = await fs.realpath(req.sourceConfig.root);
 
   if (realDestinationDir?.startsWith(realSourceRoot) !== true) {
     throw Boom.notFound('Directory not found', ['Directory not found']);

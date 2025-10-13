@@ -4,7 +4,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import { FolderMoveQuerySchema } from '../../schemas';
 import { logger } from '../../helpers/logger';
-import type { AppConfig } from '../../types';
 
 /**
  * Handler for moving a folder to a different location
@@ -14,10 +13,8 @@ export async function folderMoveHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-  const config: AppConfig = req.app.locals.config;
-
   // Validate query parameters
-  const queryValidation = FolderMoveQuerySchema.safeParse(req.query);
+  const queryValidation = FolderMoveQuerySchema.safeParse(req.params_data);
   if (queryValidation.success === false) {
     const messages = queryValidation.error.issues.map(
       issue => `${issue.path.join('.')}: ${issue.message}`
@@ -28,27 +25,20 @@ export async function folderMoveHandler(
   }
 
   const query = queryValidation.data;
-  const sourceName = query.source ?? config.defaultFilesKey;
-
-  // Get source configuration
-  const sourceConfig = config.sources?.[sourceName];
-  if (sourceConfig === undefined) {
-    throw Boom.notFound('Source not found', ['Source not found']);
-  }
 
   logger.debug(
-    `Moving folder from ${query.from} to ${query.path ?? '/'} in ${sourceName}`
+    `Moving folder from ${query.from} to ${query.path ?? '/'} in ${req.sourceName}`
   );
 
   // Construct source and destination paths
-  const sourcePath = path.join(sourceConfig.root, query.from);
-  const destinationDir = path.join(sourceConfig.root, query.path ?? '/');
+  const sourcePath = path.join(req.sourceConfig.root, query.from);
+  const destinationDir = path.join(req.sourceConfig.root, query.path ?? '/');
   const folderName = path.basename(query.from);
   const destinationPath = path.join(destinationDir, folderName);
 
   // Security check: ensure source is within root
   const realSourcePath = await fs.realpath(sourcePath).catch(() => null);
-  const realSourceRoot = await fs.realpath(sourceConfig.root);
+  const realSourceRoot = await fs.realpath(req.sourceConfig.root);
 
   if (realSourcePath?.startsWith(realSourceRoot) !== true) {
     throw Boom.notFound('Folder or directory not exists', [

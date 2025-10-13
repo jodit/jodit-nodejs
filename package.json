@@ -41,7 +41,7 @@
     "lint:fix": "eslint src/ --fix",
     "format": "prettier --write ./src",
     "docker:build": "docker build -t jodit-nodejs .",
-    "docker:run": "docker run --rm -p 3000:3000 jodit-nodejs",
+    "docker:run": "docker run --rm -p 8081:8081 jodit-nodejs",
     "docs:generate": "node --no-warnings --loader ts-node/esm -r ts-node/register scripts/generate-openapi.ts",
     "docs:serve": "npx http-server ./docs -o -p 8082"
   },

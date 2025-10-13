@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
-import type { AppConfig } from '../../types';
 import Boom from '@hapi/boom';
 import { FileDownloadQuerySchema } from '../../schemas';
+import { validateParams } from '../../helpers/validate-params';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -9,36 +9,18 @@ export async function fileDownloadHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-  const config = req.app.locals.config as AppConfig;
 
-  // Validate query params
-  const queryValidation = FileDownloadQuerySchema.safeParse(req.query);
-  if (queryValidation.success === false) {
-    const errors = queryValidation.error.issues.map(err => err.message);
-    const boomError = Boom.badRequest('Validation failed');
-    boomError.output.payload.messages = errors;
-    throw boomError;
-  }
-
-  const query = queryValidation.data;
-  const sourceName = query.source ?? config.defaultFilesKey;
-
-  // Check if source exists
-  if (config.sources[sourceName] === undefined) {
-    const boomError = Boom.notFound('Source not found');
-    boomError.output.payload.messages = ['Source not found'];
-    throw boomError;
-  }
-
-  const sourceConfig = config.sources[sourceName];
+  // Validate parameters (already resolved by middleware)
+  const query = validateParams(req.params_data ?? {}, FileDownloadQuerySchema);
+  
   const sourcePath = query.path ?? '/';
 
   // Validate and get file path
-  const targetPath = path.join(sourceConfig.root, sourcePath, query.name);
+  const targetPath = path.join(req.sourceConfig.root, sourcePath, query.name);
 
   // Security check: ensure file is within source root
   const realTargetPath = await fs.realpath(targetPath).catch(() => null);
-  const realSourceRoot = await fs.realpath(sourceConfig.root);
+  const realSourceRoot = await fs.realpath(req.sourceConfig.root);
 
   if (realTargetPath?.startsWith(realSourceRoot) !== true) {
     const boomError = Boom.notFound('File or directory not exists');
