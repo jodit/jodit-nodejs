@@ -9,7 +9,9 @@ export async function fileUploadRemoteHandler(
   // const config = req.app.locals.config;
 
   // Validate query params
-  const queryValidation = FileUploadRemoteQuerySchema.safeParse(req.context.data);
+  const queryValidation = FileUploadRemoteQuerySchema.safeParse(
+    req.context.data
+  );
   if (queryValidation.success === false) {
     const errors = queryValidation.error.issues.map(err => err.message);
     const boomError = Boom.badRequest('Validation failed');

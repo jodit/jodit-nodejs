@@ -18,6 +18,6 @@ export async function imageResizeHandler(
   }
 
   res.json({
-    success: false,
+    success: false
   });
 }

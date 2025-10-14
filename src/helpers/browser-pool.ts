@@ -81,7 +81,9 @@ class BrowserPool {
       logger.info('Browser launched successfully');
       return browser;
     } catch (error) {
-      logger.error(`Failed to launch browser: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      logger.error(
+        `Failed to launch browser: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
       throw error;
     }
   }
@@ -95,11 +97,15 @@ class BrowserPool {
     // Start idle timer to close browser after timeout
     this.idleTimer = setTimeout(() => {
       this.closeBrowser().catch(err => {
-        logger.error(`Error closing idle browser: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        logger.error(
+          `Error closing idle browser: ${err instanceof Error ? err.message : 'Unknown error'}`
+        );
       });
     }, this.idleTimeout);
 
-    logger.debug(`Browser will be closed after ${this.idleTimeout}ms of inactivity`);
+    logger.debug(
+      `Browser will be closed after ${this.idleTimeout}ms of inactivity`
+    );
   }
 
   /**
@@ -114,7 +120,9 @@ class BrowserPool {
         await this.browser.close();
         logger.info('Browser closed successfully');
       } catch (error) {
-        logger.error(`Error closing browser: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        logger.error(
+          `Error closing browser: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
       } finally {
         this.browser = null;
       }

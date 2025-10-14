@@ -163,7 +163,7 @@ export class FileSystem extends BaseSource implements ISource {
 
     let resolvedPath: string | false = false;
     try {
-      const rp = fs.realpathSync(path.join(dirPath, name));
+      const rp = await this.realpath(path.join(dirPath, name));
       if (rp.startsWith(await this.getRoot())) {
         resolvedPath = rp;
       }
@@ -193,8 +193,12 @@ export class FileSystem extends BaseSource implements ISource {
     }
   }
 
-  realpath(pathname: string): Promise<string> {
-    return fs.promises.realpath(pathname);
+  async realpath(pathname: string): Promise<string> {
+    try {
+      return await fs.promises.realpath(pathname);
+    } catch {
+      throw Boom.notFound('Path does not exist');
+    }
   }
 
   async isDirectory(pathname: string): Promise<boolean> {
@@ -324,7 +328,9 @@ export class FileSystem extends BaseSource implements ISource {
 
     const files = await this.filterFiles(pathname, list, options).then(
       results =>
-        Promise.all(results.slice(offset, offset + limit).map(file => file.sync()))
+        Promise.all(
+          results.slice(offset, offset + limit).map(file => file.sync())
+        )
     );
 
     this.sortByMode(files, sortBy, options);
@@ -365,8 +371,11 @@ export class FileSystem extends BaseSource implements ISource {
     return sourceData;
   }
 
-  async folders(options: { dots?: boolean }): Promise<ISourceFolders> {
-    const pathname = await this.getPath();
+  async folders(
+    relativePath: string,
+    options: { dots?: boolean | undefined }
+  ): Promise<ISourceFolders> {
+    const pathname = await this.getPath(relativePath);
 
     const sourceData: ISourceFolders = {
       name: this.sourceConfig.name,
@@ -376,7 +385,7 @@ export class FileSystem extends BaseSource implements ISource {
       folders: []
     };
 
-    if (options.dots === true) {
+    if (options.dots !== false) {
       sourceData.folders.push(pathname === (await this.getRoot()) ? '.' : '..');
     }
 

@@ -18,7 +18,7 @@ describe('File Remove (GET /?action=fileRemove)', () => {
   afterAll(async () => {
     await stopTestServer(testServer!);
   });
-  
+
   beforeEach(async () => {
     await createTestDirectories();
   });

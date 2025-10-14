@@ -6,10 +6,14 @@ extendZodWithOpenApi(z);
 // File download query schema
 export const FileDownloadQuerySchema = z
   .object({
-    action: z.literal('fileDownload').optional().describe('Action type').openapi({
-      description: 'Action type',
-      example: 'fileDownload'
-    }),
+    action: z
+      .literal('fileDownload')
+      .optional()
+      .describe('Action type')
+      .openapi({
+        description: 'Action type',
+        example: 'fileDownload'
+      }),
     source: z.string().optional().describe('Source name').openapi({
       description: 'Source name',
       example: 'test'

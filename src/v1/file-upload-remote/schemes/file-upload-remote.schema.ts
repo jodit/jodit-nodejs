@@ -6,10 +6,14 @@ extendZodWithOpenApi(z);
 // File upload remote query schema
 export const FileUploadRemoteQuerySchema = z
   .object({
-    action: z.literal('fileUploadRemote').optional().describe('Action type').openapi({
-      description: 'Action type',
-      example: 'fileUploadRemote'
-    }),
+    action: z
+      .literal('fileUploadRemote')
+      .optional()
+      .describe('Action type')
+      .openapi({
+        description: 'Action type',
+        example: 'fileUploadRemote'
+      }),
     source: z.string().optional().describe('Source name').openapi({
       description: 'Source name',
       example: 'test'

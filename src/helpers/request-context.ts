@@ -29,24 +29,43 @@ export class RequestContext {
 
   getField<T>(key: string, defaultValue: T): T {
     const parts = key.split('/');
-    
+
     let data = this.data;
 
     if (parts.length > 0) {
-      const queryKey = parts[0] + parts.slice(1).map(p => `[${p}]`).join('');
+      const queryKey =
+        parts[0] +
+        parts
+          .slice(1)
+          .map(p => `[${p}]`)
+          .join('');
       if (this.data[queryKey] != null) {
-        return this.data[queryKey] as T;
+        return this.prepareValue(this.data[queryKey]) as T;
       }
     }
 
     for (let i = 0; i < parts.length - 1; i++) {
       const part = parts[i]!;
       if (data[part] == null || typeof data[part] !== 'object') {
-        return defaultValue as T;
+        return this.prepareValue(defaultValue) as T;
       }
       data = data[part] as Record<string, unknown>;
     }
 
-    return (data[parts[parts.length - 1]!] as T) ?? defaultValue;
+    return (
+      (this.prepareValue(data[parts[parts.length - 1]!]) as T) ?? defaultValue
+    );
+  }
+
+  private prepareValue(str: unknown): unknown {
+    if (str === 'false' || str === 'true') {
+      return str === 'true';
+    }
+
+    if (typeof str === 'string' && !isNaN(+str)) {
+      return parseFloat(str);
+    }
+
+    return str;
   }
 }

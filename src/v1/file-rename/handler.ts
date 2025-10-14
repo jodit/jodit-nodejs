@@ -6,7 +6,6 @@ export async function fileRenameHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-
   // Validate query params
   const queryValidation = FileRenameQuerySchema.safeParse(req.context.data);
   if (queryValidation.success === false) {

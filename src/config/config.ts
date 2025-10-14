@@ -3,6 +3,8 @@ import { AccessControl } from '../helpers/access-control';
 import { FileSystem } from '../sources/file-system/file-system';
 import { AppConfig, SourceConfig } from '../types';
 import type { ISource } from '../types/abstract-file-system';
+import Boom from '@hapi/boom';
+import { logger } from '../helpers/logger';
 
 export class Config {
   access: AccessControl;
@@ -43,8 +45,37 @@ export class Config {
     }
   }
 
-  async getSources(): Promise<ISource[]> {
-    return Promise.all(Object.values(this.sources));
+  async getSources(options: {
+    source?: string;
+    action: string;
+  }): Promise<ISource[]> {
+    let sources = await Promise.all(Object.values(this.sources));
+    if (options.source) {
+      sources = sources.filter(source => source.name === options.source);
+
+      if (sources.length === 0) {
+        throw Boom.notFound('Source not found');
+      }
+    }
+
+    for (const source of sources) {
+      const path = await source.getPath();
+
+      try {
+        await this.access.checkPermission(
+          await this.getUserRole(),
+          options.action,
+          path
+        );
+      } catch {
+        logger.warn(
+          `Access denied for source ${source.sourceConfig.name} action ${options.action} path ${path}`
+        );
+        continue;
+      }
+    }
+
+    return sources;
   }
 
   async getUserRole(): Promise<string> {

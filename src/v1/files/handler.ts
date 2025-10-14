@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
 import Boom from '@hapi/boom';
 import { FilesQuerySchema } from '../../schemas';
-import { logger } from '../../helpers/logger';
 import { ISourceItem } from '../../types/abstract-file-system';
 
 export async function filesHandler(req: Request, res: Response): Promise<void> {
@@ -18,34 +17,12 @@ export async function filesHandler(req: Request, res: Response): Promise<void> {
 
   const response: Promise<ISourceItem>[] = [];
 
-  let sourcesList = await config.getSources();
-
-  if (req.context.source) {
-    sourcesList = sourcesList.filter(
-      source => source.name === req.context.source
-    );
-
-    if (sourcesList.length === 0) {
-      throw Boom.notFound('Source not found');
-    }
-  }
+  const sourcesList = await config.getSources({
+    source: req.context.source,
+    action: req.context.action
+  });
 
   for (const source of sourcesList) {
-    const path = await source.getPath();
-
-    try {
-      await config.access.checkPermission(
-        await config.getUserRole(),
-        req.context.action,
-        path
-      );
-    } catch {
-      logger.warn(
-        `Access denied for source ${source.sourceConfig.name} action ${req.context.action} path ${path}`
-      );
-      continue;
-    }
-
     response.push(
       source.items(req.context.path, {
         withFolders: req.context.getField('mods/withFolders', false),

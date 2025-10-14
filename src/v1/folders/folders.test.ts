@@ -125,25 +125,23 @@ describe('Folders (GET /?action=folders)', () => {
     expect(response.body.data.sources[0].folders).toContain('child');
   });
 
-  it('should return 200 with empty list for non-existent path', async () => {
+  it('should return 404 with empty list for non-existent path', async () => {
     const response = await request(testServer!.host).get('/').query({
       action: 'folders',
       source: 'test',
       path: '/non-existent'
     });
 
-    expect(response.status).toBe(200);
-    expect(response.body.data.sources).toEqual([]);
+    expect(response.status).toBe(404);
   });
 
-  it('should return 200 with empty list for non-existent source', async () => {
+  it('should return 404 with empty list for non-existent source', async () => {
     const response = await request(testServer!.host).get('/').query({
       action: 'folders',
       source: 'non-existent-source'
     });
 
-    expect(response.status).toBe(200);
-    expect(response.body.data.sources).toEqual([]);
+    expect(response.status).toBe(404);
   });
 
   it('should handle dots parameter', async () => {
@@ -156,7 +154,7 @@ describe('Folders (GET /?action=folders)', () => {
       action: 'folders',
       source: 'test',
       path: '/parent',
-      dots: 'false'
+      dots: false
     });
 
     expect(response.status).toBe(200);

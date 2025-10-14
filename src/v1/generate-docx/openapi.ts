@@ -5,7 +5,8 @@ export default {
   path: '/generateDocx',
   operationId: 'generateDocx',
   summary: 'Generate DOCX document',
-  description: 'Converts HTML content to DOCX format using @turbodocx/html-to-docx',
+  description:
+    'Converts HTML content to DOCX format using @turbodocx/html-to-docx',
   tags: ['Documents'],
   request: {
     query: GenerateDocxQuerySchema

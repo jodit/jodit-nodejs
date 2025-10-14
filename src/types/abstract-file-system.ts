@@ -113,7 +113,10 @@ export interface ISource {
     }
   ): Promise<ISourceItem>;
 
-  folders(options: { dots: boolean }): Promise<ISourceFolders>;
+  folders(
+    relativePath: string,
+    options: { dots?: boolean | undefined }
+  ): Promise<ISourceFolders>;
 
   makeFolder(path: string): Promise<void>;
 
@@ -140,6 +143,6 @@ export interface ISource {
 
   makeFile(path: string, content?: string | null): Promise<IFile>;
 
-  getPath(): Promise<string>;
+  getPath(relativePath?: string): Promise<string>;
   getRoot(): Promise<string>;
 }

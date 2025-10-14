@@ -62,7 +62,7 @@ export async function generatePdfHandler(
 
   try {
     // Use browser pool to reuse browser instance across requests
-    const pdfBuffer = await withBrowser(async (browser) => {
+    const pdfBuffer = await withBrowser(async browser => {
       const page = await browser.newPage();
 
       try {
@@ -98,7 +98,9 @@ export async function generatePdfHandler(
 
     res.send(pdfBuffer);
   } catch (error) {
-    logger.error(`Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    logger.error(
+      `Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
     const boomError = Boom.internal('Failed to generate PDF');
     boomError.output.payload.messages = ['Failed to generate PDF'];
     throw boomError;

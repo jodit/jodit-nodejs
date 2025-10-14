@@ -244,7 +244,9 @@ describe('File Upload API', () => {
 
       // Cleanup
       await fs.unlink(testFilePath).catch(() => {});
-      await fs.unlink(path.join(testFilesPath, 'test-error.txt')).catch(() => {});
+      await fs
+        .unlink(path.join(testFilesPath, 'test-error.txt'))
+        .catch(() => {});
     });
   });
 });

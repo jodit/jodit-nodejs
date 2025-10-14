@@ -8,11 +8,7 @@ export abstract class BaseSource {
   readonly config: Config;
   readonly sourceConfig: SourceConfig;
 
-  constructor(
-    sourceConfig: SourceConfig,
-    config: Config,
-    name?: string
-  ) {
+  constructor(sourceConfig: SourceConfig, config: Config, name?: string) {
     this.sourceConfig = sourceConfig;
     this.config = config;
     this.name = name ?? sourceConfig.name ?? 'default';
@@ -24,7 +20,9 @@ export abstract class BaseSource {
   async getRoot(): Promise<string> {
     if (this.sourceConfig.root) {
       if (!(await this.isDirectory(this.sourceConfig.root))) {
-        throw Boom.notFound('Root directory not exists ' + this.sourceConfig.root);
+        throw Boom.notFound(
+          'Root directory not exists ' + this.sourceConfig.root
+        );
       }
 
       return this.realpath(this.sourceConfig.root);

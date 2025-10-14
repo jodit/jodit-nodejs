@@ -183,7 +183,7 @@ export class Image {
     const textY = labelY + labelHeight / 2 + 2;
 
     // Generate label (only for files, not folders) (lines 127-145)
-    const label = await file.isDirectory()
+    const label = (await file.isDirectory())
       ? ''
       : `
 		<g>

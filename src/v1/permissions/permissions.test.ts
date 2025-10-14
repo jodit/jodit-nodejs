@@ -92,12 +92,10 @@ describe('Permissions (POST /?action=permissions)', () => {
   });
 
   it('should return permissions for valid source via POST', async () => {
-    const response = await request(testServer!.host)
-      .post('/')
-      .send({
-        action: 'permissions',
-        source: 'test'
-      });
+    const response = await request(testServer!.host).post('/').send({
+      action: 'permissions',
+      source: 'test'
+    });
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
@@ -124,12 +122,10 @@ describe('Permissions (POST /?action=permissions)', () => {
   });
 
   it('should return permissions when source is specified via POST', async () => {
-    const response = await request(testServer!.host)
-      .post('/')
-      .send({
-        action: 'permissions',
-        source: 'test'
-      });
+    const response = await request(testServer!.host).post('/').send({
+      action: 'permissions',
+      source: 'test'
+    });
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
@@ -137,12 +133,10 @@ describe('Permissions (POST /?action=permissions)', () => {
   });
 
   it('should return 404 for non-existent source via POST', async () => {
-    const response = await request(testServer!.host)
-      .post('/')
-      .send({
-        action: 'permissions',
-        source: 'non-existent-source'
-      });
+    const response = await request(testServer!.host).post('/').send({
+      action: 'permissions',
+      source: 'non-existent-source'
+    });
 
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
@@ -150,25 +144,21 @@ describe('Permissions (POST /?action=permissions)', () => {
   });
 
   it('should handle path parameter via POST', async () => {
-    const response = await request(testServer!.host)
-      .post('/')
-      .send({
-        action: 'permissions',
-        source: 'test',
-        path: '/subfolder'
-      });
+    const response = await request(testServer!.host).post('/').send({
+      action: 'permissions',
+      source: 'test',
+      path: '/subfolder'
+    });
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
   });
 
   it('should use default source when empty string is provided via POST', async () => {
-    const response = await request(testServer!.host)
-      .post('/')
-      .send({
-        action: 'permissions',
-        source: ''
-      });
+    const response = await request(testServer!.host).post('/').send({
+      action: 'permissions',
+      source: ''
+    });
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);

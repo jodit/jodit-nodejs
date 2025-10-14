@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import Boom from '@hapi/boom';
 import { FolderRemoveQuerySchema } from '../../schemas';
 
-
 /**
  * Handler for removing a folder
  * GET /?action=folderRemove&source=test&name=foldername&path=/
@@ -23,6 +22,6 @@ export async function folderRemoveHandler(
   }
 
   res.json({
-    success: false,
+    success: false
   });
 }

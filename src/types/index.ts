@@ -31,12 +31,29 @@ export interface PdfConfig {
   };
 }
 
-
 export interface AccessControlRule {
   role?: string;
   path?: string;
-  extensions?: string | string[] | ((action: string, rule: AccessControlRule, path: string, extension: string) => string[]);
-  [action: string]: boolean | string | string[] | ((action: string, rule: AccessControlRule, path: string, extension: string) => string[] | boolean) | undefined;
+  extensions?:
+    | string
+    | string[]
+    | ((
+        action: string,
+        rule: AccessControlRule,
+        path: string,
+        extension: string
+      ) => string[]);
+  [action: string]:
+    | boolean
+    | string
+    | string[]
+    | ((
+        action: string,
+        rule: AccessControlRule,
+        path: string,
+        extension: string
+      ) => string[] | boolean)
+    | undefined;
 }
 
 export interface AppConfig {

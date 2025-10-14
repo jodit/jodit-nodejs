@@ -86,7 +86,11 @@ describe('Files API', () => {
     it('should return files with folders when mods[withFolders]=true', async () => {
       const response = await request(testServer!.host)
         .get('/')
-        .query({ action: 'files', source: 'test', mods: {withFolders: true} });
+        .query({
+          action: 'files',
+          source: 'test',
+          mods: { withFolders: true }
+        });
 
       expect(response.status).toBe(200);
       const source = response.body.data.sources[0];
@@ -124,7 +128,7 @@ describe('Files API', () => {
         data: {
           code: 404,
           messages: expect.arrayContaining([
-            expect.stringContaining("Action \"default\" not found")
+            expect.stringContaining('Action "default" not found')
           ])
         }
       });

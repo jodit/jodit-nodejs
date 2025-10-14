@@ -1,6 +1,12 @@
-import { AccessControlRule } from "../types";
+import type { AccessControlRule } from '../types';
+import * as changeCase from 'change-case';
 
-export const DEFAULT_RULES: Record<string, boolean> = {
+export const DEFAULT_RULES = {
+  role: '*',
+
+  extensions: '*',
+  path: '/',
+
   FILES: true,
   FILE_MOVE: true,
   FILE_UPLOAD: true,
@@ -8,28 +14,23 @@ export const DEFAULT_RULES: Record<string, boolean> = {
   FILE_REMOVE: true,
   FILE_RENAME: true,
   FILE_DOWNLOAD: true,
+
   FOLDERS: true,
   FOLDER_MOVE: true,
   FOLDER_CREATE: true,
   FOLDER_REMOVE: true,
   FOLDER_RENAME: true,
   FOLDER_TREE: true,
+
   IMAGE_RESIZE: true,
   IMAGE_CROP: true,
+
   GENERATE_PDF: true,
   GENERATE_DOCX: true
 };
 
 function normalizePath(path: string): string {
   return path.replace(/\\/g, '/').replace(/\/+/g, '/');
-}
-
-function upperize(str: string): string {
-  // Convert camelCase to SNAKE_CASE
-  return str
-    .replace(/([A-Z])/g, '_$1')  // Add underscore before capitals
-    .toUpperCase()                // Convert to uppercase
-    .replace(/^_/, '');           // Remove leading underscore
 }
 
 export class AccessControl {
@@ -61,16 +62,14 @@ export class AccessControl {
     path: string = '/',
     fileExtension: string = '*'
   ): boolean {
-    const normalizedAction = upperize(action);
+    const normalizedAction = changeCase.constantCase(
+      action
+    ) as keyof typeof DEFAULT_RULES;
     let allow: boolean | null = null;
 
     for (const rule of this.accessList) {
       // Check role
-      if (
-        rule.role !== undefined &&
-        rule.role !== '*' &&
-        rule.role !== role
-      ) {
+      if (rule.role !== undefined && rule.role !== '*' && rule.role !== role) {
         continue;
       }
 
@@ -104,7 +103,10 @@ export class AccessControl {
         }
 
         const upperExt = fileExtension.toUpperCase();
-        if (!allowExtensions.includes('*') && !allowExtensions.includes(upperExt)) {
+        if (
+          !allowExtensions.includes('*') &&
+          !allowExtensions.includes(upperExt)
+        ) {
           continue;
         }
       }
@@ -114,7 +116,12 @@ export class AccessControl {
         const actionValue = rule[normalizedAction];
 
         if (typeof actionValue === 'function') {
-          const result = actionValue(normalizedAction, rule, path, fileExtension);
+          const result = actionValue(
+            normalizedAction,
+            rule,
+            path,
+            fileExtension
+          );
           allow = typeof result === 'boolean' ? result : true;
         } else {
           allow = typeof actionValue === 'boolean' ? actionValue : true;
@@ -123,7 +130,7 @@ export class AccessControl {
     }
 
     // Use default rule if no explicit rule found
-    allow ??= DEFAULT_RULES[normalizedAction] ?? true;
+    allow ??= (DEFAULT_RULES[normalizedAction] as boolean) ?? true;
 
     return allow === true;
   }

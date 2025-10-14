@@ -31,10 +31,15 @@ export const FilesModsSchema = z.object({
 // Files action query schema
 export const FilesQuerySchema = z
   .object({
-    action: z.literal('files').optional().describe('Action type').optional().openapi({
-      description: 'Action type',
-      example: 'files'
-    }),
+    action: z
+      .literal('files')
+      .optional()
+      .describe('Action type')
+      .optional()
+      .openapi({
+        description: 'Action type',
+        example: 'files'
+      }),
     source: z.string().optional().describe('Source name').openapi({
       description: 'Source name',
       example: 'test'

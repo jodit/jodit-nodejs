@@ -9,7 +9,8 @@ export default {
   path: '/fileUpload',
   operationId: 'fileUpload',
   summary: 'Upload files',
-  description: 'Upload one or more files to the specified source via multipart/form-data',
+  description:
+    'Upload one or more files to the specified source via multipart/form-data',
   tags: ['Files'],
   request: {
     query: FileUploadQuerySchema,

@@ -22,6 +22,8 @@ describe('Authentication Middleware', () => {
       config: {
         sources: {
           test: {
+            name: 'test',
+
             title: 'Test Files',
             root: testFilesPath,
             baseurl: 'http://localhost:3001/files/test/'
@@ -53,6 +55,7 @@ describe('Authentication Middleware', () => {
       config: {
         sources: {
           test: {
+            name: 'test',
             title: 'Test Files',
             root: testFilesPath,
             baseurl: 'http://localhost:3002/files/test/'
@@ -107,6 +110,8 @@ describe('Authentication Middleware', () => {
       config: {
         sources: {
           test: {
+            name: 'test',
+
             title: 'Test Files',
             root: testFilesPath,
             baseurl: 'http://localhost:3003/files/test/'
@@ -148,6 +153,7 @@ describe('Authentication Middleware', () => {
       config: {
         sources: {
           test: {
+            name: 'test',
             title: 'Test Files',
             root: testFilesPath,
             baseurl: 'http://localhost:3004/files/test/'
@@ -178,6 +184,7 @@ describe('Authentication Middleware', () => {
       config: {
         sources: {
           test: {
+            name: 'test',
             title: 'Test Files',
             root: testFilesPath,
             baseurl: 'http://localhost:3005/files/test/'
