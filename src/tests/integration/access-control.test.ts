@@ -9,7 +9,7 @@ import {
 
 describe('Access Control', () => {
   let testServer: TestServer | null = null;
-  const testFilesPath = path.join(__dirname, '../../../files/test');
+  const testFilesPath = path.join(process.cwd(), './files/test');
 
   it('should allow access when no access control rules defined', async () => {
     testServer = await startTestServer();

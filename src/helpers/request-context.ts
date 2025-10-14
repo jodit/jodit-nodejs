@@ -62,7 +62,7 @@ export class RequestContext {
       return str === 'true';
     }
 
-    if (typeof str === 'string' && !isNaN(+str)) {
+    if (typeof str === 'string' && str.length && !isNaN(+str)) {
       return parseFloat(str);
     }
 

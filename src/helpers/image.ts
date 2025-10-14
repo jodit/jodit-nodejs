@@ -182,7 +182,7 @@ export class Image {
     const textX = labelX + labelWidth / 2;
     const textY = labelY + labelHeight / 2 + 2;
 
-    // Generate label (only for files, not folders) (lines 127-145)
+    // Generate label (only for files, not folders)
     const label = (await file.isDirectory())
       ? ''
       : `
@@ -203,7 +203,6 @@ export class Image {
 		<path d="M64.5 56.5L80 72V82.54V82.54C79.7186 86.7384 76.2078 90 72 90V90H52L20.5 77L64.5 56.5Z" fill="${shadow}" fill-opacity="0.5"/>
 `;
 
-    // Generate complete SVG (lines 147-154)
     const svg = `
 	<svg width="${width}" height="${height}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
 		<path d="M20 19C20 14.5817 23.5817 11 28 11H56L80 34.5V82C80 86.4183 76.4183 90 72 90H28C23.5817 90 20 86.4183 20 82V19Z" fill="${main}"/>
@@ -213,7 +212,6 @@ export class Image {
 	</svg>
 `;
 
-    // Save icon file (line 156)
     await source.makeFile(iconName, svg);
   }
 }

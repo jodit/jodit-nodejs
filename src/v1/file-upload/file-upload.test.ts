@@ -9,7 +9,7 @@ import {
 
 describe('File Upload API', () => {
   let testServer: TestServer | null = null;
-  const testFilesPath = path.join(__dirname, '../../../files/test');
+  const testFilesPath = path.join(process.cwd(), './files/test');
 
   beforeAll(async () => {
     testServer = await startTestServer();

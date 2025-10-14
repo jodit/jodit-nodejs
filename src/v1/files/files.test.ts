@@ -9,14 +9,18 @@ import {
 
 describe('Files API', () => {
   let testServer: TestServer | null = null;
-  const testFilesPath = path.join(__dirname, '../../../files/test');
+  const testFilesPath = path.join(process.cwd(), './files/test');
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     testServer = await startTestServer();
     // Create test directory structure
     await fs.writeFile(path.join(testFilesPath, 'test.txt'), 'test content');
     await fs.writeFile(path.join(testFilesPath, 'image.png'), 'fake image');
     await fs.mkdir(path.join(testFilesPath, 'subfolder'), { recursive: true });
+    await fs.copyFile(
+      path.join(process.cwd(), 'files/pexels-yuri-manei-2337448.jpg'),
+      path.join(testFilesPath, 'subfolder', 'image.png'),
+    );
 
     // Create additional test files for sorting tests
     await fs.writeFile(path.join(testFilesPath, 'file-a.txt'), 'a');
@@ -26,7 +30,7 @@ describe('Files API', () => {
     await fs.writeFile(path.join(testFilesPath, 'newer.txt'), 'newer');
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await stopTestServer(testServer!);
   });
 
@@ -38,6 +42,7 @@ describe('Files API', () => {
         .set('Accept', 'application/json');
 
       expect(response.status).toBe(200);
+      expect(response.body.data.sources[0].path).toEqual('/');
       expect(response.body).toMatchObject({
         success: true,
         data: {
@@ -66,6 +71,20 @@ describe('Files API', () => {
         (f: { name: string }) => f.name === 'test.txt'
       );
       expect(textFile?.isImage).toBe(false);
+    });
+
+    describe('Set path parameter', () => {
+      it('should return files list from subfolder', async () => {
+        const response = await request(testServer!.host)
+          .get('/')
+          .query({ action: 'files', source: 'test', path: 'subfolder' })
+          .set('Accept', 'application/json');
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.sources[0].path).toEqual('subfolder');
+        expect(response.body.data.sources[0].files[0].file).toEqual('image.png');
+        expect(response.body.data.sources[0].files[0].thumb).toEqual('_thumbs/image.png');
+      });
     });
 
     it('should return files without folders by default', async () => {

@@ -24,7 +24,7 @@ import { makeSafeFilename } from '../../helpers/file-upload';
  * Class FileSystem
  */
 export class FileSystem extends BaseSource implements ISource {
-  public async movePath(from: string): Promise<void> {
+  async movePath(from: string): Promise<void> {
     const destinationPath = await this.getPath();
     const sourcePath = await this.getPath(from);
 
@@ -245,7 +245,7 @@ export class FileSystem extends BaseSource implements ISource {
       slugify(await file.getBasename()) + '.' + (await file.getExtension())
     );
 
-    if (fs.existsSync(thumbName)) {
+    if (!(await file.isDirectory()) && fs.existsSync(thumbName)) {
       return this.makeFile(thumbName);
     }
 
@@ -300,12 +300,19 @@ export class FileSystem extends BaseSource implements ISource {
     }
   ): Promise<ISourceItem> {
     const pathname = await this.getPath(relativePath);
+    const root = await this.getRoot();
+
+    let relativeCalcPath = pathname.replace(root, '');
+
+    if (relativeCalcPath.length > 1 && relativeCalcPath.startsWith(path.sep)) {
+      relativeCalcPath = relativeCalcPath.substring(1);
+    }
 
     const sourceData: ISourceItem = {
       name: this.name,
       title: this.sourceConfig.title,
       baseurl: this.sourceConfig.baseurl,
-      path: pathname.replace(await this.getRoot(), ''),
+      path: relativeCalcPath || path.sep,
       files: []
     };
 
@@ -342,7 +349,7 @@ export class FileSystem extends BaseSource implements ISource {
 
       if (!file.isDirectory) {
         item = {
-          file: file.getPathByRoot,
+          file: file.getPath.replace(pathname + path.sep, ''),
           name: file.getName,
           type: file.isImage ? 'image' : 'file',
           isImage: file.isImage,
@@ -354,7 +361,9 @@ export class FileSystem extends BaseSource implements ISource {
             counter.countThumbs <=
               this.config.params.safeThumbsCountInOneTime &&
             (this.config.params.createThumb || !file.isImage)
-              ? await (await this.makeThumb(file.file, counter)).getPathByRoot()
+              ? (
+                  await (await this.makeThumb(file.file, counter)).getPath()
+                ).replace(pathname + path.sep, '')
               : undefined
         };
       } else {
@@ -378,7 +387,7 @@ export class FileSystem extends BaseSource implements ISource {
     const pathname = await this.getPath(relativePath);
 
     const sourceData: ISourceFolders = {
-      name: this.sourceConfig.name,
+      name: this.name,
       title: this.sourceConfig.title ?? this.sourceConfig.name,
       baseurl: this.sourceConfig.baseurl,
       path: pathname.replace(await this.getRoot(), ''),

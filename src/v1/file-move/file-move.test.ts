@@ -12,7 +12,7 @@ import path from 'path';
 
 describe('File Move (GET /?action=fileMove)', () => {
   let testServer: TestServer | null = null;
-  const testFilesPath = path.join(__dirname, '../../../files/test');
+  const testFilesPath = path.join(process.cwd(), './files/test');
 
   beforeAll(async () => {
     testServer = await startTestServer();

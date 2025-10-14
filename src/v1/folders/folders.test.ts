@@ -9,7 +9,7 @@ import path from 'path';
 
 describe('Folders (GET /?action=folders)', () => {
   let testServer: TestServer | null = null;
-  const testFilesPath = path.join(__dirname, '../../../files/test');
+  const testFilesPath = path.join(process.cwd(), './files/test');
 
   beforeAll(async () => {
     testServer = await startTestServer();
@@ -159,5 +159,6 @@ describe('Folders (GET /?action=folders)', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.data.sources[0].folders).not.toContain('..');
+    expect(response.body.data.sources[0].name).toEqual('test');
   });
 });

@@ -14,7 +14,7 @@ describe('File Upload Remote (GET /?action=fileUploadRemote)', () => {
   let testServer: TestServer | null = null;
   let mockServer: http.Server;
   let mockServerPort: number;
-  const testFilesPath = path.join(__dirname, '../../../files/test');
+  const testFilesPath = path.join(process.cwd(), './files/test');
 
   beforeAll(async () => {
     testServer = await startTestServer();

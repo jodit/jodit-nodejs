@@ -56,7 +56,7 @@ export class File implements IFile {
   }
 
   async getPath(): Promise<string> {
-    return this.absPath.split('\\').join(path.sep);
+    return this.absPath;
   }
 
   async getFolder(): Promise<string> {
@@ -152,10 +152,9 @@ export class File implements IFile {
   }
 
   async getPathByRoot(): Promise<string> {
-    if (!this.source) return this.absPath;
     const normalized = await this.getPath();
     const root = await this.source.getPath();
-    return normalized.replace(root, '');
+    return normalized.replace(root + path.sep, '');
   }
 
   async isImage(): Promise<boolean> {

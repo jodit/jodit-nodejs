@@ -3,6 +3,7 @@
     "allowCrossOrigin": true,
     "sources": {
         "default": {
+            "name": "default",
             "title": "Jodit Connector Demo",
             "root": "./files",
             "baseurl": "http://localhost:8080/files"

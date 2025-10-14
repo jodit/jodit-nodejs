@@ -11,7 +11,7 @@ import path from 'path';
 
 describe('Folder Move (GET /?action=folderMove)', () => {
   let testServer: TestServer | null = null;
-  const testFilesPath = path.join(__dirname, '../../../files/test');
+  const testFilesPath = path.join(process.cwd(), './files/test');
 
   beforeAll(async () => {
     testServer = await startTestServer();

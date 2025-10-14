@@ -11,7 +11,7 @@ import path from 'path';
 
 describe('Folder Rename (GET /?action=folderRename)', () => {
   let testServer: TestServer | null = null;
-  const testFilesPath = path.join(__dirname, '../../../files/test');
+  const testFilesPath = path.join(process.cwd(), './files/test');
 
   beforeAll(async () => {
     testServer = await startTestServer();

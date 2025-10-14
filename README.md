@@ -594,13 +594,13 @@ export const config: AppConfig = {
   sources: {
     test: {
       title: 'Test Files',
-      root: path.join(__dirname, '../../files/test'),
+      root: path.join(process.cwd(), './files/test'),
       baseurl: 'http://localhost:8081/files/test/'
     }
   },
 
   // File handling
-  root: path.join(__dirname, '../../files'),
+  root: path.join(process.cwd(), './files'),
   baseurl: '',
   extensions: ['jpg', 'png', 'gif', 'pdf', 'doc', /* ... */],
   imageExtensions: ['jpg', 'png', 'gif', 'jpeg', 'bmp', 'svg', 'ico', 'webp'],
