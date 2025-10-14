@@ -219,8 +219,6 @@ export class FileSystem extends BaseSource implements ISource {
     });
   }
 
-  private folderChecked: boolean = false;
-
   async makeThumb(
     file: IFile,
     counter: { countThumbs: number } = { countThumbs: 0 }
@@ -228,7 +226,6 @@ export class FileSystem extends BaseSource implements ISource {
     const pathname = await file.getFolder();
 
     if (
-      !this.folderChecked &&
       !(await this.isDirectory(
         path.join(pathname, this.config.params.thumbFolderName)
       ))
@@ -237,7 +234,6 @@ export class FileSystem extends BaseSource implements ISource {
         path.join(pathname, this.config.params.thumbFolderName)
       );
     }
-    this.folderChecked = true;
 
     let thumbName = path.join(
       pathname,
@@ -368,10 +364,13 @@ export class FileSystem extends BaseSource implements ISource {
         };
       } else {
         item = {
-          file: file.getPathByRoot,
+          file: file.getPath.replace(pathname + path.sep, ''),
           name: file.getName,
           type: 'folder',
-          thumb: await (await this.makeThumb(file.file)).getPathByRoot()
+          thumb: (await (await this.makeThumb(file.file)).getPath()).replace(
+            pathname + path.sep,
+            ''
+          )
         };
       }
       sourceData.files.push(item);

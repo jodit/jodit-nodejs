@@ -17,9 +17,12 @@ describe('Files API', () => {
     await fs.writeFile(path.join(testFilesPath, 'test.txt'), 'test content');
     await fs.writeFile(path.join(testFilesPath, 'image.png'), 'fake image');
     await fs.mkdir(path.join(testFilesPath, 'subfolder'), { recursive: true });
+    await fs.mkdir(path.join(testFilesPath, 'subfolder/somefolder'), {
+      recursive: true
+    });
     await fs.copyFile(
       path.join(process.cwd(), 'files/pexels-yuri-manei-2337448.jpg'),
-      path.join(testFilesPath, 'subfolder', 'image.png'),
+      path.join(testFilesPath, 'subfolder', 'image.png')
     );
 
     // Create additional test files for sorting tests
@@ -77,13 +80,28 @@ describe('Files API', () => {
       it('should return files list from subfolder', async () => {
         const response = await request(testServer!.host)
           .get('/')
-          .query({ action: 'files', source: 'test', path: 'subfolder' })
+          .query({
+            action: 'files',
+            source: 'test',
+            path: 'subfolder',
+            mods: { withFolders: true }
+          })
           .set('Accept', 'application/json');
 
         expect(response.status).toBe(200);
         expect(response.body.data.sources[0].path).toEqual('subfolder');
-        expect(response.body.data.sources[0].files[0].file).toEqual('image.png');
-        expect(response.body.data.sources[0].files[0].thumb).toEqual('_thumbs/image.png');
+        expect(response.body.data.sources[0].files[0].file).toEqual(
+          'image.png'
+        );
+        expect(response.body.data.sources[0].files[0].thumb).toEqual(
+          '_thumbs/image.png'
+        );
+        expect(response.body.data.sources[0].files[1].thumb).toEqual(
+          '_thumbs/somefolder.svg'
+        );
+        expect(response.body.data.sources[0].files[1].file).toEqual(
+          'somefolder'
+        );
       });
     });
 
