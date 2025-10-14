@@ -1,64 +1,23 @@
-import winston from 'winston';
+import { createLogger, format, transports } from 'winston';
+const { combine, timestamp, json, errors } = format;
 
-// Custom log levels
-const levels = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  http: 3,
-  debug: 4
+const logLevels = {
+	fatal: 0,
+	error: 1,
+	warn: 2,
+	info: 3,
+	debug: 4,
+	trace: 5,
 };
 
-// Custom colors for each level
-const colors = {
-  error: 'red',
-  warn: 'yellow',
-  info: 'green',
-  http: 'magenta',
-  debug: 'white'
-};
-
-// Tell winston that you want to link the colors defined above to the severity levels
-winston.addColors(colors);
-
-// Choose the aspect of your log customizing the log format
-const format = winston.format.combine(
-  // Add timestamp to logs
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-  // Add colors only in production
-  ...(process.env.NODE_ENV !== 'production'
-    ? [winston.format.colorize({ all: true })]
-    : []),
-  // Define format of logs
-  winston.format.printf(
-    info => `${info.timestamp} ${info.level}: ${info.message}`
-  )
-);
-
-// Define which transports the logger must use
-const transports = [
-  // Console transport
-  new winston.transports.Console({
-    format: winston.format.combine(
-      // Add colors only in production
-      ...(process.env.NODE_ENV !== 'production'
-        ? [winston.format.colorize({ all: true })]
-        : []),
-      winston.format.printf(
-        info =>
-          `${process.env.NODE_ENV !== 'production' ? info.timestamp + ' ' : ''}${info.level}: ${info.message}`
-      )
-    )
-  })
-];
-
-// Create the logger
-export const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL ?? 'info',
-  levels,
-  silent: process.env.LOGGER !== 'yes' && process.env.NODE_ENV === 'test',
-  format,
-  transports,
-  // Do not exit on handled exceptions
-  exitOnError: false
+export const logger = createLogger({
+	transports: [new transports.Console()],
+	format: combine(errors({ stack: true }), timestamp(), json()),
+	levels: logLevels,
+	silent: !process.env.LOGGER && process.env.NODE_ENV === 'test',
+	defaultMeta: {
+		version: process.env.VERSION,
+	},
+	exceptionHandlers: [new transports.Console({ consoleWarnLevels: ['error'] })],
+	rejectionHandlers: [new transports.Console({ consoleWarnLevels: ['error'] })],
 });

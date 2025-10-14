@@ -81,8 +81,7 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
   // Error handler
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     if (app.locals.config.params.debug === true) {
-      logger.error(err.message);
-      logger.debug(err.stack ?? 'No stack trace');
+      logger.error(err);
     }
 
     // Check if it's a Boom error
