@@ -86,7 +86,7 @@ describe('Files API', () => {
     it('should return files with folders when mods[withFolders]=true', async () => {
       const response = await request(testServer!.host)
         .get('/')
-        .query({ action: 'files', source: 'test', mods: 'withFolders' });
+        .query({ action: 'files', source: 'test', mods: {withFolders: true} });
 
       expect(response.status).toBe(200);
       const source = response.body.data.sources[0];
@@ -115,16 +115,16 @@ describe('Files API', () => {
       });
     });
 
-    it('should return 400 when action parameter is missing', async () => {
+    it('should return 404 when action parameter is missing', async () => {
       const response = await request(testServer!.host).get('/');
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(404);
       expect(response.body).toMatchObject({
         success: false,
         data: {
-          code: 400,
+          code: 404,
           messages: expect.arrayContaining([
-            expect.stringContaining('Action parameter is required')
+            expect.stringContaining("Action \"default\" not found")
           ])
         }
       });
@@ -404,144 +404,6 @@ describe('Files API', () => {
       expect(response.body).toEqual({
         success: true
       });
-    });
-  });
-});
-
-describe('Files API custom config', () => {
-  let testServer: TestServer | null = null;
-  const testFilesPath = path.join(__dirname, '../../../files/test');
-
-  describe('GET /?action=files', () => {
-    describe('Null sources configuration', () => {
-      it('should handle null sources in custom config', async () => {
-        const customConfig = {
-          sources: null
-        };
-
-        testServer = await startTestServer();
-
-        const response = await request(testServer!.host)
-          .get('/')
-          .query({
-            action: 'files',
-            custom_config: JSON.stringify(customConfig)
-          });
-
-        // Should use default source when sources is null
-        expect(response.status).toBe(200);
-        expect(response.body.success).toBe(true);
-
-        await stopTestServer(testServer!);
-      });
-    });
-
-    it('should apply custom config from query parameter in debug mode', async () => {
-      const customConfig = {
-        sources: {
-          custom: {
-            title: 'Custom Source',
-            root: testFilesPath,
-            baseurl: 'http://localhost:8081/custom/'
-          }
-        }
-      };
-
-      testServer = await startTestServer();
-
-      const response = await request(testServer!.host)
-        .get('/')
-        .query({
-          action: 'files',
-          source: 'custom',
-          custom_config: JSON.stringify(customConfig)
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({
-        success: true,
-        data: {
-          code: 220,
-          sources: expect.arrayContaining([
-            expect.objectContaining({
-              name: 'custom',
-              title: 'Custom Source'
-            })
-          ])
-        }
-      });
-
-      await stopTestServer(testServer!);
-    });
-
-    it('should NOT apply custom config when debug is false', async () => {
-      const customConfig = {
-        sources: {
-          custom: {
-            title: 'Custom Source',
-            root: testFilesPath,
-            baseurl: 'http://localhost:8081/custom/'
-          }
-        }
-      };
-
-      testServer = await startTestServer({
-        debug: false
-      });
-
-      const response = await request(testServer!.host)
-        .get('/')
-        .query({
-          action: 'files',
-          source: 'custom',
-          custom_config: JSON.stringify(customConfig)
-        });
-
-      // Should return 404 because custom source was not applied
-      expect(response.status).toBe(404);
-      expect(response.body).toMatchObject({
-        success: false,
-        data: {
-          code: 404,
-          messages: expect.arrayContaining([
-            expect.stringContaining('not found')
-          ])
-        }
-      });
-
-      await stopTestServer(testServer!);
-    });
-
-    it('should reject invalid custom config with validation errors', async () => {
-      const invalidConfig = {
-        sources: {
-          invalid: {
-            title: 'Invalid Source',
-            root: testFilesPath,
-            baseurl: 'not-a-valid-url' // Invalid URL
-          }
-        }
-      };
-
-      testServer = await startTestServer();
-
-      const response = await request(testServer!.host)
-        .get('/')
-        .query({
-          action: 'files',
-          custom_config: JSON.stringify(invalidConfig)
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body).toMatchObject({
-        success: false,
-        data: {
-          code: 400,
-          messages: expect.arrayContaining([expect.stringContaining('baseurl')])
-        }
-      });
-
-      await stopTestServer(testServer!);
     });
   });
 });

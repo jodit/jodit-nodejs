@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { AppConfig } from '../types';
+import { Config } from '../config/config';
 
 /**
  * Authentication callback that can set user role or throw an error
@@ -11,7 +11,7 @@ declare module 'express-serve-static-core' {
     userRole?: string;
   }
   interface Locals {
-    config: AppConfig;
+    config: Config;
     checkAuthentication?: AuthCallback;
   }
 }
@@ -21,12 +21,12 @@ export function authMiddleware(
   _res: Response,
   next: NextFunction
 ): void {
-  const config = req.app.locals.config as AppConfig;
+  const config = req.app.locals.config;
   const checkAuthentication = req.app.locals.checkAuthentication;
 
   // If no auth callback defined, use default role
   if (checkAuthentication == null) {
-    req.userRole = config.defaultRole;
+    req.userRole = config.params.defaultRole;
     next();
     return;
   }

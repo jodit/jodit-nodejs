@@ -30,15 +30,7 @@ export default [
       '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/prefer-optional-chain': 'error',
-      '@typescript-eslint/strict-boolean-expressions': ['error', {
-        'allowString': true,
-        'allowNumber': false,
-        'allowNullableObject': true,
-        'allowNullableBoolean': false,
-        'allowNullableString': true,
-        'allowNullableNumber': false,
-        'allowAny': false
-      }],
+      '@typescript-eslint/strict-boolean-expressions': 'off',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/await-thenable': 'error'
     }

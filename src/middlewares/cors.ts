@@ -1,15 +1,14 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { AppConfig } from '../types';
 
 export function corsMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
 ): void {
-  const config = req.app.locals.config as AppConfig;
+  const config = req.app.locals.config;
 
   // Only apply CORS if enabled in config
-  if (config.allowCrossOrigin !== true) {
+  if (config.params.allowCrossOrigin !== true) {
     next();
     return;
   }

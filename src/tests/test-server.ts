@@ -25,6 +25,7 @@ export async function startTestServer(
     defaultFilesKey: 'test',
     sources: {
       test: {
+        name: 'test',
         title: 'Test Files',
         root: testFilesPath,
         baseurl: 'http://localhost:8081/files/test/'

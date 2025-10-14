@@ -11,6 +11,7 @@ export const config: AppConfig = {
   defaultFilesKey: 'default',
   sources: {
     default: {
+      name: 'default',
       title: process.env.SOURCE_NAME ?? 'Test Files',
       root:
         process.env.SOURCE_ROOT != null

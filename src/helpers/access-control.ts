@@ -1,11 +1,4 @@
-import type { AppConfig } from '../types';
-
-export interface AccessControlRule {
-  role?: string;
-  path?: string;
-  extensions?: string | string[] | ((action: string, rule: AccessControlRule, path: string, extension: string) => string[]);
-  [action: string]: boolean | string | string[] | ((action: string, rule: AccessControlRule, path: string, extension: string) => string[] | boolean) | undefined;
-}
+import { AccessControlRule } from "../types";
 
 export const DEFAULT_RULES: Record<string, boolean> = {
   FILES: true,
@@ -42,7 +35,7 @@ function upperize(str: string): string {
 export class AccessControl {
   private accessList: AccessControlRule[] = [];
 
-  constructor(accessList: AccessControlRule[] = []) {
+  constructor(accessList: AccessControlRule[]) {
     this.accessList = accessList;
   }
 
@@ -50,12 +43,12 @@ export class AccessControl {
     this.accessList = list;
   }
 
-  checkPermission(
+  async checkPermission(
     role: string,
     action: string,
     path: string = '/',
     fileExtension: string = '*'
-  ): boolean {
+  ): Promise<boolean> {
     if (!this.isAllow(role, action, path, fileExtension)) {
       throw new Error('Access denied');
     }
@@ -134,8 +127,4 @@ export class AccessControl {
 
     return allow === true;
   }
-}
-
-export function createAccessControl(config: AppConfig): AccessControl {
-  return new AccessControl(config.accessControl as AccessControlRule[]);
 }

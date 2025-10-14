@@ -4,16 +4,12 @@ import HTMLtoDOCX from '@turbodocx/html-to-docx';
 import { GenerateDocxQuerySchema } from '../../schemas';
 import { logger } from '../../helpers/logger';
 
-/**
- * Handler for generating DOCX documents from HTML
- * GET /?action=generateDocx&html=<html content>
- */
 export async function generateDocxHandler(
   req: Request,
   res: Response
 ): Promise<void> {
   // Validate query parameters
-  const queryValidation = GenerateDocxQuerySchema.safeParse(req.params_data);
+  const queryValidation = GenerateDocxQuerySchema.safeParse(req.context.data);
   if (queryValidation.success === false) {
     const messages = queryValidation.error.issues.map(
       issue => `${issue.path.join('.')}: ${issue.message}`

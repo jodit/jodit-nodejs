@@ -23,7 +23,7 @@ We have introduced three key components to simplify handler development:
 
 ```typescript
 export async function myHandler(req: Request, res: Response): Promise<void> {
-  const config = req.app.locals.config as AppConfig;
+  const config = req.app.locals.config;
 
   // Manual parameter resolution
   const params = req.method === 'POST' ? req.body : req.query;

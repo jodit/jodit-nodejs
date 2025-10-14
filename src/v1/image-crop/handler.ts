@@ -1,24 +1,13 @@
 import { Request, Response } from 'express';
 import Boom from '@hapi/boom';
-import fs from 'fs/promises';
-import path from 'path';
-import sharp from 'sharp';
 import { ImageCropQuerySchema } from '../../schemas';
-import { logger } from '../../helpers/logger';
-import type { AppConfig } from '../../types';
 
-/**
- * Handler for cropping images
- * GET /?action=imageCrop&source=test&name=image.jpg&box[x]=100&box[y]=100&box[w]=800&box[h]=600
- */
 export async function imageCropHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-  const config: AppConfig = req.app.locals.config;
-
   // Validate query parameters
-  const queryValidation = ImageCropQuerySchema.safeParse(req.params_data);
+  const queryValidation = ImageCropQuerySchema.safeParse(req.context.data);
   if (queryValidation.success === false) {
     const messages = queryValidation.error.issues.map(
       issue => `${issue.path.join('.')}: ${issue.message}`
@@ -28,97 +17,7 @@ export async function imageCropHandler(
     throw boomError;
   }
 
-  const query = queryValidation.data;
-
-  logger.debug(
-    `Cropping image: ${query.name} at (${query.box.x}, ${query.box.y}) with size ${query.box.w}x${query.box.h}`
-  );
-
-  // Construct file path
-  const requestPath = query.path ?? '/';
-  const targetDir = path.join(req.sourceConfig.root, requestPath);
-  const targetPath = path.join(targetDir, query.name);
-
-  // Security check: ensure target path is within source root
-  const realTargetPath = await fs.realpath(targetPath).catch(() => null);
-  const realSourceRoot = await fs.realpath(req.sourceConfig.root);
-
-  if (realTargetPath?.startsWith(realSourceRoot) !== true) {
-    throw Boom.notFound('File not exists', ['File not exists']);
-  }
-
-  // Check if file exists and is a file
-  const stats = await fs.stat(realTargetPath).catch(() => null);
-  if (stats?.isFile() !== true) {
-    throw Boom.notFound('File not exists', ['File not exists']);
-  }
-
-  // Validate crop box parameters
-  if (query.box.w == null || query.box.w <= 0) {
-    throw Boom.badRequest('Width not specified');
-  }
-
-  if (query.box.h == null || query.box.h <= 0) {
-    throw Boom.badRequest('Height not specified');
-  }
-
-  if (query.box.x < 0 || query.box.y < 0) {
-    throw Boom.badRequest('Invalid crop coordinates');
-  }
-
-  // Determine output filename
-  let newName = query.newname ?? query.name;
-  const ext = path.extname(query.name);
-
-  // Preserve extension if not present in newname
-  if (newName.endsWith(ext) !== true) {
-    newName = newName + ext;
-  }
-
-  const outputPath = path.join(targetDir, newName);
-
-
-  // Check if output file already exists (unless we're replacing the source file)
-  if (newName !== query.name && !config.allowReplaceSourceFile) {
-    const exists = await fs
-      .access(outputPath)
-      .then(() => true)
-      .catch(() => false);
-    if (exists) {
-      const boomError = Boom.badRequest(`File ${newName} already exists`);
-      boomError.output.payload.messages = [`File ${newName} already exists`];
-      throw boomError;
-    }
-  }
-
-  // Crop image using sharp
-  try {
-    // If cropping in place, use a temporary file first
-    const isSameFile = newName === query.name;
-    const tempOutputPath = isSameFile ? `${outputPath}.tmp` : outputPath;
-
-    await sharp(realTargetPath)
-      .extract({
-        left: query.box.x,
-        top: query.box.y,
-        width: query.box.w,
-        height: query.box.h
-      })
-      .toFile(tempOutputPath);
-
-    // If we used a temp file, move it to the final location
-    if (isSameFile) {
-      await fs.rename(tempOutputPath, outputPath);
-    }
-  } catch (error) {
-    logger.error(`Failed to crop image: ${error}`);
-    throw Boom.internal('Failed to crop image', ['Failed to crop image']);
-  }
-
   res.json({
-    success: true,
-    data: {
-      code: 220
-    }
+    success: false
   });
 }

@@ -4,4 +4,4 @@ export { corsMiddleware } from './cors';
 export { customConfigMiddleware } from './custom-config';
 export { resolveAction } from './resolve-action';
 export { resolveParams } from './resolve-params';
-export { resolveSource } from './resolve-source';
+export { resolveSource } from './request-context';

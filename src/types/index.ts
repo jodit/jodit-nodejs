@@ -12,7 +12,8 @@ export interface ErrorResponse {
 }
 
 export interface SourceConfig {
-  title: string;
+  title?: string | undefined;
+  name: string;
   root: string;
   baseurl: string;
 }
@@ -28,6 +29,14 @@ export interface PdfConfig {
     format: string;
     page_orientation: string;
   };
+}
+
+
+export interface AccessControlRule {
+  role?: string;
+  path?: string;
+  extensions?: string | string[] | ((action: string, rule: AccessControlRule, path: string, extension: string) => string[]);
+  [action: string]: boolean | string | string[] | ((action: string, rule: AccessControlRule, path: string, extension: string) => string[] | boolean) | undefined;
 }
 
 export interface AppConfig {
@@ -52,7 +61,7 @@ export interface AppConfig {
   allowCrossOrigin: boolean;
   safeThumbsCountInOneTime: number;
   sourceClassName: string;
-  accessControl: unknown[];
+  accessControl: AccessControlRule[];
   roleSessionVar: string;
   defaultRole: string;
   allowReplaceSourceFile: boolean;

@@ -1,24 +1,14 @@
 import type { Request, Response } from 'express';
-import type { AppConfig } from '../../types';
 import Boom from '@hapi/boom';
 import { FileUploadQuerySchema } from '../../schemas';
-import path from 'path';
-import fs from 'fs/promises';
-import {
-  makeSafeFilename,
-  validateUploadedFile,
-  generateUniqueFilename,
-  getRelativePath
-} from '../../helpers/file-upload';
-import { isImageFile } from '../../helpers/file-system';
 
 export async function fileUploadHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-  const config = req.app.locals.config as AppConfig;
+  // const config = req.app.locals.config;
   // Validate params
-  const queryValidation = FileUploadQuerySchema.safeParse(req.params_data);
+  const queryValidation = FileUploadQuerySchema.safeParse(req.context.data);
   if (queryValidation.success === false) {
     const errors = queryValidation.error.issues.map(err => err.message);
     const boomError = Boom.badRequest('Validation failed');
@@ -26,121 +16,5 @@ export async function fileUploadHandler(
     throw boomError;
   }
 
-  const query = queryValidation.data;
-  const sourcePath = query.path ?? '/';
-
-  // Check if files were uploaded
-  if (
-    req.files === undefined ||
-    req.files === null ||
-    !Array.isArray(req.files)
-  ) {
-    const boomError = Boom.badRequest('No files have been uploaded');
-    boomError.output.payload.messages = ['No files have been uploaded'];
-    throw boomError;
-  }
-
-  /* eslint-disable-next-line no-undef */
-  const uploadedFiles = req.files as Express.Multer.File[];
-
-  if (uploadedFiles.length === 0) {
-    const boomError = Boom.badRequest('No files have been uploaded');
-    boomError.output.payload.messages = ['No files have been uploaded'];
-    throw boomError;
-  }
-
-  const targetDir = path.join(req.sourceConfig.root, sourcePath);
-
-  // Ensure target directory exists
-  try {
-    await fs.access(targetDir);
-  } catch {
-    const boomError = Boom.badRequest('Target directory does not exist');
-    boomError.output.payload.messages = ['Target directory does not exist'];
-    throw boomError;
-  }
-
-  const files: string[] = [];
-  const isImages: boolean[] = [];
-  const messages: string[] = [];
-
-  // Process each uploaded file
-  for (const file of uploadedFiles) {
-    const safeFilename = makeSafeFilename(file.originalname);
-
-    // Validate file
-    const validation = await validateUploadedFile(
-      file.path,
-      safeFilename,
-      config
-    );
-
-    if (!validation.valid) {
-      // Remove temp file
-      await fs.unlink(file.path);
-
-      const boomError = Boom.forbidden(
-        validation.reason ?? 'File validation failed'
-      );
-      boomError.output.payload.messages = [
-        validation.reason ?? 'File validation failed'
-      ];
-      throw boomError;
-    }
-
-    // Generate unique filename if needed
-    const targetPath = path.join(targetDir, safeFilename);
-    let finalFilename: string;
-    try {
-      finalFilename = await generateUniqueFilename(
-        targetPath,
-        safeFilename,
-        config.saveSameFileNameStrategy
-      );
-    } catch (error) {
-      // Remove temp file
-      await fs.unlink(file.path);
-
-      if (error instanceof Error && error.message === 'File already exists') {
-        const boomError = Boom.badRequest('File already exists');
-        boomError.output.payload.messages = ['File already exists'];
-        throw boomError;
-      }
-      throw error;
-    }
-    const finalPath = path.join(targetDir, finalFilename);
-
-    // Move file to target location
-    try {
-      await fs.rename(file.path, finalPath);
-    } catch {
-      // If rename fails, try copy + delete
-      try {
-        await fs.copyFile(file.path, finalPath);
-        await fs.unlink(file.path);
-      } catch {
-        const boomError = Boom.internal('Failed to save uploaded file');
-        boomError.output.payload.messages = ['Failed to save uploaded file'];
-        throw boomError;
-      }
-    }
-
-    const relativePath = getRelativePath(finalPath, req.sourceConfig.root);
-    const isImage = isImageFile(finalFilename, config.imageExtensions);
-
-    files.push(relativePath);
-    isImages.push(isImage);
-    messages.push(`File ${finalFilename} was uploaded`);
-  }
-
-  res.json({
-    success: true,
-    data: {
-      code: 220,
-      baseurl: req.sourceConfig.baseurl,
-      files,
-      isImages,
-      messages
-    }
-  });
+  res.send({ success: false });
 }
