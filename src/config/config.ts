@@ -1,10 +1,14 @@
 import os from 'os';
+import { AsyncLocalStorage } from 'async_hooks';
 import { AccessControl } from '../helpers/access-control';
 import { FileSystem } from '../sources/file-system/file-system';
 import { AppConfig, SourceConfig } from '../types';
 import type { ISource } from '../types/abstract-file-system';
 import Boom from '@hapi/boom';
 import { logger } from '../helpers/logger';
+
+// AsyncLocalStorage for storing request-specific context
+export const requestStorage = new AsyncLocalStorage<{ userRole: string }>();
 
 export class Config {
   access: AccessControl;
@@ -79,6 +83,13 @@ export class Config {
   }
 
   async getUserRole(): Promise<string> {
+    // Priority: 1. Request-scoped role (from checkAuthentication)
+    //           2. Default role (from config)
+    const store = requestStorage.getStore();
+    if (store?.userRole) {
+      return store.userRole;
+    }
+
     return this.params.defaultRole;
   }
 }

@@ -24,8 +24,7 @@ export const FolderCreateQuerySchema = z
     name: z.string().openapi({
       description: 'Name of the new folder',
       example: 'new-folder'
-    }),
-    custom_config: z.string().optional()
+    })
   })
   .openapi('FolderCreateQuery');
 

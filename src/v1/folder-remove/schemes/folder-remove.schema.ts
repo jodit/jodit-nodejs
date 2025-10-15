@@ -24,8 +24,7 @@ export const FolderRemoveQuerySchema = z
     name: z.string().openapi({
       description: 'Name of the folder to remove',
       example: 'old-folder'
-    }),
-    custom_config: z.string().optional()
+    })
   })
   .openapi('FolderRemoveQuery');
 

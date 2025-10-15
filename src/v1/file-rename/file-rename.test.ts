@@ -4,6 +4,7 @@ import {
   stopTestServer,
   cleanupTestFiles,
   createTestFile,
+  createTestDirectories,
   TestServer
 } from '../../tests/test-server';
 import fs from 'fs/promises';
@@ -23,6 +24,7 @@ describe('File Rename (GET /?action=fileRename)', () => {
 
   beforeEach(async () => {
     await cleanupTestFiles();
+    await createTestDirectories();
   });
 
   it('should rename file successfully', async () => {

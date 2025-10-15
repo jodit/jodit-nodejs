@@ -1,5 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import Boom from '@hapi/boom';
+import multer from 'multer';
+import os from 'os';
 import type { AppConfig } from './types';
 import { config as defaultConfig } from './config';
 import { logger } from './helpers/logger';
@@ -35,6 +37,9 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
     .use(express.urlencoded({ extended: true }));
 
   app.locals.config = new Config(appConfig);
+
+  // Configure multer for file uploads (using system temp directory)
+  const upload = multer({ dest: os.tmpdir() }).any();
 
   // Apply middlewares
   app.use(corsMiddleware);
@@ -72,8 +77,8 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
   };
 
   // POST endpoint for file uploads and other actions
-  app.post('/', requestContext, actionHandler);
-  app.post('/:action', requestContext, actionHandler);
+  app.post('/', upload, requestContext, actionHandler);
+  app.post('/:action', upload, requestContext, actionHandler);
   // Main API endpoint with validation
   app.get('/', requestContext, actionHandler);
   app.get('/:action', requestContext, actionHandler);

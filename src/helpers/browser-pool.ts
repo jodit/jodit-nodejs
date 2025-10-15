@@ -4,7 +4,7 @@ import { logger } from './logger';
 interface BrowserPoolOptions {
   /**
    * Time in milliseconds to keep browser alive after last use
-   * @default 80810 (30 seconds)
+   * @default 30000 (30 seconds)
    */
   idleTimeout?: number;
 
@@ -27,7 +27,7 @@ class BrowserPool {
   private launchPromise: Promise<Browser> | null = null;
 
   constructor(options: BrowserPoolOptions = {}) {
-    this.idleTimeout = options.idleTimeout ?? 80810; // 30 seconds default
+    this.idleTimeout = options.idleTimeout ?? 30000; // 30 seconds default
     this.launchOptions = options.launchOptions ?? {
       headless: true,
       args: [
@@ -157,7 +157,7 @@ class BrowserPool {
 
 // Export singleton instance
 export const browserPool = new BrowserPool({
-  idleTimeout: 80810, // 30 seconds
+  idleTimeout: 30000, // 30 seconds
   launchOptions: {
     headless: true,
     args: [

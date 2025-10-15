@@ -109,71 +109,13 @@ describe('File Upload API', () => {
       await fs.unlink(testImagePath);
     });
 
-    it('should handle same filename with replace strategy', async () => {
-      const testFilePath = path.join(testFilesPath, './test-same.txt');
-      await fs.writeFile(testFilePath, 'content 1');
-
-      // Upload first time
-      const response1 = await request(testServer!.host)
-        .post(
-          '/?custom_config=' +
-            encodeURIComponent(
-              JSON.stringify({ saveSameFileNameStrategy: 'replace' })
-            )
-        )
-        .field('action', 'fileUpload')
-        .field('source', 'test')
-        .attach('files', testFilePath);
-
-      expect(response1.status).toBe(200);
-
-      // Update file content
-      await fs.writeFile(testFilePath, 'content 2');
-
-      // Upload again with same name
-      const response2 = await request(testServer!.host)
-        .post(
-          '/?custom_config=' +
-            encodeURIComponent(
-              JSON.stringify({ saveSameFileNameStrategy: 'replace' })
-            )
-        )
-        .field('action', 'fileUpload')
-        .field('source', 'test')
-        .attach('files', testFilePath);
-
-      expect(response2.status).toBe(200);
-      expect(response2.body).toMatchObject({
-        success: true,
-        data: {
-          code: 220,
-          files: ['test-same.txt']
-        }
-      });
-
-      // Verify the file was replaced
-      const uploadedContent = await fs.readFile(
-        path.join(testFilesPath, 'test-same.txt'),
-        'utf-8'
-      );
-      expect(uploadedContent).toBe('content 2');
-
-      // Cleanup
-      await fs.unlink(testFilePath);
-    });
-
-    it('should handle same filename with addNumber strategy', async () => {
+    it('should handle same filename with addNumber strategy (default)', async () => {
       const testFilePath = path.join(testFilesPath, './test-number.txt');
       await fs.writeFile(testFilePath, 'content');
 
       // Upload first time
       const response1 = await request(testServer!.host)
-        .post(
-          '/?custom_config=' +
-            encodeURIComponent(
-              JSON.stringify({ saveSameFileNameStrategy: 'addNumber' })
-            )
-        )
+        .post('/')
         .field('action', 'fileUpload')
         .field('source', 'test')
         .attach('files', testFilePath);
@@ -182,12 +124,7 @@ describe('File Upload API', () => {
 
       // Upload again with same name
       const response2 = await request(testServer!.host)
-        .post(
-          '/?custom_config=' +
-            encodeURIComponent(
-              JSON.stringify({ saveSameFileNameStrategy: 'addNumber' })
-            )
-        )
+        .post('/')
         .field('action', 'fileUpload')
         .field('source', 'test')
         .attach('files', testFilePath);
@@ -199,54 +136,162 @@ describe('File Upload API', () => {
       await fs.unlink(testFilePath);
     });
 
-    it('should return error when file exists and strategy is error', async () => {
-      // Create file in subdir for uploading
-      const testFilePath = path.join(testFilesPath, './subdir/test-error.txt');
-      await fs.writeFile(testFilePath, 'original content');
+    it('should upload files with array-style field names (files[0], files[1])', async () => {
+      const testImagePath = path.join(testFilesPath, './subdir/test-array-1.png');
+      const testCsvPath = path.join(testFilesPath, './subdir/test-array-2.csv');
 
-      // Upload first file successfully
-      const response1 = await request(testServer!.host)
-        .post(
-          '/?custom_config=' +
-            encodeURIComponent(
-              JSON.stringify({ saveSameFileNameStrategy: 'error' })
-            )
-        )
+      // Create test files
+      await fs.writeFile(testImagePath, 'fake image content');
+      await fs.writeFile(testCsvPath, 'test,csv,content');
+
+      // Simulate browser FormData with array-style field names
+      const response = await request(testServer!.host)
+        .post('/')
         .field('action', 'fileUpload')
         .field('source', 'test')
-        .attach('files', testFilePath);
+        .attach('files[0]', testImagePath)
+        .attach('files[1]', testCsvPath);
 
-      expect(response1.status).toBe(200);
-      expect(response1.body.success).toBe(true);
-
-      // Try to upload again with same name - should fail
-      const response2 = await request(testServer!.host)
-        .post(
-          '/?custom_config=' +
-            encodeURIComponent(
-              JSON.stringify({ saveSameFileNameStrategy: 'error' })
-            )
-        )
-        .field('action', 'fileUpload')
-        .field('source', 'test')
-        .attach('files', testFilePath);
-
-      expect(response2.status).toBe(400);
-      expect(response2.body).toMatchObject({
-        success: false,
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        success: true,
         data: {
-          code: 400,
-          messages: expect.arrayContaining([
-            expect.stringContaining('already exists')
-          ])
+          code: 220,
+          files: expect.arrayContaining(['test-array-1.png', 'test-array-2.csv']),
+          isImages: expect.any(Array)
         }
       });
 
-      // Cleanup
-      await fs.unlink(testFilePath).catch(() => {});
-      await fs
-        .unlink(path.join(testFilesPath, 'test-error.txt'))
-        .catch(() => {});
+      // Cleanup test files
+      await fs.unlink(testImagePath);
+      await fs.unlink(testCsvPath);
+    });
+  });
+});
+
+describe('File Upload API - Replace Strategy', () => {
+  let testServer: TestServer | null = null;
+  const testFilesPath = path.join(process.cwd(), './files/test-replace');
+
+  beforeAll(async () => {
+    testServer = await startTestServer({
+      saveSameFileNameStrategy: 'replace',
+      sources: {
+        test: {
+          name: 'test',
+          title: 'Test Files',
+          root: testFilesPath,
+          baseurl: 'http://localhost:8081/files/test/',
+          defaultFilesKey: 'files'
+        }
+      }
+    });
+    await fs.mkdir(testFilesPath, { recursive: true });
+  });
+
+  afterAll(async () => {
+    await stopTestServer(testServer!);
+    await fs.rm(testFilesPath, { recursive: true, force: true });
+  });
+
+  it('should handle same filename with replace strategy', async () => {
+    const testFilePath = path.join(testFilesPath, 'test-same.txt');
+    await fs.writeFile(testFilePath, 'content 1');
+
+    // Upload first time
+    const response1 = await request(testServer!.host)
+      .post('/')
+      .field('action', 'fileUpload')
+      .field('source', 'test')
+      .attach('files', testFilePath);
+
+    expect(response1.status).toBe(200);
+
+    // Update file content
+    await fs.writeFile(testFilePath, 'content 2');
+
+    // Upload again with same name
+    const response2 = await request(testServer!.host)
+      .post('/')
+      .field('action', 'fileUpload')
+      .field('source', 'test')
+      .attach('files', testFilePath);
+
+    expect(response2.status).toBe(200);
+    expect(response2.body).toMatchObject({
+      success: true,
+      data: {
+        code: 220,
+        files: ['test-same.txt']
+      }
+    });
+
+    // Verify the file was replaced
+    const uploadedContent = await fs.readFile(
+      path.join(testFilesPath, 'test-same.txt'),
+      'utf-8'
+    );
+    expect(uploadedContent).toBe('content 2');
+  });
+});
+
+describe('File Upload API - Error Strategy', () => {
+  let testServer: TestServer | null = null;
+  const testFilesPath = path.join(process.cwd(), './files/test-error');
+
+  beforeAll(async () => {
+    testServer = await startTestServer({
+      saveSameFileNameStrategy: 'error',
+      sources: {
+        test: {
+          name: 'test',
+          title: 'Test Files',
+          root: testFilesPath,
+          baseurl: 'http://localhost:8081/files/test/',
+          defaultFilesKey: 'files'
+        }
+      }
+    });
+    await fs.mkdir(testFilesPath, { recursive: true });
+    await fs.mkdir(path.join(testFilesPath, 'subdir'), { recursive: true });
+  });
+
+  afterAll(async () => {
+    await stopTestServer(testServer!);
+    await fs.rm(testFilesPath, { recursive: true, force: true });
+  });
+
+  it('should return error when file exists and strategy is error', async () => {
+    // Create file in subdir for uploading
+    const testFilePath = path.join(testFilesPath, 'subdir', 'test-error.txt');
+    await fs.writeFile(testFilePath, 'original content');
+
+    // Upload first file successfully
+    const response1 = await request(testServer!.host)
+      .post('/')
+      .field('action', 'fileUpload')
+      .field('source', 'test')
+      .attach('files', testFilePath);
+
+    expect(response1.status).toBe(200);
+    expect(response1.body.success).toBe(true);
+
+    // Try to upload again with same name - should fail
+    const response2 = await request(testServer!.host)
+      .post('/')
+      .field('action', 'fileUpload')
+      .field('source', 'test')
+      .attach('files', testFilePath);
+
+    expect(response2.status).toBe(400);
+    expect(response2.body).toMatchObject({
+      success: false,
+      data: {
+        code: 400,
+        messages: expect.arrayContaining([
+          expect.stringContaining('already exists')
+        ])
+      }
     });
   });
 });

@@ -28,8 +28,7 @@ export const FolderRenameQuerySchema = z
     newname: z.string().openapi({
       description: 'New folder name',
       example: 'new-folder-name'
-    }),
-    custom_config: z.string().optional()
+    })
   })
   .openapi('FolderRenameQuery');
 

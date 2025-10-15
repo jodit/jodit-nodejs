@@ -5,6 +5,8 @@ import {
   cleanupTestFiles,
   TestServer
 } from '../../tests/test-server';
+import { jest } from '@jest/globals';
+import { browserPool } from '../../helpers/browser-pool';
 
 describe('Generate PDF (GET /?action=generatePdf)', () => {
   let testServer: TestServer | null = null;
@@ -15,6 +17,8 @@ describe('Generate PDF (GET /?action=generatePdf)', () => {
 
   afterAll(async () => {
     await stopTestServer(testServer!);
+    // Close browser to prevent hanging
+    await browserPool.closeBrowser();
   });
 
   beforeEach(async () => {

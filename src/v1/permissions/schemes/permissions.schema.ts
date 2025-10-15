@@ -20,8 +20,7 @@ export const PermissionsQuerySchema = z
       description: 'Path within source (default: "/")',
       example: '/',
       default: '/'
-    }),
-    custom_config: z.string().optional()
+    })
   })
   .openapi('PermissionsQuery');
 

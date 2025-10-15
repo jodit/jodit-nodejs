@@ -76,7 +76,6 @@ export class Image {
 
   /**
    * Adjust a single color value brightness
-   * (PHP lines 53-75)
    *
    * @param value - Color value (0-255)
    * @param percent - Brightness percentage (0-100)
@@ -106,7 +105,6 @@ export class Image {
 
   /**
    * Convert RGB color to hex string
-   * (PHP lines 77-94)
    *
    * @param r - Red component (0-255)
    * @param g - Green component (0-255)
@@ -138,7 +136,6 @@ export class Image {
 
   /**
    * Generate SVG icon for a file or folder
-   * (PHP lines 96-157)
    *
    * Creates a colored SVG icon based on file extension:
    * - Folders get a simple colored document icon

@@ -16,6 +16,7 @@ export interface SourceConfig {
   name: string;
   root: string;
   baseurl: string;
+  defaultFilesKey?: string | undefined;
 }
 
 export interface PdfConfig {

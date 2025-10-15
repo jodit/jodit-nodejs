@@ -37,8 +37,7 @@ export const GeneratePdfQuerySchema = z
     options: z
       .union([z.string(), PdfOptionsSchema])
       .optional()
-      .describe('PDF generation options'),
-    custom_config: z.string().optional()
+      .describe('PDF generation options')
   })
   .passthrough()
   .openapi('GeneratePdfQuery');

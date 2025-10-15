@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { Config } from '../config/config';
+import { Config, requestStorage } from '../config/config';
 
 /**
  * Authentication callback that can set user role or throw an error
@@ -24,10 +24,17 @@ export function authMiddleware(
   const config = req.app.locals.config;
   const checkAuthentication = req.app.locals.checkAuthentication;
 
+  // Helper to run next() within AsyncLocalStorage context
+  const runWithRole = (role: string): void => {
+    req.userRole = role;
+    requestStorage.run({ userRole: role }, () => {
+      next();
+    });
+  };
+
   // If no auth callback defined, use default role
   if (checkAuthentication == null) {
-    req.userRole = config.params.defaultRole;
-    next();
+    runWithRole(config.params.defaultRole);
     return;
   }
 
@@ -38,13 +45,11 @@ export function authMiddleware(
     if (roleOrPromise instanceof Promise) {
       roleOrPromise
         .then(role => {
-          req.userRole = role;
-          next();
+          runWithRole(role);
         })
         .catch(next);
     } else {
-      req.userRole = roleOrPromise;
-      next();
+      runWithRole(roleOrPromise);
     }
   } catch (error) {
     next(error);

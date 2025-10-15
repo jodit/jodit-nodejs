@@ -15,8 +15,7 @@ export const GenerateDocxQuerySchema = z
     html: z.string().min(1).openapi({
       description: 'HTML content to convert to DOCX',
       example: '<h1>Hello World</h1><p>This is a test document.</p>'
-    }),
-    custom_config: z.string().optional()
+    })
   })
   .passthrough()
   .openapi('GenerateDocxQuery');

@@ -1,5 +1,6 @@
 import type { AccessControlRule } from '../types';
 import * as changeCase from 'change-case';
+import Boom from '@hapi/boom';
 
 export const DEFAULT_RULES = {
   role: '*',
@@ -51,7 +52,7 @@ export class AccessControl {
     fileExtension: string = '*'
   ): Promise<boolean> {
     if (!this.isAllow(role, action, path, fileExtension)) {
-      throw new Error('Access denied');
+      throw Boom.forbidden('Access denied');
     }
     return true;
   }

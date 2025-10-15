@@ -1,5 +1,8 @@
 import { SourceConfig } from '.';
 import type { Config } from '../config/config';
+import type { Response } from 'express';
+// Express is a global namespace from @types/express
+/* global Express */
 
 export interface IResolveFile {
   readonly path: string;
@@ -67,7 +70,7 @@ export interface IFile {
   isDirectory(): Promise<boolean>;
 
   remove(): Promise<boolean>;
-  send(): Promise<void>; // TODO WHY
+  send(res?: Response): Promise<void>;
 
   getPath(): Promise<string>;
 
@@ -118,7 +121,7 @@ export interface ISource {
     options: { dots?: boolean | undefined }
   ): Promise<ISourceFolders>;
 
-  makeFolder(path: string): Promise<void>;
+  makeFolder(name: string, relativePath?: string): Promise<void>;
 
   makeThumb(
     file: IFile,
@@ -129,15 +132,15 @@ export interface ISource {
 
   isExcluded(file: string): Promise<boolean>;
 
-  movePath(fromName: string): Promise<void>;
+  movePath(from: string, toPath?: string): Promise<void>;
 
-  renamePath(fromName: string, newName: string): Promise<void>;
+  renamePath(fromName: string, newName: string, relativePath?: string, expectType?: 'file' | 'folder'): Promise<void>;
 
-  fileRemove(target: string): Promise<void>;
+  fileRemove(target: string, relativePath?: string): Promise<void>;
 
-  fileDownload(target: string): Promise<void>;
+  fileDownload(target: string, relativePath?: string): Promise<IFile>;
 
-  folderRemove(name: string): Promise<void>;
+  folderRemove(name: string, relativePath?: string): Promise<void>;
 
   resolveFileByUrl(url: string): Promise<IResolveFile | null>;
 
@@ -145,4 +148,29 @@ export interface ISource {
 
   getPath(relativePath?: string): Promise<string>;
   getRoot(): Promise<string>;
+
+  uploadFiles(files: Express.Multer.File[]): Promise<IFile[]>;
+
+  cropImage(
+    name: string,
+    box: { x: number; y: number; w: number; h: number },
+    newName?: string,
+    relativePath?: string
+  ): Promise<void>;
+
+  resizeImage(
+    name: string,
+    box: { w: number; h: number },
+    newName?: string,
+    relativePath?: string
+  ): Promise<void>;
+
+  uploadFileFromUrl(
+    url: string,
+    relativePath?: string
+  ): Promise<{
+    baseurl: string;
+    newfilename: string;
+    isImage: boolean;
+  }>;
 }

@@ -10,6 +10,8 @@ export async function folderMoveHandler(
   req: Request,
   res: Response
 ): Promise<void> {
+  const config = req.app.locals.config;
+
   // Validate query parameters
   const queryValidation = FolderMoveQuerySchema.safeParse(req.context.data);
   if (queryValidation.success === false) {
@@ -21,7 +23,26 @@ export async function folderMoveHandler(
     throw boomError;
   }
 
+  // Get source
+  const [source] = await config.getSources({
+    source: req.context.source,
+    action: req.context.action
+  });
+
+  // Get from parameter (path to folder to move)
+  const from = req.context.getField<string>('from', '');
+
+  if (!from) {
+    throw Boom.badRequest('From parameter is required');
+  }
+
+  // Move folder through source interface
+  await source.movePath(from, req.context.path);
+
   res.json({
-    success: false
+    success: true,
+    data: {
+      code: 220
+    }
   });
 }

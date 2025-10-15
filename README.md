@@ -172,7 +172,10 @@ jodit-nodejs/
 │   └── run.ts               # Default app launcher for development
 ├── examples/                # Usage examples
 │   ├── basic-js.js          # Basic JavaScript example
-│   └── with-auth-js.js      # Example with authentication
+│   ├── with-auth-js.js      # Example with checkAuthentication callback
+│   ├── with-cookie-auth.js  # Example with cookie-based authentication
+│   ├── with-jwt-auth.js     # Example with JWT token authentication
+│   └── with-express-session.js # Example with express-session (like PHP $_SESSION)
 ├── files/                   # Files directory (gitignored)
 ├── dist/                    # Compiled code (gitignored)
 ├── docs/                    # Generated OpenAPI documentation
@@ -183,7 +186,11 @@ jodit-nodejs/
 ├── tsconfig.json
 ├── jest.config.js
 ├── eslint.config.js
-└── .prettierrc
+├── .prettierrc
+├── README.md                # This file
+├── AUTHENTICATION.md        # Authentication & access control guide
+├── CONFIG.md                # Configuration reference
+└── DEPLOYMENT.md            # Deployment guide
 ```
 
 ## Installation
@@ -197,7 +204,10 @@ npm install jodit-nodejs
 Check the `examples/` directory for complete working examples:
 
 - **`examples/basic-js.js`** - Simple server setup with CommonJS
-- **`examples/with-auth-js.js`** - Server with authentication and access control
+- **`examples/with-auth-js.js`** - Server with checkAuthentication callback
+- **`examples/with-cookie-auth.js`** - Cookie-based authentication (per-request)
+- **`examples/with-jwt-auth.js`** - JWT token authentication (per-request)
+- **`examples/with-express-session.js`** - express-session integration (like PHP `$_SESSION`)
 
 Run examples:
 ```bash
@@ -207,8 +217,17 @@ npm run build
 # Run basic example
 node examples/basic-js.js
 
-# Run with authentication example
+# Run with authentication callback
 node examples/with-auth-js.js
+
+# Run with cookie authentication (per-request)
+node examples/with-cookie-auth.js
+
+# Run with JWT token authentication
+node examples/with-jwt-auth.js
+
+# Run with express-session (most similar to PHP $_SESSION)
+node examples/with-express-session.js
 ```
 
 ## API Usage
@@ -447,220 +466,109 @@ Health check endpoint.
 
 ## Authentication & Access Control
 
-### Custom Authentication Middleware
+For detailed authentication and access control guide, see **[AUTHENTICATION.md](./AUTHENTICATION.md)**.
 
-You can provide a custom authentication callback to validate requests and set user roles:
+### Quick Example
 
 ```typescript
 import { start, type AuthCallback } from 'jodit-nodejs';
 
+// Define authentication callback
 const checkAuth: AuthCallback = async (req) => {
-  // Read authentication token from headers
   const token = req.headers.authorization?.replace('Bearer ', '');
 
   if (!token) {
-    throw new Error('No authorization token provided');
+    return 'guest'; // Default role for unauthenticated users
   }
 
-  // Validate token (example with JWT)
-  try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    return payload.role; // Return user role
-  } catch (error) {
-    throw new Error('Invalid token');
-  }
+  // Validate token and return user role
+  const payload = jwt.verify(token, process.env.JWT_SECRET);
+  return payload.role; // e.g., 'admin', 'editor', 'guest'
 };
 
+// Start server with authentication and access control
 await start({
   port: 8081,
   config: {
-    defaultRole: 'guest', // Fallback role
+    defaultRole: 'guest',
     accessControl: [
-      // Define access rules (see below)
+      {
+        role: 'guest',
+        FILES: true,
+        FILE_UPLOAD: false,
+        FILE_REMOVE: false
+      },
+      {
+        role: 'admin',
+        FILES: true,
+        FILE_UPLOAD: true,
+        FILE_REMOVE: true
+      }
     ]
   },
   checkAuthentication: checkAuth
 });
 ```
 
-**How it works:**
-- The `checkAuthentication` callback receives Express `Request` object
-- It should return a user role (string) or throw an error
-- Supports both synchronous and asynchronous callbacks
-- If callback throws, the request fails with error
-- If no callback provided, uses `config.defaultRole`
-- The role is set in `req.userRole` for use by access control
+### Key Features
 
-### Access Control Rules
+- **Per-request authentication**: Each request is authenticated independently
+- **Flexible authentication**: Support for cookies, JWT tokens, express-session, and custom methods
+- **Role-based access control**: Define permissions based on user roles
+- **Path-based restrictions**: Control access to specific folders
+- **Extension filtering**: Restrict file types per role
+- **Dynamic rules**: Use functions for complex permission logic
 
-Define fine-grained permissions based on role, path, and file extensions:
-
-```typescript
-const customConfig: Partial<AppConfig> = {
-  defaultRole: 'guest',
-  accessControl: [
-    // General rules first (less specific)
-    {
-      role: 'guest',
-      FILES: true,
-      FILE_UPLOAD: false,
-      FILE_REMOVE: false
-    },
-    // Specific rules last (more specific, will override general)
-    {
-      role: 'guest',
-      path: '/private',
-      FILES: false // Deny access to /private folder
-    },
-    {
-      role: 'admin',
-      FILES: true,
-      FILE_UPLOAD: true,
-      FILE_REMOVE: true,
-      FOLDER_CREATE: true
-    },
-    {
-      role: 'editor',
-      extensions: ['jpg', 'png', 'gif'], // Only images
-      FILE_UPLOAD: true,
-      FILE_REMOVE: false // Can upload but not delete
-    },
-    {
-      role: '*', // Wildcard - matches all roles
-      path: '/public',
-      FILES: true
-    }
-  ]
-};
-```
-
-**Available Actions:**
-- `FILES` - list files
-- `FILE_UPLOAD` - upload files
-- `FILE_UPLOAD_REMOTE` - upload from URL
-- `FILE_REMOVE` - delete files
-- `FILE_MOVE` - move files
-- `FILE_RENAME` - rename files
-- `FILE_DOWNLOAD` - download files
-- `FOLDERS` - list folders
-- `FOLDER_CREATE` - create folders
-- `FOLDER_REMOVE` - delete folders
-- `FOLDER_MOVE` - move folders
-- `FOLDER_RENAME` - rename folders
-- `IMAGE_RESIZE` - resize images
-- `IMAGE_CROP` - crop images
-- `GENERATE_PDF` - generate PDF
-- `GENERATE_DOCX` - generate DOCX
-
-**Rule Matching:**
-- Rules are processed in order (general → specific)
-- Later rules override earlier ones for the same role/action
-- `role` - user role (`'guest'`, `'admin'`, `'*'` for all)
-- `path` - path restriction (matches if request path starts with rule path)
-- `extensions` - file extension filter (array or comma-separated string)
-- Action - boolean or function returning boolean
-
-**Example with function:**
-```typescript
-{
-  role: 'editor',
-  extensions: (action, rule, path, ext) => {
-    // Custom logic for allowed extensions
-    if (path.startsWith('/images')) {
-      return ['jpg', 'png', 'gif'];
-    }
-    return ['*']; // Allow all in other folders
-  },
-  FILE_UPLOAD: (action, rule, path, ext) => {
-    // Custom logic for upload permission
-    return path !== '/protected';
-  }
-}
-```
+**See [AUTHENTICATION.md](./AUTHENTICATION.md) for:**
+- Cookie-based authentication (like PHP `$_SESSION`)
+- JWT token authentication
+- Express-session integration
+- Complete access control examples
+- Security best practices
 
 ## Configuration
 
-Default configuration is in `src/config/index.ts`. Full config structure (same as PHP version):
+For detailed configuration reference, see **[CONFIG.md](./CONFIG.md)**.
+
+### Quick Configuration Example
 
 ```typescript
-export const config: AppConfig = {
-  // Basic settings
-  title: '',
-  defaultFilesKey: 'files',
-  saveSameFileNameStrategy: 'addNumber',
-  debug: true,
+import { start } from 'jodit-nodejs';
 
-  // Sources
-  sources: {
-    test: {
-      title: 'Test Files',
-      root: path.join(process.cwd(), './files/test'),
-      baseurl: 'http://localhost:8081/files/test/'
-    }
-  },
-
-  // File handling
-  root: path.join(process.cwd(), './files'),
-  baseurl: '',
-  extensions: ['jpg', 'png', 'gif', 'pdf', 'doc', /* ... */],
-  imageExtensions: ['jpg', 'png', 'gif', 'jpeg', 'bmp', 'svg', 'ico', 'webp'],
-  maxFileSize: '8mb',
-  maxUploadFileSize: '8mb',
-
-  // Thumbnails
-  createThumb: true,
-  thumbSize: 250,
-  thumbFolderName: '_thumbs',
-  safeThumbsCountInOneTime: 20,
-
-  // Image processing
-  quality: 90,
-  maxImageWidth: 1900,
-  maxImageHeight: 1900,
-
-  // Sorting and formatting
-  defaultSortBy: 'changed-desc',
-  datetimeFormat: 'M/D/YYYY h:mm A',
-
-  // Security
-  excludeDirectoryNames: ['.tmb', '.quarantine'],
-  accessControl: [],
-  roleSessionVar: 'JoditUserRole',
-  defaultRole: 'guest',
-  allowReplaceSourceFile: true,
-
-  // Performance
-  countInChunk: 1000000,
-  memoryLimit: '256M',
-  timeoutLimit: 60,
-  allowCrossOrigin: false,
-
-  // PDF configuration
-  pdf: {
-    defaultFont: 'serif',
-    isRemoteEnabled: true,
-    fontDir: tmpDir,
-    fontCache: tmpDir,
-    tempDir: tmpDir,
-    chroot: tmpDir,
-    paper: {
-      format: 'A4',
-      page_orientation: 'portrait'
+await start({
+  port: 8081,
+  config: {
+    debug: false,
+    allowCrossOrigin: true,
+    maxUploadFileSize: '10mb',
+    createThumb: true,
+    thumbSize: 200,
+    accessControl: [
+      {
+        role: 'guest',
+        FILES: true,
+        FILE_UPLOAD: false
+      },
+      {
+        role: 'admin',
+        FILES: true,
+        FILE_UPLOAD: true,
+        FILE_REMOVE: true
+      }
+    ],
+    sources: {
+      uploads: {
+        name: 'uploads',
+        title: 'User Uploads',
+        root: '/var/www/uploads',
+        baseurl: 'https://cdn.example.com/uploads/'
+      }
     }
   }
-};
+});
 ```
 
-### Custom Config via Query (Debug Mode Only)
-
-Like the PHP version, you can pass custom config via `custom_config` query parameter, but **only when `debug: true`**:
-
-```bash
-# This works only in debug mode
-curl "http://localhost:8081/?action=files&custom_config={\"sources\":{\"custom\":{\"title\":\"Custom\",\"root\":\"/path\",\"baseurl\":\"http://...\"}}}"
-```
-
-The config is validated with Zod schemas and will return 400 if invalid.
+**See [CONFIG.md](./CONFIG.md) for complete configuration reference.**
 
 ## Implemented Functions
 
@@ -686,7 +594,7 @@ The config is validated with Zod schemas and will return 400 if invalid.
 ## Tests
 
 All tests use Jest + Supertest for integration testing:
-- 9 integration tests covering all scenarios
+- Integration tests covering all scenarios
 - Automatic test data cleanup
 - Test isolation with separate app instances
 - Config validation tests

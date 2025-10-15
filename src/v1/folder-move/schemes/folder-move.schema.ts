@@ -24,8 +24,7 @@ export const FolderMoveQuerySchema = z
       description: 'Destination directory path (default: "/")',
       example: '/new-location/',
       default: '/'
-    }),
-    custom_config: z.string().optional()
+    })
   })
   .openapi('FolderMoveQuery');
 

@@ -6,7 +6,8 @@ export async function fileUploadHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-  // const config = req.app.locals.config;
+  const config = req.app.locals.config;
+
   // Validate params
   const queryValidation = FileUploadQuerySchema.safeParse(req.context.data);
   if (queryValidation.success === false) {
@@ -16,5 +17,61 @@ export async function fileUploadHandler(
     throw boomError;
   }
 
-  res.send({ success: false });
+  // Get source
+  const [source] = await config.getSources({
+    source: req.context.source,
+    action: req.context.action
+  });
+
+  // Get the expected field name for uploaded files
+  const filesKey = source.sourceConfig.defaultFilesKey || config.params.defaultFilesKey;
+
+  // Filter files uploaded with the correct field name
+  // Accept both exact match (e.g., 'default') and array-style names (e.g., 'files[0]', 'files[1]')
+  const uploadedFiles = req.files && Array.isArray(req.files)
+    ? req.files.filter(file =>
+        file.fieldname === filesKey ||
+        file.fieldname.startsWith('files[')
+      )
+    : [];
+
+  // Check if files were uploaded
+  if (uploadedFiles.length === 0) {
+    throw Boom.badRequest('No files have been uploaded');
+  }
+
+  // Check permission
+  await config.access.checkPermission(
+    await config.getUserRole(),
+    req.context.action,
+    await source.getPath(req.context.path)
+  );
+
+  // Upload files through source interface
+  const uploadedFileObjects = await source.uploadFiles(uploadedFiles);
+
+  const root = await source.getRoot();
+  const messages: string[] = [];
+  const filePaths: string[] = [];
+  const isImages: boolean[] = [];
+
+  for (const file of uploadedFileObjects) {
+    const fileName = await file.getName();
+    messages.push(`File ${fileName} was uploaded`);
+    const filePath = (await file.getPath()).replace(root, '');
+    // Remove leading slash if present
+    filePaths.push(filePath.startsWith('/') ? filePath.substring(1) : filePath);
+    isImages.push(await file.isImage());
+  }
+
+  res.json({
+    success: true,
+    data: {
+      code: 220,
+      baseurl: source.sourceConfig.baseurl,
+      messages,
+      files: filePaths,
+      isImages
+    }
+  });
 }

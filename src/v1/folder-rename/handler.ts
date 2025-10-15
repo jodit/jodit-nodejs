@@ -6,6 +6,8 @@ export async function folderRenameHandler(
   req: Request,
   res: Response
 ): Promise<void> {
+  const config = req.app.locals.config;
+
   // Validate query parameters
   const queryValidation = FolderRenameQuerySchema.safeParse(req.context.data);
   if (queryValidation.success === false) {
@@ -17,7 +19,31 @@ export async function folderRenameHandler(
     throw boomError;
   }
 
+  // Get source
+  const [source] = await config.getSources({
+    source: req.context.source,
+    action: req.context.action
+  });
+
+  // Get name and newname from request
+  const name = req.context.getField<string>('name', '');
+  const newname = req.context.getField<string>('newname', '');
+
+  if (!name) {
+    throw Boom.badRequest('Name parameter is required');
+  }
+
+  if (!newname) {
+    throw Boom.badRequest('Newname parameter is required');
+  }
+
+  // Rename folder through source interface
+  await source.renamePath(name, newname, req.context.path, 'folder');
+
   res.json({
-    success: false
+    success: true,
+    data: {
+      code: 220
+    }
   });
 }

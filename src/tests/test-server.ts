@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createApp } from '../app';
 import type { AppConfig } from '../types';
+import type { AuthCallback } from '../middlewares/auth';
 
 const testFilesPath = path.join(process.cwd(), './files/test');
 
@@ -14,25 +15,33 @@ export interface TestServer {
 /**
  * Start a real HTTP test server
  * @param config Optional custom config for the app
+ * @param checkAuthentication Optional authentication callback
  * @returns Object with host URL, server instance, and port
  */
 export async function startTestServer(
-  config?: Partial<AppConfig>
+  config?: Partial<AppConfig>,
+  checkAuthentication?: AuthCallback
 ): Promise<TestServer> {
   await createTestDirectories();
 
   const app = createApp({
-    defaultFilesKey: 'test',
+    defaultFilesKey: 'files',
     sources: {
       test: {
         name: 'test',
         title: 'Test Files',
         root: testFilesPath,
-        baseurl: 'http://localhost:8081/files/test/'
+        baseurl: 'http://localhost:8081/files/test/',
+        defaultFilesKey: 'files'
       }
     },
     ...config
   });
+
+  // Set checkAuthentication if provided
+  if (checkAuthentication !== undefined) {
+    app.locals.checkAuthentication = checkAuthentication;
+  }
 
   return new Promise((resolve, reject) => {
     if (process.env.TEST_SERVER_HOST != null) {

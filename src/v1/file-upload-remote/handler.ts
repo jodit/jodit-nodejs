@@ -6,7 +6,7 @@ export async function fileUploadRemoteHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-  // const config = req.app.locals.config;
+  const config = req.app.locals.config;
 
   // Validate query params
   const queryValidation = FileUploadRemoteQuerySchema.safeParse(
@@ -19,7 +19,24 @@ export async function fileUploadRemoteHandler(
     throw boomError;
   }
 
-  // const query = queryValidation.data;
+  const query = queryValidation.data;
 
-  res.send({ success: false });
+  // Get source
+  const [source] = await config.getSources({
+    source: req.context.source,
+    action: req.context.action
+  });
+
+  // Upload file from URL through source interface
+  const result = await source.uploadFileFromUrl(query.url, req.context.path);
+
+  res.json({
+    success: true,
+    data: {
+      code: 220,
+      baseurl: result.baseurl,
+      newfilename: result.newfilename,
+      isImage: result.isImage
+    }
+  });
 }

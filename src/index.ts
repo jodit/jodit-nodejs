@@ -1,9 +1,11 @@
 import type { Server } from 'http';
 import type { AppConfig } from './types';
 import type { AuthCallback } from './middlewares/auth';
-import { version } from '../package.json';
+import packageJson from '../package.json' with { type: 'json' };
 import { logger } from './helpers/logger';
 import { createApp } from './app';
+
+const { version } = packageJson;
 
 let server: Server | null = null;
 

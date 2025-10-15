@@ -33,8 +33,7 @@ export const FoldersQuerySchema = z
       .openapi({
         description: 'Include parent directory (..) navigation (default: true)',
         example: true
-      }),
-    custom_config: z.string().optional()
+      })
   })
   .openapi('FoldersQuery');
 

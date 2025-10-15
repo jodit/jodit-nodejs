@@ -6,6 +6,8 @@ export async function imageCropHandler(
   req: Request,
   res: Response
 ): Promise<void> {
+  const config = req.app.locals.config;
+
   // Validate query parameters
   const queryValidation = ImageCropQuerySchema.safeParse(req.context.data);
   if (queryValidation.success === false) {
@@ -17,7 +19,31 @@ export async function imageCropHandler(
     throw boomError;
   }
 
+  const validatedData = queryValidation.data;
+
+  // Get source
+  const [source] = await config.getSources({
+    source: req.context.source,
+    action: req.context.action
+  });
+
+  // Get name parameter (image name to crop)
+  const name = req.context.getField<string>('name', '');
+
+  if (!name) {
+    throw Boom.badRequest('Name parameter is required');
+  }
+
+  // Get newname if provided
+  const newname = req.context.getField<string | undefined>('newname', undefined);
+
+  // Crop image through source interface
+  await source.cropImage(name, validatedData.box, newname, req.context.path);
+
   res.json({
-    success: false
+    success: true,
+    data: {
+      code: 220
+    }
   });
 }
