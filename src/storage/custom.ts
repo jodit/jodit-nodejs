@@ -26,78 +26,78 @@ export class AdapterFileStorage implements StorageAdapter {
   }
 
   async write(
-    path: string,
-    contents: Readable,
-    options: WriteOptions
+    _path: string,
+    _contents: Readable,
+    _options: WriteOptions
   ): Promise<void> {
     throw new Error('Not implemented');
   }
 
-  async read(path: string): Promise<FileContents> {
+  async read(_path: string): Promise<FileContents> {
     throw new Error('Not implemented');
   }
-  async deleteFile(path: string): Promise<void> {
+  async deleteFile(_path: string): Promise<void> {
     throw new Error('Not implemented');
   }
   async createDirectory(
-    path: string,
-    options: CreateDirectoryOptions
+    _path: string,
+    _options: CreateDirectoryOptions
   ): Promise<void> {
     throw new Error('Not implemented');
   }
-  async stat(path: string): Promise<StatEntry> {
+  async stat(_path: string): Promise<StatEntry> {
     throw new Error('Not implemented');
   }
-  list(path: string, options: { deep: boolean }): AsyncGenerator<StatEntry> {
+  list(_path: string, _options: { deep: boolean }): AsyncGenerator<StatEntry> {
     throw new Error('Not implemented');
   }
-  async changeVisibility(path: string, visibility: string): Promise<void> {
+  async changeVisibility(_path: string, _visibility: string): Promise<void> {
     throw new Error('Not implemented');
   }
-  async visibility(path: string): Promise<string> {
+  async visibility(_path: string): Promise<string> {
     throw new Error('Not implemented');
   }
-  async deleteDirectory(path: string): Promise<void> {
+  async deleteDirectory(_path: string): Promise<void> {
     throw new Error('Not implemented');
   }
-  async fileExists(path: string): Promise<boolean> {
+  async fileExists(_path: string): Promise<boolean> {
     throw new Error('Not implemented');
   }
-  async directoryExists(path: string): Promise<boolean> {
+  async directoryExists(_path: string): Promise<boolean> {
     throw new Error('Not implemented');
   }
-  async publicUrl(path: string, options: PublicUrlOptions): Promise<string> {
+  async publicUrl(_path: string, _options: PublicUrlOptions): Promise<string> {
     throw new Error('Not implemented');
   }
   async temporaryUrl(
-    path: string,
-    options: TemporaryUrlOptions
+    _path: string,
+    _options: TemporaryUrlOptions
   ): Promise<string> {
     throw new Error('Not implemented');
   }
-  async checksum(path: string, options: ChecksumOptions): Promise<string> {
+  async checksum(_path: string, _options: ChecksumOptions): Promise<string> {
     throw new Error('Not implemented');
   }
-  async mimeType(path: string, options: MimeTypeOptions): Promise<string> {
+  async mimeType(_path: string, _options: MimeTypeOptions): Promise<string> {
     throw new Error('Not implemented');
   }
-  async lastModified(path: string): Promise<number> {
+  async lastModified(_path: string): Promise<number> {
     throw new Error('Not implemented');
   }
-  async fileSize(path: string): Promise<number> {
+  async fileSize(_path: string): Promise<number> {
     throw new Error('Not implemented');
   }
   async copyFile(
-    from: string,
-    to: string,
-    options: CopyFileOptions
+    _from: string,
+    _to: string,
+    _options: CopyFileOptions
   ): Promise<void> {
     throw new Error('Not implemented');
   }
   async moveFile(
-    from: string,
-    to: string,
-    options: MoveFileOptions
+    _from: string,
+    _to: string,
+    _options: MoveFileOptions
   ): Promise<void> {
     throw new Error('Not implemented');
   }

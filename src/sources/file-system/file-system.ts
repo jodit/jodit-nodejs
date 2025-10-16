@@ -326,7 +326,7 @@ export class FileSystem extends BaseSource implements ISource {
           return file;
         }
       } else {
-        await Image.generateIcon(file, thumbName, this);
+        Image.generateIcon(file, thumbName, this);
       }
     }
 
@@ -375,7 +375,7 @@ export class FileSystem extends BaseSource implements ISource {
 
     const list = await filter(
       fs.readdirSync(pathname),
-      async file => !(await this.isExcluded(file))
+      async file => !this.isExcluded(file)
     );
 
     const files = await this.filterFiles(pathname, list, options).then(
@@ -450,7 +450,7 @@ export class FileSystem extends BaseSource implements ISource {
     let dirent;
 
     while ((dirent = dir.readSync()) !== null) {
-      if (dirent.isDirectory() && !(await this.isExcluded(dirent.name))) {
+      if (dirent.isDirectory() && !this.isExcluded(dirent)) {
         sourceData.folders.push(dirent.name);
       }
     }

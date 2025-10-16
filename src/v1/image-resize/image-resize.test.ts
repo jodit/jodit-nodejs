@@ -241,7 +241,7 @@ describe('Image Resize (GET /?action=imageResize)', () => {
       'box[h]': '100'
     });
 
-    expect(response.status).toBe(404);
+    expect(response.status).  toBe(404);
     expect(response.body.success).toBe(false);
   });
 });

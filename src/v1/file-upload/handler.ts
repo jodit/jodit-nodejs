@@ -50,18 +50,17 @@ export async function fileUploadHandler(
   // Upload files through source interface
   const uploadedFileObjects = await source.uploadFiles(uploadedFiles);
 
-  const root = await source.getRoot();
   const messages: string[] = [];
   const filePaths: string[] = [];
   const isImages: boolean[] = [];
 
   for (const file of uploadedFileObjects) {
-    const fileName = await file.getName();
+    const fileName = file.name;
     messages.push(`File ${fileName} was uploaded`);
-    const filePath = (await file.getPath()).replace(root, '');
+    const filePath = file.stat.path;
     // Remove leading slash if present
     filePaths.push(filePath.startsWith('/') ? filePath.substring(1) : filePath);
-    isImages.push(await file.isImage());
+    isImages.push(file.isImage);
   }
 
   res.json({

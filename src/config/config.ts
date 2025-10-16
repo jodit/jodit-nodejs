@@ -6,6 +6,7 @@ import { AppConfig, SourceConfig } from '../types';
 import Boom from '@hapi/boom';
 import { logger } from '../helpers/logger';
 import { LocalStorageAdapter } from '@flystorage/local-fs';
+import { FileStorage } from '@flystorage/file-storage';
 
 // AsyncLocalStorage for storing request-specific context
 export const requestStorage = new AsyncLocalStorage<{ userRole: string }>();
@@ -21,7 +22,7 @@ export class Config {
     name: string
   ): Promise<FileManagerService> {
     // Create LocalStorageAdapter for the source root
-    const storage = new LocalStorageAdapter(sourceConfig.root);
+    const storage = new FileStorage(new LocalStorageAdapter(sourceConfig.root));
 
     // Create FileManagerService with the storage adapter
     return new FileManagerService(sourceConfig, config, storage, name);

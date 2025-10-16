@@ -32,9 +32,19 @@ export async function fileDownloadHandler(
     throw Boom.badRequest('Name parameter is required');
   }
 
-  // Download file through source interface
-  const file = await source.fileDownload(name, req.context.path);
+  // Download file through source interface - returns object with stream and file info
+  const fileInfo = await source.fileDownload(name, req.context.path);
 
-  // Send file to client
-  await file.send(res);
+  // Send file to client with appropriate headers
+  res.setHeader('Content-Description', 'File Transfer');
+  res.setHeader('Content-Type', 'application/octet-stream');
+  res.setHeader('Content-Disposition', `attachment; filename="${name}"`);
+  res.setHeader('Content-Transfer-Encoding', 'binary');
+
+  if (fileInfo.size) {
+    res.setHeader('Content-Length', fileInfo.size.toString());
+  }
+
+  // Pipe the stream to response
+  fileInfo.stream.pipe(res);
 }
