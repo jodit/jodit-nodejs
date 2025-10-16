@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import Boom from '@hapi/boom';
 import { FoldersQuerySchema } from '../../schemas';
-import type { ISourceFolders } from '../../types/abstract-file-system';
+import type { ISourceFolders } from '../../types/rest-api';
 
 export async function foldersHandler(
   req: Request,

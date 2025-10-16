@@ -2,6 +2,7 @@ import path from 'node:path';
 import Boom from '@hapi/boom';
 import type { SourceConfig } from '../types';
 import type { Config } from '../config/config';
+import { StatEntry } from '@flystorage/file-storage';
 
 export abstract class BaseSource {
   readonly name: string;
@@ -46,6 +47,46 @@ export abstract class BaseSource {
     }
 
     return root;
+  }
+
+  isExcluded(file: StatEntry): boolean {
+    const name = path.basename(file.path);
+    return (
+      (this.config.params.createThumb &&
+        name === this.config.params.thumbFolderName) ||
+      this.config.params.excludeDirectoryNames.includes(name)
+    );
+  }
+
+  isGoodFile(file: StatEntry): boolean {
+    const ext = this.getExtension(file.path);
+    return !!ext && this.config.params.extensions.includes(ext);
+  }
+
+  isSafeFile(file: StatEntry): boolean {
+    const ext = this.getExtension(file.path);
+
+    if (!this.isGoodFile(file)) return false;
+
+    if (
+      this.config.params.imageExtensions.includes(ext) &&
+      !this.isImage(file)
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  isImage(file: StatEntry): boolean {
+    const ext = this.getExtension(file.path);
+    if (ext === 'svg') return true;
+
+    return this.config.params.imageExtensions.includes(ext);
+  }
+
+  protected getExtension(filePath: string): string {
+    return path.extname(filePath).toLowerCase().replace(/^./, '');
   }
 }
 

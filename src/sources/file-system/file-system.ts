@@ -14,7 +14,7 @@ import type {
   ISourceFolders,
   ISourceItem
   //   TreeNode
-} from '../../types/abstract-file-system';
+} from '../../types/rest-api';
 import { BaseSource } from '../../helpers/base-source';
 import { Image } from '../../helpers/image';
 import Boom from '@hapi/boom';
@@ -223,12 +223,12 @@ export class FileSystem extends BaseSource implements ISource {
     return fs.existsSync(pathname) && fs.lstatSync(pathname).isDirectory();
   }
 
-  makeFile(path: string, content: string | null = null): Promise<IFile> {
+  makeFile(path: string, content: string | null = null): IFile {
     if (content !== null) {
       fs.writeFileSync(path, content, 'utf8');
     }
 
-    return File.create(path, this);
+    return File.create(path);
   }
 
   async makeFolder(name: string, relativePath?: string): Promise<void> {
@@ -458,16 +458,6 @@ export class FileSystem extends BaseSource implements ISource {
     dir.closeSync();
 
     return sourceData;
-  }
-
-  async isExcluded(file: string): Promise<boolean> {
-    return (
-      file === '.' ||
-      file === '..' ||
-      (this.config.params.createThumb &&
-        file === this.config.params.thumbFolderName) ||
-      this.config.params.excludeDirectoryNames.includes(file)
-    );
   }
 
   async uploadFiles(files: Express.Multer.File[]): Promise<IFile[]> {

@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import Boom from '@hapi/boom';
 import { FilesQuerySchema } from '../../schemas';
-import { ISourceItem } from '../../types/abstract-file-system';
+import { ISourceItem } from '../../types/rest-api';
 
 export async function filesHandler(req: Request, res: Response): Promise<void> {
   const config = req.app.locals.config;

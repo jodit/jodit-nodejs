@@ -45,6 +45,7 @@ describe('Files API', () => {
         .set('Accept', 'application/json');
 
       expect(response.status).toBe(200);
+
       expect(response.body.data.sources[0].path).toEqual('/');
       expect(response.body).toMatchObject({
         success: true,
@@ -88,18 +89,19 @@ describe('Files API', () => {
           })
           .set('Accept', 'application/json');
 
+          
         expect(response.status).toBe(200);
         expect(response.body.data.sources[0].path).toEqual('subfolder');
-        expect(response.body.data.sources[0].files[0].file).toEqual(
+        expect(response.body.data.sources[0].files[1].file).toEqual(
           'image.png'
         );
-        expect(response.body.data.sources[0].files[0].thumb).toEqual(
+        expect(response.body.data.sources[0].files[1].thumb).toEqual(
           '_thumbs/image.png'
         );
-        expect(response.body.data.sources[0].files[1].thumb).toEqual(
+        expect(response.body.data.sources[0].files[0].thumb).toEqual(
           '_thumbs/somefolder.svg'
         );
-        expect(response.body.data.sources[0].files[1].file).toEqual(
+        expect(response.body.data.sources[0].files[0].file).toEqual(
           'somefolder'
         );
       });

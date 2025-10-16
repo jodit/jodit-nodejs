@@ -8,25 +8,13 @@
  *
  */
 
+import { StatEntry } from '@flystorage/file-storage';
+import path from 'node:path';
+
 /**
  * RGB color tuple [R, G, B]
  */
 export type RGBColor = [number, number, number];
-
-/**
- * Interface for file/folder objects
- */
-export interface IFileForIcon {
-  isDirectory: () => Promise<boolean>;
-  getExtension: () => Promise<string>;
-}
-
-/**
- * Interface for source objects that can create files
- */
-export interface ISourceForIcon {
-  makeFile: (filename: string, content: string) => Promise<unknown>;
-}
 
 /**
  * Image utility class
@@ -147,17 +135,15 @@ export class Image {
    * @param width - Icon width (default: 100)
    * @param height - Icon height (default: 100)
    */
-  static async generateIcon(
-    file: IFileForIcon,
-    iconName: string,
-    source: ISourceForIcon,
+  static generateIcon(
+    file: StatEntry,
     width: number = 100,
     height: number = 100
-  ): Promise<void> {
+  ): string {
     // Get word for icon (folder or extension) (lines 103-105)
-    const word = (await file.isDirectory())
+    const word = file.isDirectory
       ? 'folder'
-      : (await file.getExtension()).toUpperCase();
+      : path.extname(file.path).substring(1).toLowerCase();
 
     // Select color from palette based on first character (lines 107-108)
     const code = word.charCodeAt(0) % this.colors.length;
@@ -180,7 +166,7 @@ export class Image {
     const textY = labelY + labelHeight / 2 + 2;
 
     // Generate label (only for files, not folders)
-    const label = (await file.isDirectory())
+    const label = file.isDirectory
       ? ''
       : `
 		<g>
@@ -209,6 +195,6 @@ export class Image {
 	</svg>
 `;
 
-    await source.makeFile(iconName, svg);
+    return svg;
   }
 }

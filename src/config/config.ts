@@ -1,11 +1,11 @@
 import os from 'os';
 import { AsyncLocalStorage } from 'async_hooks';
 import { AccessControl } from '../helpers/access-control';
-import { FileSystem } from '../sources/file-system/file-system';
+import { FileManagerService } from '../services/file-manager.service';
 import { AppConfig, SourceConfig } from '../types';
-import type { ISource } from '../types/abstract-file-system';
 import Boom from '@hapi/boom';
 import { logger } from '../helpers/logger';
+import { LocalStorageAdapter } from '@flystorage/local-fs';
 
 // AsyncLocalStorage for storing request-specific context
 export const requestStorage = new AsyncLocalStorage<{ userRole: string }>();
@@ -13,15 +13,18 @@ export const requestStorage = new AsyncLocalStorage<{ userRole: string }>();
 export class Config {
   access: AccessControl;
 
-  private sources: { [key: string]: Promise<ISource> } = {};
+  private sources: { [key: string]: Promise<FileManagerService> } = {};
 
   async makeSource(
     sourceConfig: SourceConfig,
     config: Config,
     name: string
-  ): Promise<ISource> {
-    // TODO Another source types
-    return new FileSystem(sourceConfig, config, name);
+  ): Promise<FileManagerService> {
+    // Create LocalStorageAdapter for the source root
+    const storage = new LocalStorageAdapter(sourceConfig.root);
+
+    // Create FileManagerService with the storage adapter
+    return new FileManagerService(sourceConfig, config, storage, name);
   }
 
   constructor(public readonly params: AppConfig) {
@@ -52,7 +55,7 @@ export class Config {
   async getSources(options: {
     source?: string;
     action: string;
-  }): Promise<ISource[]> {
+  }): Promise<FileManagerService[]> {
     let sources = await Promise.all(Object.values(this.sources));
     if (options.source) {
       sources = sources.filter(source => source.name === options.source);
