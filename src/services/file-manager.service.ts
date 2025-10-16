@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import slugify from 'slugify';
@@ -30,27 +29,9 @@ export class FileManagerService extends BaseSource {
     this.storage = storage;
   }
 
-  async realpath(pathname: string): Promise<string> {
-    try {
-      // For now, use fs.promises.realpath as flystorage doesn't have realpath
-      // This is OK because we're still working with local paths
-      return await fs.promises.realpath(pathname);
-    } catch {
-      throw Boom.notFound('Path does not exist');
-    }
-  }
-
   async isDirectory(pathname: string): Promise<boolean> {
     try {
-      // Use direct fs check for root validation to avoid recursion
-      // LocalStorageAdapter is initialized with root, so just check relative path
-      const root = this.sourceConfig.root;
-
-      // If checking the root itself, use fs directly to avoid recursion in getRoot()
-      if (pathname === root) {
-        return fs.existsSync(pathname) && fs.lstatSync(pathname).isDirectory();
-      }
-
+      const root = await this.getRoot();
       // For other paths, convert to relative and use storage adapter
       let relativePath = pathname.replace(root, '');
       if (relativePath.startsWith(path.sep)) {

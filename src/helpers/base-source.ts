@@ -15,18 +15,11 @@ export abstract class BaseSource {
     this.name = name ?? sourceConfig.name ?? 'default';
   }
 
-  abstract realpath(pathname: string): Promise<string>;
   abstract isDirectory(pathname: string): Promise<boolean>;
 
   async getRoot(): Promise<string> {
     if (this.sourceConfig.root) {
-      if (!(await this.isDirectory(this.sourceConfig.root))) {
-        throw Boom.notFound(
-          'Root directory not exists ' + this.sourceConfig.root
-        );
-      }
-
-      return this.realpath(this.sourceConfig.root);
+      return path.resolve(this.sourceConfig.root);
     }
 
     throw Boom.notImplemented('Set root directory for source');
@@ -35,7 +28,7 @@ export abstract class BaseSource {
   async getPath(relativePath?: string): Promise<string> {
     let root = await this.getRoot();
 
-    let pathname = await this.realpath(
+    let pathname = path.resolve(
       normalizePath(path.join(root, relativePath ?? './'))
     );
 
