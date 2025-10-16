@@ -383,6 +383,7 @@ export class FileManagerService extends BaseSource {
   async fileDownload(
     target: string,
     relativePath?: string
+  // eslint-disable-next-line no-undef
   ): Promise<{ stream: NodeJS.ReadableStream; size?: number }> {
     const dirPath = await this.getPath(relativePath);
 
@@ -709,6 +710,7 @@ export class FileManagerService extends BaseSource {
     }
   }
 
+  // @ts-expect-error Multer types are not perfect
   async uploadFiles(files: Multer.File[]): Promise<IItemFile[]> {
     const dirPath = await this.getPath();
     const root = await this.getRoot();
@@ -912,6 +914,11 @@ export class FileManagerService extends BaseSource {
 
     try {
       const stats = await this.storage.stat(targetRelative, {});
+
+      if (!stats.isFile) {
+        await this.storage.deleteFile(targetRelative, {});
+        throw Boom.badRequest('It is not a file!');
+      }
 
       // Check if file is safe
       if (!this.isSafeFile(stats)) {
