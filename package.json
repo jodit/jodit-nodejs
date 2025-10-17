@@ -42,8 +42,10 @@
     "format": "prettier --write ./src",
     "docker:build": "docker build -t jodit-nodejs .",
     "docker:run": "docker run --rm -p 8081:8081 jodit-nodejs",
-    "docs:generate": "tsx scripts/generate-openapi.ts",
-    "docs:serve": "npx http-server ./dist/docs -o -p 8082",
+    "openapi:generate": "tsx scripts/generate-openapi.ts",
+    "docs:serve": "cd docs && . .venv/bin/activate  && mkdocs serve",
+    "docs:build": "cd docs && . .venv/bin/activate  && mkdocs build",
+    "docs:deploy": "cd docs && . .venv/bin/activate  && mkdocs gh-deploy",
     "stat": "npx cloc ./src --include-lang=TypeScript --exclude-dir=node_modules,compose,dist && npx jscpd ./src | grep \"│\""
   },
   "keywords": [

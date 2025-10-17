@@ -1,0 +1,14 @@
+site_name: My Project API Docs
+
+docs_dir: ./content
+theme:
+  name: material
+
+plugins:
+  - search
+  # - swagger-ui:
+  #     swagger_path: openapi.yaml
+  #     page_title: API Reference
+
+nav:
+  - Overview: index.md
