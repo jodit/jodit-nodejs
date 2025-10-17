@@ -1,26 +1,22 @@
 ---
-title: Authentication & Access Control
-description: Comprehensive guide to implementing authentication and access control in Jodit Connector Node.js, including cookie-based auth, JWT tokens, express-session integration, and dynamic ACL rules.
+title: Authentication
+description: Complete guide to implementing authentication in Jodit Connector Node.js, including cookie-based auth, JWT tokens, and express-session integration.
 ---
 
-# Authentication & Access Control
+# Authentication
 
-This document provides a comprehensive guide to implementing authentication and access control in Jodit Connector Node.js.
+This document provides a comprehensive guide to implementing authentication in Jodit Connector Node.js.
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Authentication Callback](#authentication-callback)
-- [Authentication Examples](#authentication-examples)
+- [Authentication Methods](#authentication-methods)
   - [Cookie-based Authentication](#cookie-based-authentication)
   - [JWT Token Authentication](#jwt-token-authentication)
   - [Express-Session Integration](#express-session-integration)
-- [Access Control Rules](#access-control-rules)
-- [Dynamic Access Control Rules](#dynamic-access-control-rules)
-- [Advanced Examples](#advanced-examples)
+  - [Database-based Authentication](#database-based-authentication)
 - [Security Best Practices](#security-best-practices)
-
----
 
 ## Overview
 
@@ -30,7 +26,7 @@ Jodit Connector uses a **per-request authentication** model where each request i
 
 - **checkAuthentication**: A callback function that receives each request and returns the user's role
 - **defaultRole**: Fallback role used when no authentication is provided
-- **accessControl**: Rules that define what each role can do
+- **accessControl**: Rules that define what each role can do (see [Access Control](./access-control.md))
 - **Per-request**: Every request is authenticated separately (no global state)
 
 ### How It Works
@@ -40,8 +36,6 @@ Jodit Connector uses a **per-request authentication** model where each request i
 3. Callback validates credentials and returns a user role (e.g., 'admin', 'guest')
 4. Access control middleware checks if the role has permission for the requested action
 5. If permitted, the request proceeds; otherwise, it's rejected with 403 Forbidden
-
----
 
 ## Authentication Callback
 
@@ -90,7 +84,7 @@ await start({
   config: {
     defaultRole: 'guest', // Fallback when no auth
     accessControl: [
-      // Define permissions (see below)
+      // Define permissions (see Access Control guide)
     ]
   },
   checkAuthentication: checkAuth
@@ -105,9 +99,7 @@ await start({
 - **No global state**: Each request is independent
 - **Error handling**: Throwing an error rejects the request with 401
 
----
-
-## Authentication Examples
+## Authentication Methods
 
 ### Cookie-based Authentication
 
@@ -161,8 +153,6 @@ curl -H "Cookie: userRole=admin" "http://localhost:8081/?action=files&source=upl
 ```
 
 **Complete example:** See `examples/with-cookie-auth.js`
-
----
 
 ### JWT Token Authentication
 
@@ -237,8 +227,6 @@ curl -H "Authorization: Bearer $TOKEN" \
 ```
 
 **Complete example:** See `examples/with-jwt-auth.js`
-
----
 
 ### Express-Session Integration
 
@@ -347,469 +335,6 @@ curl -b cookies.txt "http://localhost:8081/logout"
 
 **Complete example:** See `examples/with-express-session.js`
 
----
-
-## Access Control Rules
-
-Define fine-grained permissions based on role, path, and file extensions.
-
-### Basic Structure
-
-```typescript
-interface AccessControlRule {
-  role?: string;           // User role or '*' for all
-  path?: string;           // Path restriction
-  extensions?: string[];   // Allowed file extensions
-  [action: string]: boolean | Function;  // Action permissions
-}
-```
-
-### Example Configuration
-
-```typescript
-const config = {
-  defaultRole: 'guest',
-  accessControl: [
-    // General rules first (less specific)
-    {
-      role: 'guest',
-      FILES: true,
-      FILE_UPLOAD: false,
-      FILE_REMOVE: false
-    },
-    // Specific rules override general rules
-    {
-      role: 'guest',
-      path: '/private',
-      FILES: false // Deny access to /private folder
-    },
-    {
-      role: 'user',
-      FILES: true,
-      FILE_UPLOAD: true,
-      FILE_REMOVE: false,
-      FOLDER_CREATE: true
-    },
-    {
-      role: 'admin',
-      FILES: true,
-      FILE_UPLOAD: true,
-      FILE_REMOVE: true,
-      FOLDER_CREATE: true,
-      FOLDER_REMOVE: true
-    },
-    {
-      role: 'editor',
-      extensions: ['jpg', 'png', 'gif'], // Only images
-      FILE_UPLOAD: true,
-      FILE_REMOVE: false
-    },
-    {
-      role: '*', // Wildcard - matches all roles
-      path: '/public',
-      FILES: true
-    }
-  ]
-};
-```
-
-### Available Actions
-
-| Action | Description |
-|--------|-------------|
-| `FILES` | List files |
-| `FILE_UPLOAD` | Upload files |
-| `FILE_UPLOAD_REMOTE` | Upload from URL |
-| `FILE_REMOVE` | Delete files |
-| `FILE_MOVE` | Move files |
-| `FILE_RENAME` | Rename files |
-| `FILE_DOWNLOAD` | Download files |
-| `FOLDERS` | List folders |
-| `FOLDER_CREATE` | Create folders |
-| `FOLDER_REMOVE` | Delete folders |
-| `FOLDER_MOVE` | Move folders |
-| `FOLDER_RENAME` | Rename folders |
-| `IMAGE_RESIZE` | Resize images |
-| `IMAGE_CROP` | Crop images |
-| `GENERATE_PDF` | Generate PDF |
-| `GENERATE_DOCX` | Generate DOCX |
-
-### Rule Matching
-
-- **Order matters**: Rules are processed in order (general → specific)
-- **Later rules override earlier ones** for the same role/action
-- **Role matching**: Exact match or wildcard (`'*'`)
-- **Path matching**: Checks if request path starts with rule path
-- **Extension matching**: Filters by file extension
-
-### Dynamic Rules with Functions
-
-For complex logic, use functions instead of boolean values:
-
-```typescript
-{
-  role: 'editor',
-  extensions: (action, rule, path, ext) => {
-    // Custom logic for allowed extensions
-    if (path.startsWith('/images')) {
-      return ['jpg', 'png', 'gif'];
-    }
-    if (path.startsWith('/documents')) {
-      return ['pdf', 'doc', 'docx'];
-    }
-    return ['*']; // Allow all in other folders
-  },
-  FILE_UPLOAD: (action, rule, path, ext) => {
-    // Custom logic for upload permission
-    return path !== '/protected';
-  },
-  FILE_REMOVE: (action, rule, path, ext) => {
-    // Only allow removing own files
-    return path.startsWith(`/users/${getUserId(rule)}`);
-  }
-}
-```
-
----
-
-## Dynamic Access Control Rules
-
-Access control rules can be loaded dynamically from external sources like databases, APIs, or cache systems. This is useful when:
-- Rules change frequently and shouldn't require application restart
-- Rules are stored in a database or configuration service
-- Different deployments need different rules without code changes
-- Rules need to be updated in real-time
-
-### Static vs Dynamic Rules
-
-**Static rules** (array):
-```typescript
-{
-  accessControl: [
-    { role: 'guest', FILES: true, FILE_UPLOAD: false },
-    { role: 'admin', FILES: true, FILE_UPLOAD: true }
-  ]
-}
-```
-- ✅ Simple and fast
-- ✅ No database calls
-- ❌ Fixed at startup
-- ❌ Requires restart to update
-
-**Dynamic rules** (async function):
-```typescript
-{
-  accessControl: async () => {
-    const rules = await loadFromDatabase();
-    return rules;
-  }
-}
-```
-- ✅ Fresh rules on every check
-- ✅ No restart needed for updates
-- ✅ Centralized rule management
-- ⚠️ Adds latency (use caching!)
-
-### Loading Rules from Database
-
-```typescript
-import { start } from 'jodit-nodejs';
-import { database } from './database';
-
-await start({
-  port: 8081,
-  config: {
-    defaultRole: 'guest',
-    // Load ACL rules from database on every permission check
-    accessControl: async () => {
-      const rules = await database.query(`
-        SELECT role, action, allowed
-        FROM acl_rules
-        WHERE active = true
-        ORDER BY priority
-      `);
-
-      // Transform database rows to AccessControlRule format
-      const rulesByRole: Record<string, any> = {};
-
-      for (const row of rules) {
-        if (!rulesByRole[row.role]) {
-          rulesByRole[row.role] = { role: row.role };
-        }
-        rulesByRole[row.role][row.action] = row.allowed;
-      }
-
-      return Object.values(rulesByRole);
-    }
-  }
-});
-```
-
-### Caching for Performance
-
-Loading rules from database on every permission check can be slow. Add caching:
-
-```typescript
-import { start } from 'jodit-nodejs';
-import { database } from './database';
-
-// Simple in-memory cache
-let cachedRules: AccessControlRule[] | null = null;
-let cacheExpiry = 0;
-const CACHE_TTL = 60000; // 1 minute
-
-async function loadACLRules(): Promise<AccessControlRule[]> {
-  const now = Date.now();
-
-  // Return cached rules if still valid
-  if (cachedRules && now < cacheExpiry) {
-    return cachedRules;
-  }
-
-  // Load fresh rules from database
-  const rules = await database.query(`
-    SELECT role, action, allowed
-    FROM acl_rules
-    WHERE active = true
-  `);
-
-  const rulesByRole: Record<string, any> = {};
-  for (const row of rules) {
-    if (!rulesByRole[row.role]) {
-      rulesByRole[row.role] = { role: row.role };
-    }
-    rulesByRole[row.role][row.action] = row.allowed;
-  }
-
-  cachedRules = Object.values(rulesByRole);
-  cacheExpiry = now + CACHE_TTL;
-
-  return cachedRules;
-}
-
-await start({
-  port: 8081,
-  config: {
-    defaultRole: 'guest',
-    accessControl: loadACLRules
-  }
-});
-```
-
-### Loading Rules from Redis
-
-```typescript
-import { start } from 'jodit-nodejs';
-import Redis from 'ioredis';
-
-const redis = new Redis();
-
-async function loadACLFromRedis(): Promise<AccessControlRule[]> {
-  // Try to get cached rules
-  const cached = await redis.get('acl:rules');
-
-  if (cached) {
-    return JSON.parse(cached);
-  }
-
-  // Load from primary source (database)
-  const rules = await loadFromDatabase();
-
-  // Cache for 5 minutes
-  await redis.setex('acl:rules', 300, JSON.stringify(rules));
-
-  return rules;
-}
-
-await start({
-  port: 8081,
-  config: {
-    defaultRole: 'guest',
-    accessControl: loadACLFromRedis
-  }
-});
-```
-
-### Loading Rules from API
-
-```typescript
-import { start } from 'jodit-nodejs';
-import fetch from 'node-fetch';
-
-async function loadACLFromAPI(): Promise<AccessControlRule[]> {
-  const response = await fetch('https://api.example.com/acl/rules', {
-    headers: {
-      'Authorization': `Bearer ${process.env.API_TOKEN}`
-    }
-  });
-
-  if (!response.ok) {
-    // Fallback to safe defaults on error
-    return [
-      { role: 'guest', FILES: true, FILE_UPLOAD: false }
-    ];
-  }
-
-  const data = await response.json();
-  return data.rules;
-}
-
-await start({
-  port: 8081,
-  config: {
-    defaultRole: 'guest',
-    accessControl: loadACLFromAPI
-  }
-});
-```
-
-### Synchronous Function (Computed Rules)
-
-For rules that depend on application state but don't need async operations:
-
-```typescript
-import { start } from 'jodit-nodejs';
-
-// Rules computed from environment
-function getACLRules(): AccessControlRule[] {
-  const isProduction = process.env.NODE_ENV === 'production';
-
-  if (isProduction) {
-    // Strict rules in production
-    return [
-      { role: 'guest', FILES: true, FILE_UPLOAD: false },
-      { role: 'user', FILES: true, FILE_UPLOAD: true, FILE_REMOVE: false },
-      { role: 'admin', FILES: true, FILE_UPLOAD: true, FILE_REMOVE: true }
-    ];
-  } else {
-    // Relaxed rules in development
-    return [
-      { role: '*', FILES: true, FILE_UPLOAD: true, FILE_REMOVE: true }
-    ];
-  }
-}
-
-await start({
-  port: 8081,
-  config: {
-    defaultRole: 'guest',
-    accessControl: getACLRules  // Sync function
-  }
-});
-```
-
-### Best Practices for Dynamic Rules
-
-1. **Always implement caching** for database/API calls to avoid performance issues
-2. **Set appropriate TTL** (cache lifetime) based on how often rules change
-3. **Provide fallback rules** in case loading fails
-4. **Monitor performance** - async rule loading adds latency to every request
-5. **Use sync functions** when rules depend only on application state
-6. **Log rule changes** for audit and debugging
-7. **Test failure scenarios** (database down, API timeout, etc.)
-
-### Complete Example with Error Handling
-
-```typescript
-import { start } from 'jodit-nodejs';
-import { database } from './database';
-import { logger } from './logger';
-
-let cachedRules: AccessControlRule[] = [
-  // Safe defaults as fallback
-  { role: 'guest', FILES: true, FILE_UPLOAD: false }
-];
-let cacheExpiry = 0;
-
-async function loadACL(): Promise<AccessControlRule[]> {
-  const now = Date.now();
-
-  // Return cached rules if valid
-  if (now < cacheExpiry) {
-    return cachedRules;
-  }
-
-  try {
-    // Load fresh rules from database
-    const rules = await database.query('SELECT * FROM acl_rules');
-
-    const transformed = transformRules(rules);
-
-    // Update cache
-    cachedRules = transformed;
-    cacheExpiry = now + 60000; // 1 minute
-
-    logger.info(`Loaded ${transformed.length} ACL rules from database`);
-
-    return transformed;
-  } catch (error) {
-    logger.error('Failed to load ACL rules from database:', error);
-
-    // Return last successful cache or defaults
-    return cachedRules;
-  }
-}
-
-await start({
-  port: 8081,
-  config: {
-    defaultRole: 'guest',
-    accessControl: loadACL
-  }
-});
-```
-
----
-
-## Advanced Examples
-
-### Multi-source Permissions
-
-Different permissions for different file sources:
-
-```typescript
-const config = {
-  defaultRole: 'guest',
-  sources: {
-    public: {
-      name: 'public',
-      title: 'Public Files',
-      root: '/var/www/public',
-      baseurl: 'https://cdn.example.com/public/'
-    },
-    private: {
-      name: 'private',
-      title: 'Private Files',
-      root: '/var/www/private',
-      baseurl: 'https://cdn.example.com/private/'
-    }
-  },
-  accessControl: [
-    // Guest can view public files only
-    {
-      role: 'guest',
-      FILES: true,
-      FILE_UPLOAD: false
-    },
-    // User can upload to public, view private
-    {
-      role: 'user',
-      FILES: true,
-      FILE_UPLOAD: true,
-      FILE_REMOVE: false
-    },
-    // Admin has full access
-    {
-      role: 'admin',
-      FILES: true,
-      FILE_UPLOAD: true,
-      FILE_REMOVE: true,
-      FOLDER_CREATE: true
-    }
-  ]
-};
-```
-
 ### Database-based Authentication
 
 Authenticate users from a database:
@@ -820,7 +345,14 @@ import { getUserByToken } from './database';
 
 await start({
   port: 8081,
-  config: { /* ... */ },
+  config: {
+    defaultRole: 'guest',
+    accessControl: [
+      { role: 'guest', FILES: true, FILE_UPLOAD: false },
+      { role: 'user', FILES: true, FILE_UPLOAD: true },
+      { role: 'admin', FILES: true, FILE_UPLOAD: true, FILE_REMOVE: true }
+    ]
+  },
   checkAuthentication: async (req) => {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
@@ -849,48 +381,6 @@ await start({
   }
 });
 ```
-
-### Role-based File Filtering
-
-Show different files to different roles:
-
-```typescript
-const config = {
-  accessControl: [
-    {
-      role: 'guest',
-      path: '/public',
-      FILES: true,
-      FILE_UPLOAD: false
-    },
-    {
-      role: 'guest',
-      path: '/private',
-      FILES: false // Guest cannot see private files
-    },
-    {
-      role: 'user',
-      path: '/public',
-      FILES: true,
-      FILE_UPLOAD: true
-    },
-    {
-      role: 'user',
-      path: '/private',
-      FILES: true, // User can see private files
-      FILE_UPLOAD: false
-    },
-    {
-      role: 'admin',
-      FILES: true,
-      FILE_UPLOAD: true,
-      FILE_REMOVE: true
-    }
-  ]
-};
-```
-
----
 
 ## Security Best Practices
 
@@ -933,12 +423,13 @@ checkAuthentication: async (req) => {
 
 ### 3. Use Environment Variables for Secrets
 
-```typescript
-// .env file
+```bash
+# .env file
 JWT_SECRET=your-very-long-and-random-secret-key
 SESSION_SECRET=another-very-long-and-random-secret-key
+```
 
-// In code
+```typescript
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -958,7 +449,7 @@ const limiter = rateLimit({
   max: 100 // limit each IP to 100 requests per windowMs
 });
 
-app.use('/jodit', limiter);
+app.use('/', limiter);
 ```
 
 ### 5. Log Authentication Attempts
@@ -1031,12 +522,8 @@ const config = {
 };
 ```
 
----
+## Next Steps
 
-## See Also
-
-- [config.md](./config.md) - Configuration reference (see `accessControl` and `defaultRole`)
-- [examples/with-cookie-auth.js](../examples/with-cookie-auth.js) - Cookie authentication example
-- [examples/with-jwt-auth.js](../examples/with-jwt-auth.js) - JWT authentication example
-- [examples/with-express-session.js](../examples/with-express-session.js) - Express-session example
-- [README.md](../README.md) - General documentation
+- **[Access Control](./access-control.md)** - Learn about ACL rules and permissions
+- **[Configuration](./config.md)** - Explore all configuration options
+- **[API Usage](./api-usage.md)** - See complete usage examples
