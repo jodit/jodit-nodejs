@@ -229,4 +229,197 @@ describe('Folder Rename (GET /?action=folderRename)', () => {
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
   });
+
+  describe('Access Control', () => {
+    let aclTestServer: TestServer | null = null;
+
+    afterEach(async () => {
+      if (aclTestServer) {
+        await stopTestServer(aclTestServer);
+        aclTestServer = null;
+      }
+    });
+
+    it('should allow access when no access control rules defined', async () => {
+      aclTestServer = await startTestServer();
+      await fs.mkdir(path.join(testFilesPath, 'acl-folder'), { recursive: true });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderRename', source: 'test', name: 'acl-folder', newname: 'renamed-folder' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should deny access when role does not have FOLDER_RENAME permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FOLDER_RENAME: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await fs.mkdir(path.join(testFilesPath, 'test-folder'), { recursive: true });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderRename', source: 'test', name: 'test-folder', newname: 'renamed-folder' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.code).toBe(403);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should allow access when role has FOLDER_RENAME permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'admin',
+            FOLDER_RENAME: true
+          }
+        ],
+        defaultRole: 'admin'
+      });
+
+      await fs.mkdir(path.join(testFilesPath, 'test-folder'), { recursive: true });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderRename', source: 'test', name: 'test-folder', newname: 'renamed-folder' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should check path-based permissions for FOLDER_RENAME action', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FOLDER_RENAME: true
+          },
+          {
+            role: 'guest',
+            path: '/locked',
+            FOLDER_RENAME: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await fs.mkdir(path.join(testFilesPath, 'public'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'locked', 'private'), { recursive: true });
+
+      // Should allow rename in root path
+      const rootResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderRename', source: 'test', path: '/', name: 'public', newname: 'public-renamed' });
+
+      expect(rootResponse.status).toBe(200);
+      expect(rootResponse.body.success).toBe(true);
+
+      // Should deny rename in /locked path
+      const lockedResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderRename', source: 'test', path: '/locked', name: 'private', newname: 'private-renamed' });
+
+      expect(lockedResponse.status).toBe(403);
+      expect(lockedResponse.body.success).toBe(false);
+      expect(lockedResponse.body.data.messages).toContain('Access denied');
+    });
+
+    it('should use wildcard role to deny FOLDER_RENAME access to all roles', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: '*',
+            FOLDER_RENAME: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await fs.mkdir(path.join(testFilesPath, 'test-folder'), { recursive: true });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderRename', source: 'test', name: 'test-folder', newname: 'renamed-folder' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should work with POST method', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FOLDER_RENAME: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await fs.mkdir(path.join(testFilesPath, 'test-folder'), { recursive: true });
+
+      const response = await request(aclTestServer!.host)
+        .post('/')
+        .send({
+          action: 'folderRename',
+          source: 'test',
+          name: 'test-folder',
+          newname: 'renamed-folder'
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+  });
 });

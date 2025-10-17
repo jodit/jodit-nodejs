@@ -189,4 +189,195 @@ describe('File Upload Remote (GET /?action=fileUploadRemote)', () => {
     expect(response.status).toBe(400);
     expect(response.body.data.messages[0]).toContain('File was not loaded');
   });
+
+  describe('Access Control', () => {
+    let aclTestServer: TestServer | null = null;
+
+    afterEach(async () => {
+      if (aclTestServer) {
+        await stopTestServer(aclTestServer);
+        aclTestServer = null;
+      }
+    });
+
+    it('should allow access when no access control rules defined', async () => {
+      aclTestServer = await startTestServer();
+      const remoteUrl = `http://localhost:${mockServerPort}/test-image.png`;
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileUploadRemote', source: 'test', url: remoteUrl });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should deny access when role does not have FILE_UPLOAD_REMOTE permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FILE_UPLOAD_REMOTE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const remoteUrl = `http://localhost:${mockServerPort}/test-image.png`;
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileUploadRemote', source: 'test', url: remoteUrl });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.code).toBe(403);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should allow access when role has FILE_UPLOAD_REMOTE permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'admin',
+            FILE_UPLOAD_REMOTE: true
+          }
+        ],
+        defaultRole: 'admin'
+      });
+
+      const remoteUrl = `http://localhost:${mockServerPort}/test-image.png`;
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileUploadRemote', source: 'test', url: remoteUrl });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should check path-based permissions for FILE_UPLOAD_REMOTE action', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FILE_UPLOAD_REMOTE: true
+          },
+          {
+            role: 'guest',
+            path: '/uploads',
+            FILE_UPLOAD_REMOTE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const remoteUrl = `http://localhost:${mockServerPort}/test-image.png`;
+
+      // Should allow remote upload in root path
+      const rootResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileUploadRemote', source: 'test', path: '/', url: remoteUrl });
+
+      expect(rootResponse.status).toBe(200);
+      expect(rootResponse.body.success).toBe(true);
+
+      // Should deny remote upload in /uploads path
+      const uploadsResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileUploadRemote', source: 'test', path: '/uploads', url: remoteUrl });
+
+      expect(uploadsResponse.status).toBe(403);
+      expect(uploadsResponse.body.success).toBe(false);
+      expect(uploadsResponse.body.data.messages).toContain('Access denied');
+    });
+
+    it('should use wildcard role to deny FILE_UPLOAD_REMOTE access to all roles', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: '*',
+            FILE_UPLOAD_REMOTE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const remoteUrl = `http://localhost:${mockServerPort}/test-image.png`;
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileUploadRemote', source: 'test', url: remoteUrl });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should work with POST method', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FILE_UPLOAD_REMOTE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const remoteUrl = `http://localhost:${mockServerPort}/test-image.png`;
+
+      const response = await request(aclTestServer!.host)
+        .post('/')
+        .send({
+          action: 'fileUploadRemote',
+          source: 'test',
+          url: remoteUrl
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+  });
 });

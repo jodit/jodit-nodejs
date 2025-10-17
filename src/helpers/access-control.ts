@@ -1,4 +1,4 @@
-import type { AccessControlRule } from '../types';
+import type { AccessControlRule, IAccessControl } from '../types';
 import * as changeCase from 'change-case';
 import Boom from '@hapi/boom';
 
@@ -34,15 +34,26 @@ function normalizePath(path: string): string {
   return path.replace(/\\/g, '/').replace(/\/+/g, '/');
 }
 
-export class AccessControl {
-  private accessList: AccessControlRule[] = [];
+export class AccessControl implements IAccessControl {
+  private accessList: AccessControlRule[] | (() => Promise<AccessControlRule[]>);
 
-  constructor(accessList: AccessControlRule[]) {
+  constructor(
+    accessList: AccessControlRule[] | (() => Promise<AccessControlRule[]>)
+  ) {
     this.accessList = accessList;
   }
 
-  setAccessList(list: AccessControlRule[]): void {
+  setAccessList(
+    list: AccessControlRule[] | (() => Promise<AccessControlRule[]>)
+  ): void {
     this.accessList = list;
+  }
+
+  private async getAccessList(): Promise<AccessControlRule[]> {
+    if (typeof this.accessList === 'function') {
+      return await this.accessList();
+    }
+    return this.accessList;
   }
 
   async checkPermission(
@@ -51,24 +62,26 @@ export class AccessControl {
     path: string = '/',
     fileExtension: string = '*'
   ): Promise<boolean> {
-    if (!this.isAllow(role, action, path, fileExtension)) {
+    if (!(await this.isAllow(role, action, path, fileExtension))) {
       throw Boom.forbidden('Access denied');
     }
     return true;
   }
 
-  isAllow(
+  async isAllow(
     role: string,
     action: string,
     path: string = '/',
     fileExtension: string = '*'
-  ): boolean {
+  ): Promise<boolean> {
     const normalizedAction = changeCase.constantCase(
       action
     ) as keyof typeof DEFAULT_RULES;
     let allow: boolean | null = null;
 
-    for (const rule of this.accessList) {
+    const accessList = await this.getAccessList();
+
+    for (const rule of accessList) {
       // Check role
       if (rule.role !== undefined && rule.role !== '*' && rule.role !== role) {
         continue;

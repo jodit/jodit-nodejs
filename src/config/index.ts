@@ -1,6 +1,7 @@
 import type { AppConfig } from '../types';
 import path from 'path';
 import os from 'os';
+import { generateIcon } from '../helpers/image';
 
 const tmpDir = os.tmpdir();
 
@@ -30,6 +31,12 @@ export const config: AppConfig = {
   createThumb: true,
   thumbSize: 250,
   thumbFolderName: '_thumbs',
+
+  generateSvgThumbs: true,
+  svgThumbWidth: 100,
+  svgThumbHeight: 100,
+  svgGenerator: generateIcon,
+
   excludeDirectoryNames: ['.tmb', '.quarantine'],
   maxFileSize: '8mb',
   maxUploadFileSize: '8mb',

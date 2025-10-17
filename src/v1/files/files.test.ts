@@ -449,4 +449,184 @@ describe('Files API', () => {
       });
     });
   });
+
+  describe('Access Control', () => {
+    it('should allow access when no access control rules defined', async () => {
+      await stopTestServer(testServer!);
+      testServer = await startTestServer();
+      await fs.writeFile(path.join(testFilesPath, 'acl-test.txt'), 'test');
+
+      const response = await request(testServer!.host)
+        .get('/')
+        .query({ action: 'files', source: 'test' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should deny access when role does not have FILES permission', async () => {
+      await stopTestServer(testServer!);
+      testServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FILES: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const response = await request(testServer!.host)
+        .get('/')
+        .query({ action: 'files', source: 'test' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.code).toBe(403);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should allow access when role has FILES permission', async () => {
+      await stopTestServer(testServer!);
+      testServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'admin',
+            FILES: true
+          }
+        ],
+        defaultRole: 'admin'
+      });
+
+      const response = await request(testServer!.host)
+        .get('/')
+        .query({ action: 'files', source: 'test' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should check path-based permissions for FILES action', async () => {
+      await stopTestServer(testServer!);
+      testServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FILES: true
+          },
+          {
+            role: 'guest',
+            path: '/subfolder',
+            FILES: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      // Should allow access to root path
+      const rootResponse = await request(testServer!.host)
+        .get('/')
+        .query({ action: 'files', source: 'test', path: '/' });
+
+      expect(rootResponse.status).toBe(200);
+      expect(rootResponse.body.success).toBe(true);
+
+      // Should deny access to /subfolder path
+      const subfolderResponse = await request(testServer!.host)
+        .get('/')
+        .query({ action: 'files', source: 'test', path: '/subfolder' });
+
+      expect(subfolderResponse.status).toBe(403);
+      expect(subfolderResponse.body.success).toBe(false);
+      expect(subfolderResponse.body.data.messages).toContain('Access denied');
+    });
+
+    it('should use wildcard role to deny FILES access to all roles', async () => {
+      await stopTestServer(testServer!);
+      testServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: '*',
+            FILES: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const response = await request(testServer!.host)
+        .get('/')
+        .query({ action: 'files', source: 'test' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should work with POST method and mods parameter', async () => {
+      await stopTestServer(testServer!);
+      testServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FILES: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'name-asc'
+          }
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+  });
 });

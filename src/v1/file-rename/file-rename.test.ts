@@ -68,7 +68,7 @@ describe('File Rename (GET /?action=fileRename)', () => {
   it('should preserve file extension when renaming', async () => {
     // Create test file
     const oldName = 'document.pdf';
-    const newName = 'renamed-doc'; // без расширения
+    const newName = 'renamed-doc'; 
     await createTestFile(oldName, 'pdf content');
 
     const response = await request(testServer!.host).get('/').query({
@@ -254,5 +254,198 @@ describe('File Rename (GET /?action=fileRename)', () => {
 
     expect(safeExists).toBe(true);
     expect(dangerousExists).toBe(false);
+  });
+
+  describe('Access Control', () => {
+    let aclTestServer: TestServer | null = null;
+
+    afterEach(async () => {
+      if (aclTestServer) {
+        await stopTestServer(aclTestServer);
+        aclTestServer = null;
+      }
+    });
+
+    it('should allow access when no access control rules defined', async () => {
+      aclTestServer = await startTestServer();
+      await createTestFile('acl-test.txt', 'test content');
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileRename', source: 'test', name: 'acl-test.txt', newname: 'renamed.txt' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should deny access when role does not have FILE_RENAME permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FILE_RENAME: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await createTestFile('test.txt', 'content');
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileRename', source: 'test', name: 'test.txt', newname: 'renamed.txt' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.code).toBe(403);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should allow access when role has FILE_RENAME permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'admin',
+            FILE_RENAME: true
+          }
+        ],
+        defaultRole: 'admin'
+      });
+
+      await createTestFile('test.txt', 'content');
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileRename', source: 'test', name: 'test.txt', newname: 'renamed.txt' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should check path-based permissions for FILE_RENAME action', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FILE_RENAME: true
+          },
+          {
+            role: 'guest',
+            path: '/subdir',
+            FILE_RENAME: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await createTestFile('public.txt', 'public content');
+      await createTestFile('protected.txt', 'protected content', '/subdir');
+
+      // Should allow rename in root path
+      const rootResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileRename', source: 'test', path: '/', name: 'public.txt', newname: 'renamed-public.txt' });
+
+      expect(rootResponse.status).toBe(200);
+      expect(rootResponse.body.success).toBe(true);
+
+      // Should deny rename in /subdir path
+      const subdirResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileRename', source: 'test', path: '/subdir', name: 'protected.txt', newname: 'renamed-protected.txt' });
+
+      expect(subdirResponse.status).toBe(403);
+      expect(subdirResponse.body.success).toBe(false);
+      expect(subdirResponse.body.data.messages).toContain('Access denied');
+    });
+
+    it('should use wildcard role to deny FILE_RENAME access to all roles', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: '*',
+            FILE_RENAME: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await createTestFile('test.txt', 'content');
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileRename', source: 'test', name: 'test.txt', newname: 'renamed.txt' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should work with POST method', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FILE_RENAME: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await createTestFile('test.txt', 'content');
+
+      const response = await request(aclTestServer!.host)
+        .post('/')
+        .send({
+          action: 'fileRename',
+          source: 'test',
+          name: 'test.txt',
+          newname: 'renamed.txt'
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
   });
 });

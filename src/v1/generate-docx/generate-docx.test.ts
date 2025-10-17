@@ -156,4 +156,149 @@ describe('Generate DOCX (GET /?action=generateDocx)', () => {
     // Check file size is reasonable
     expect(response.body.length).toBeGreaterThan(100);
   });
+
+  describe('Access Control', () => {
+    let aclTestServer: TestServer | null = null;
+
+    afterEach(async () => {
+      if (aclTestServer) {
+        await stopTestServer(aclTestServer);
+        aclTestServer = null;
+      }
+    });
+
+    it('should allow access when no access control rules defined', async () => {
+      aclTestServer = await startTestServer();
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'generateDocx', html: '<p>Test</p>' });
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toContain(
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      );
+    });
+
+    it('should deny access when role does not have GENERATE_DOCX permission', async () => {
+      aclTestServer = await startTestServer({
+        accessControl: [
+          {
+            role: 'guest',
+            GENERATE_DOCX: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'generateDocx', html: '<p>Test</p>' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.code).toBe(403);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should allow access when role has GENERATE_DOCX permission', async () => {
+      aclTestServer = await startTestServer({
+        accessControl: [
+          {
+            role: 'admin',
+            GENERATE_DOCX: true
+          }
+        ],
+        defaultRole: 'admin'
+      });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'generateDocx', html: '<p>Test</p>' });
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toContain(
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      );
+    });
+
+    it('should check path-based permissions for GENERATE_DOCX action', async () => {
+      aclTestServer = await startTestServer({
+        accessControl: [
+          {
+            role: 'guest',
+            GENERATE_DOCX: true
+          },
+          {
+            role: 'guest',
+            path: '/restricted',
+            GENERATE_DOCX: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      // Should allow DOCX generation in root path
+      const rootResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'generateDocx', path: '/', html: '<p>Test</p>' });
+
+      expect(rootResponse.status).toBe(200);
+      expect(rootResponse.headers['content-type']).toContain(
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      );
+
+      // Should deny DOCX generation in /restricted path
+      const restrictedResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'generateDocx', path: '/restricted', html: '<p>Test</p>' });
+
+      expect(restrictedResponse.status).toBe(403);
+      expect(restrictedResponse.body.success).toBe(false);
+      expect(restrictedResponse.body.data.messages).toContain('Access denied');
+    });
+
+    it('should use wildcard role to deny GENERATE_DOCX access to all roles', async () => {
+      aclTestServer = await startTestServer({
+        accessControl: [
+          {
+            role: '*',
+            GENERATE_DOCX: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'generateDocx', html: '<p>Test</p>' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should work with POST method', async () => {
+      aclTestServer = await startTestServer({
+        accessControl: [
+          {
+            role: 'guest',
+            GENERATE_DOCX: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const response = await request(aclTestServer!.host)
+        .post('/')
+        .send({
+          action: 'generateDocx',
+          html: '<p>Test</p>'
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+  });
 });

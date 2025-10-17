@@ -78,7 +78,8 @@ export abstract class BaseSource {
     return this.config.params.imageExtensions.includes(ext);
   }
 
-  protected getExtension(filePath: string): string {
+  protected getExtension(fileOrPath: string | StatEntry): string {
+    const filePath = typeof fileOrPath === 'string' ? fileOrPath : fileOrPath.path;
     return path.extname(filePath).toLowerCase().replace(/^./, '');
   }
 }

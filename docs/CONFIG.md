@@ -7,6 +7,7 @@ This document provides a comprehensive reference for all configuration options a
 - [Configuration Format](#configuration-format)
 - [General Settings](#general-settings)
 - [File Sources](#file-sources)
+- [Source-Level Configuration Overrides](#source-level-configuration-overrides)
 - [File Handling](#file-handling)
 - [Image Processing](#image-processing)
 - [Thumbnails](#thumbnails)
@@ -146,6 +147,247 @@ CONFIG_FILE=/path/to/config.json npm start
     }
   }
 }
+```
+
+---
+
+## Source-Level Configuration Overrides
+
+**New Feature**: Each source can override any global configuration setting (except `sources` itself). This allows you to have different configurations for different file storage locations.
+
+### How It Works
+
+When you add any `AppConfig` property to a `SourceConfig`, that property will override the global configuration for that specific source only. This is implemented using JavaScript Proxy pattern, which checks source-specific settings first before falling back to global configuration.
+
+### Supported Overrides
+
+Any configuration property can be overridden at the source level, including:
+
+- **File handling**: `extensions`, `maxUploadFileSize`, `saveSameFileNameStrategy`
+- **Image processing**: `imageExtensions`, `quality`, `maxImageWidth`, `maxImageHeight`
+- **Thumbnails**: `createThumb`, `thumbSize`, `thumbFolderName`, `generateSvgThumbs`, `svgThumbWidth`, `svgThumbHeight`, `svgGenerator`, `safeThumbsCountInOneTime`
+- **Formatting**: `datetimeFormat`
+- **Performance**: `countInChunk`, `excludeDirectoryNames`
+- And any other `AppConfig` property
+
+**Note**: The `sources` property cannot be overridden at source level to prevent circular references.
+
+### Basic Example
+
+```typescript
+await start({
+  port: 8081,
+  config: {
+    // Global settings
+    extensions: ['txt', 'doc', 'pdf'],
+    maxUploadFileSize: '10MB',
+    thumbSize: 250,
+
+    sources: {
+      images: {
+        name: 'images',
+        root: '/var/www/images',
+        baseurl: 'https://cdn.example.com/images/',
+        // Override for images source
+        extensions: ['jpg', 'png', 'gif', 'webp'],  // Only images
+        maxUploadFileSize: '5MB',                    // Smaller limit
+        thumbSize: 150                               // Smaller thumbnails
+      },
+      documents: {
+        name: 'documents',
+        root: '/var/www/docs',
+        baseurl: 'https://cdn.example.com/docs/',
+        // Partial override for documents source
+        maxUploadFileSize: '50MB'  // Larger limit for docs
+        // extensions and thumbSize will use global values
+      }
+    }
+  }
+});
+```
+
+### Real-World Examples
+
+#### Example 1: Different File Types per Source
+
+```typescript
+{
+  // Global: Accept common file types
+  extensions: ['txt', 'pdf', 'doc', 'docx'],
+
+  sources: {
+    images: {
+      name: 'images',
+      root: '/var/www/images',
+      baseurl: 'https://cdn.example.com/images/',
+      extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']
+    },
+    videos: {
+      name: 'videos',
+      root: '/var/www/videos',
+      baseurl: 'https://cdn.example.com/videos/',
+      extensions: ['mp4', 'webm', 'mov', 'avi'],
+      maxUploadFileSize: '100MB'  // Larger for videos
+    },
+    documents: {
+      name: 'documents',
+      root: '/var/www/docs',
+      baseurl: 'https://cdn.example.com/docs/',
+      // Uses global extensions
+    }
+  }
+}
+```
+
+#### Example 2: Different Upload Strategies
+
+```typescript
+{
+  // Global: Add number to duplicates
+  saveSameFileNameStrategy: 'addNumber',
+
+  sources: {
+    temp: {
+      name: 'temp',
+      root: '/var/www/temp',
+      baseurl: 'https://cdn.example.com/temp/',
+      saveSameFileNameStrategy: 'replace'  // Always overwrite in temp
+    },
+    production: {
+      name: 'production',
+      root: '/var/www/production',
+      baseurl: 'https://cdn.example.com/production/',
+      saveSameFileNameStrategy: 'error'  // Never allow duplicates
+    }
+  }
+}
+```
+
+#### Example 3: Different Thumbnail Settings
+
+```typescript
+{
+  // Global: Medium thumbnails
+  createThumb: true,
+  thumbSize: 250,
+  thumbFolderName: '_thumbs',
+  quality: 90,
+
+  sources: {
+    highQuality: {
+      name: 'highQuality',
+      root: '/var/www/hq-images',
+      baseurl: 'https://cdn.example.com/hq/',
+      thumbSize: 400,      // Larger thumbnails
+      quality: 95,         // Higher quality
+      thumbFolderName: '.thumbnails'
+    },
+    mobile: {
+      name: 'mobile',
+      root: '/var/www/mobile-images',
+      baseurl: 'https://cdn.example.com/mobile/',
+      thumbSize: 100,      // Smaller thumbnails
+      quality: 75,         // Lower quality
+      createThumb: true
+    },
+    noThumbs: {
+      name: 'noThumbs',
+      root: '/var/www/raw',
+      baseurl: 'https://cdn.example.com/raw/',
+      createThumb: false   // Disable thumbnails
+    }
+  }
+}
+```
+
+#### Example 4: Different Date Formats per Region
+
+```typescript
+{
+  // Global: US format
+  datetimeFormat: 'M/D/YYYY h:mm A',
+
+  sources: {
+    us: {
+      name: 'us',
+      root: '/var/www/files-us',
+      baseurl: 'https://us.example.com/files/',
+      // Uses global US format
+    },
+    eu: {
+      name: 'eu',
+      root: '/var/www/files-eu',
+      baseurl: 'https://eu.example.com/files/',
+      datetimeFormat: 'DD.MM.YYYY HH:mm'  // European format
+    },
+    asia: {
+      name: 'asia',
+      root: '/var/www/files-asia',
+      baseurl: 'https://asia.example.com/files/',
+      datetimeFormat: 'YYYY-MM-DD HH:mm:ss'  // ISO format
+    }
+  }
+}
+```
+
+#### Example 5: Performance-Optimized Sources
+
+```typescript
+{
+  // Global: Standard settings
+  createThumb: true,
+  safeThumbsCountInOneTime: 20,
+  countInChunk: 1000,
+
+  sources: {
+    archive: {
+      name: 'archive',
+      root: '/slow-storage/archive',
+      baseurl: 'https://archive.example.com/files/',
+      createThumb: false,              // No thumbnails for archive
+      countInChunk: 50,                // Smaller chunks
+      excludeDirectoryNames: ['.git', '.svn', 'node_modules']
+    },
+    cdn: {
+      name: 'cdn',
+      root: '/fast-ssd/cdn',
+      baseurl: 'https://cdn.example.com/files/',
+      safeThumbsCountInOneTime: 100,   // Generate more thumbnails
+      countInChunk: 5000               // Larger chunks
+    }
+  }
+}
+```
+
+### Implementation Details
+
+The source-level overrides are implemented using JavaScript Proxy:
+
+1. When a source is created, a proxied config object is generated
+2. When code accesses `config.params.someProperty`:
+   - First checks if `sourceConfig.someProperty` exists and is not undefined
+   - If yes, returns the source-specific value
+   - Otherwise, returns the global `config.params.someProperty`
+3. The `sources` property is explicitly blocked from being overridden
+
+This approach provides:
+- **Zero overhead**: No performance impact, Proxy is very fast
+- **Type safety**: Full TypeScript support
+- **Transparency**: Code doesn't need to know about overrides
+- **Flexibility**: Any property can be overridden
+
+### Testing
+
+Comprehensive tests are available in `src/tests/integration/source-config-override.test.ts` covering:
+- File extension overrides
+- Upload size and strategy overrides
+- Thumbnail settings overrides
+- Image processing overrides
+- Multiple sources with different configurations
+
+Run tests:
+```bash
+npm test -- source-config-override.test.ts
 ```
 
 ---
@@ -356,6 +598,170 @@ CONFIG_FILE=/path/to/config.json npm start
   thumbFolderName: '.thumbnails'
 }
 ```
+
+### `generateSvgThumbs`
+- **Type**: `boolean`
+- **Default**: `true`
+- **Used**: ✅ Yes
+- **Purpose**: Enable/disable SVG thumbnail generation for non-image files (folders and documents)
+- **Usage**: When `true`, generates colored SVG icons for files and folders that are not images. When `false`, returns the original file path without generating SVG thumbnails.
+
+**Example**:
+```typescript
+{
+  generateSvgThumbs: false  // Disable SVG icon generation for non-images
+}
+```
+
+### `svgThumbWidth`
+- **Type**: `number`
+- **Default**: `100`
+- **Used**: ✅ Yes
+- **Purpose**: Width of generated SVG thumbnails in pixels
+- **Usage**: Only applies when `generateSvgThumbs` is `true`. Controls the width attribute of the SVG element.
+
+**Example**:
+```typescript
+{
+  svgThumbWidth: 150  // Generate 150px wide SVG icons
+}
+```
+
+### `svgThumbHeight`
+- **Type**: `number`
+- **Default**: `100`
+- **Used**: ✅ Yes
+- **Purpose**: Height of generated SVG thumbnails in pixels
+- **Usage**: Only applies when `generateSvgThumbs` is `true`. Controls the height attribute of the SVG element.
+
+**Example**:
+```typescript
+{
+  svgThumbHeight: 150  // Generate 150px tall SVG icons
+}
+```
+
+### `svgGenerator`
+- **Type**: `(file: StatEntry, width: number, height: number) => string`
+- **Default**: `undefined` (uses built-in generator)
+- **Used**: ✅ Yes
+- **Purpose**: Custom function to generate SVG thumbnails for non-image files
+- **Usage**: Allows complete customization of SVG thumbnail appearance. Receives file information, desired width/height, and must return SVG string.
+
+**Function signature**:
+```typescript
+type SvgGenerator = (
+  file: StatEntry,      // File/folder information with path, isDirectory, etc.
+  width: number,        // Desired SVG width in pixels
+  height: number        // Desired SVG height in pixels
+) => string;            // Must return valid SVG markup
+```
+
+**Example - Simple colored rectangles**:
+```typescript
+{
+  svgGenerator: (file, width, height) => {
+    const fileName = file.path.split('/').pop() || 'unknown';
+    const color = file.isDirectory ? '#3498db' : '#e74c3c';
+
+    return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="${width}" height="${height}" fill="${color}"/>
+      <text x="50%" y="50%" text-anchor="middle" fill="white">${fileName}</text>
+    </svg>`;
+  }
+}
+```
+
+**Example - Extension-based colors**:
+```typescript
+import path from 'path';
+
+{
+  svgGenerator: (file, width, height) => {
+    const ext = path.extname(file.path).toLowerCase();
+
+    const colors: Record<string, string> = {
+      '.pdf': '#e74c3c',
+      '.doc': '#3498db',
+      '.docx': '#3498db',
+      '.txt': '#95a5a6',
+      '.zip': '#f39c12'
+    };
+
+    const color = colors[ext] || '#7f8c8d';
+
+    return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="${color}" rx="8"/>
+      <text x="50%" y="50%" text-anchor="middle" fill="white" font-size="14">
+        ${ext.replace('.', '').toUpperCase()}
+      </text>
+    </svg>`;
+  }
+}
+```
+
+**Example - Using external SVG templates**:
+```typescript
+import fs from 'fs';
+import path from 'path';
+
+{
+  svgGenerator: (file, width, height) => {
+    const ext = path.extname(file.path).toLowerCase();
+    const templatePath = path.join(__dirname, 'svg-templates', `${ext}.svg`);
+
+    if (fs.existsSync(templatePath)) {
+      // Use custom template for this extension
+      let svg = fs.readFileSync(templatePath, 'utf-8');
+      svg = svg.replace('{{width}}', String(width));
+      svg = svg.replace('{{height}}', String(height));
+      return svg;
+    }
+
+    // Fallback to default
+    return `<svg width="${width}" height="${height}"><rect fill="#ccc"/></svg>`;
+  }
+}
+```
+
+**Example - Per-source custom generators**:
+```typescript
+{
+  // Global generator for most sources
+  svgGenerator: (file, width, height) => {
+    return `<svg width="${width}" height="${height}"><rect fill="#3498db"/></svg>`;
+  },
+
+  sources: {
+    documents: {
+      name: 'documents',
+      root: '/var/www/docs',
+      baseurl: 'https://cdn.example.com/docs/',
+      // Override with document-specific generator
+      svgGenerator: (file, width, height) => {
+        return `<svg width="${width}" height="${height}">
+          <rect fill="#2ecc71"/>
+          <text x="50%" y="50%" text-anchor="middle" fill="white">DOC</text>
+        </svg>`;
+      }
+    },
+    images: {
+      name: 'images',
+      root: '/var/www/images',
+      baseurl: 'https://cdn.example.com/images/',
+      generateSvgThumbs: false  // No SVG for images, use real thumbnails
+    }
+  }
+}
+```
+
+**Notes**:
+- The function is called for each non-image file when listing directories
+- Must return valid SVG markup as a string
+- Can access file properties: `file.path`, `file.isDirectory`, `file.size`, etc.
+- Only called when `generateSvgThumbs` is `true`
+- Can be overridden per source (see Source-Level Configuration Overrides)
+- Default generator creates colored document icons with extension labels
 
 ### `safeThumbsCountInOneTime`
 - **Type**: `number`
@@ -584,6 +990,67 @@ The following parameters are defined in the configuration but are **not currentl
       title: 'Fast Storage',
       root: '/ssd/files',
       baseurl: 'http://localhost:8081/files/'
+    }
+  }
+}
+```
+
+### Multi-Source with Per-Source Overrides
+```typescript
+{
+  // Global defaults
+  debug: false,
+  allowCrossOrigin: true,
+  extensions: ['txt', 'pdf', 'doc'],
+  maxUploadFileSize: '10MB',
+  createThumb: true,
+  thumbSize: 200,
+  saveSameFileNameStrategy: 'addNumber',
+
+  sources: {
+    // Images: different extensions, smaller upload limit, larger thumbnails
+    images: {
+      name: 'images',
+      title: 'Image Gallery',
+      root: '/var/www/images',
+      baseurl: 'https://cdn.example.com/images/',
+      extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+      maxUploadFileSize: '5MB',
+      thumbSize: 300,
+      quality: 95
+    },
+
+    // Videos: video extensions, much larger upload limit, no thumbnails
+    videos: {
+      name: 'videos',
+      title: 'Video Library',
+      root: '/var/www/videos',
+      baseurl: 'https://cdn.example.com/videos/',
+      extensions: ['mp4', 'webm', 'mov'],
+      maxUploadFileSize: '500MB',
+      createThumb: false
+    },
+
+    // Archive: no thumbnails, replace strategy, limited extensions
+    archive: {
+      name: 'archive',
+      title: 'Archive Storage',
+      root: '/slow-storage/archive',
+      baseurl: 'https://archive.example.com/files/',
+      extensions: ['zip', 'tar', 'gz', '7z'],
+      createThumb: false,
+      saveSameFileNameStrategy: 'replace',
+      countInChunk: 50
+    },
+
+    // Documents: uses most global settings, only overrides upload size
+    documents: {
+      name: 'documents',
+      title: 'Documents',
+      root: '/var/www/docs',
+      baseurl: 'https://cdn.example.com/docs/',
+      maxUploadFileSize: '50MB'  // Larger for documents
+      // Everything else uses global config
     }
   }
 }

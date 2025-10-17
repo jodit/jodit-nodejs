@@ -5,8 +5,8 @@ import YAML from 'yaml';
 import { logger } from '../src/helpers/logger';
 
 generateOpenApiSpec().then(spec => {
-  // Create docs directory if it doesn't exist
-  const docsDir = path.join(process.cwd(), './docs');
+  // Create dist/docs directory if it doesn't exist
+  const docsDir = path.join(process.cwd(), './dist/docs');
   if (!fs.existsSync(docsDir)) {
     fs.mkdirSync(docsDir, { recursive: true });
   }
@@ -57,10 +57,10 @@ generateOpenApiSpec().then(spec => {
   fs.writeFileSync(path.join(docsDir, 'index.html'), swaggerHtml);
 
   logger.info('✅ OpenAPI documentation generated:');
-  logger.info('  - docs/openapi.yaml');
-  logger.info('  - docs/openapi.json');
-  logger.info('  - docs/index.html (Swagger UI)');
+  logger.info('  - dist/docs/openapi.yaml');
+  logger.info('  - dist/docs/openapi.json');
+  logger.info('  - dist/docs/index.html (Swagger UI)');
   logger.info(
-    '\n📖 Open docs/index.html in your browser to view the API documentation'
+    '\n📖 Open dist/docs/index.html in your browser to view the API documentation'
   );
 });

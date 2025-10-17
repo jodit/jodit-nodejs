@@ -121,4 +121,196 @@ describe('File Remove (GET /?action=fileRemove)', () => {
     expect(response.body.success).toBe(false);
     expect(response.body.data.messages).toContain('It is not a file!');
   });
+
+  describe('Access Control', () => {
+    let aclTestServer: TestServer | null = null;
+
+    afterEach(async () => {
+      if (aclTestServer) {
+        await stopTestServer(aclTestServer);
+        aclTestServer = null;
+      }
+    });
+
+    it('should allow access when no access control rules defined', async () => {
+      aclTestServer = await startTestServer();
+      await createTestFile('acl-test.txt', 'test content');
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileRemove', source: 'test', name: 'acl-test.txt' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should deny access when role does not have FILE_REMOVE permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: './files/test',
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FILE_REMOVE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await createTestFile('test.txt', 'content');
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileRemove', source: 'test', name: 'test.txt' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.code).toBe(403);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should allow access when role has FILE_REMOVE permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: './files/test',
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'admin',
+            FILE_REMOVE: true
+          }
+        ],
+        defaultRole: 'admin'
+      });
+
+      await createTestFile('test.txt', 'content');
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileRemove', source: 'test', name: 'test.txt' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should check path-based permissions for FILE_REMOVE action', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: './files/test',
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FILE_REMOVE: true
+          },
+          {
+            role: 'guest',
+            path: '/subdir',
+            FILE_REMOVE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await createTestFile('public.txt', 'public content');
+      await createTestFile('protected.txt', 'protected content', '/subdir');
+
+      // Should allow removal in root path
+      const rootResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileRemove', source: 'test', path: '/', name: 'public.txt' });
+
+      expect(rootResponse.status).toBe(200);
+      expect(rootResponse.body.success).toBe(true);
+
+      // Should deny removal in /subdir path
+      const subdirResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileRemove', source: 'test', path: '/subdir', name: 'protected.txt' });
+
+      expect(subdirResponse.status).toBe(403);
+      expect(subdirResponse.body.success).toBe(false);
+      expect(subdirResponse.body.data.messages).toContain('Access denied');
+    });
+
+    it('should use wildcard role to deny FILE_REMOVE access to all roles', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: './files/test',
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: '*',
+            FILE_REMOVE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await createTestFile('test.txt', 'content');
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'fileRemove', source: 'test', name: 'test.txt' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should work with POST method', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: './files/test',
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FILE_REMOVE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await createTestFile('test.txt', 'content');
+
+      const response = await request(aclTestServer!.host)
+        .post('/')
+        .send({
+          action: 'fileRemove',
+          source: 'test',
+          name: 'test.txt'
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+  });
 });

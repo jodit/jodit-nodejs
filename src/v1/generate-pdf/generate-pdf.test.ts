@@ -253,4 +253,143 @@ describe('Generate PDF (GET /?action=generatePdf)', () => {
       expect(response.headers['content-type']).toBe('application/pdf');
     });
   });
+
+  describe('Access Control', () => {
+    let aclTestServer: TestServer | null = null;
+
+    afterEach(async () => {
+      if (aclTestServer) {
+        await stopTestServer(aclTestServer);
+        aclTestServer = null;
+      }
+    });
+
+    it('should allow access when no access control rules defined', async () => {
+      aclTestServer = await startTestServer();
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'generatePdf', html: '<p>Test</p>' });
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toBe('application/pdf');
+    });
+
+    it('should deny access when role does not have GENERATE_PDF permission', async () => {
+      aclTestServer = await startTestServer({
+        accessControl: [
+          {
+            role: 'guest',
+            GENERATE_PDF: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'generatePdf', html: '<p>Test</p>' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.code).toBe(403);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should allow access when role has GENERATE_PDF permission', async () => {
+      aclTestServer = await startTestServer({
+        accessControl: [
+          {
+            role: 'admin',
+            GENERATE_PDF: true
+          }
+        ],
+        defaultRole: 'admin'
+      });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'generatePdf', html: '<p>Test</p>' });
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toBe('application/pdf');
+    });
+
+    it('should check path-based permissions for GENERATE_PDF action', async () => {
+      aclTestServer = await startTestServer({
+        accessControl: [
+          {
+            role: 'guest',
+            GENERATE_PDF: true
+          },
+          {
+            role: 'guest',
+            path: '/restricted',
+            GENERATE_PDF: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      // Should allow PDF generation in root path
+      const rootResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'generatePdf', path: '/', html: '<p>Test</p>' });
+
+      expect(rootResponse.status).toBe(200);
+      expect(rootResponse.headers['content-type']).toBe('application/pdf');
+
+      // Should deny PDF generation in /restricted path
+      const restrictedResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'generatePdf', path: '/restricted', html: '<p>Test</p>' });
+
+      expect(restrictedResponse.status).toBe(403);
+      expect(restrictedResponse.body.success).toBe(false);
+      expect(restrictedResponse.body.data.messages).toContain('Access denied');
+    });
+
+    it('should use wildcard role to deny GENERATE_PDF access to all roles', async () => {
+      aclTestServer = await startTestServer({
+        accessControl: [
+          {
+            role: '*',
+            GENERATE_PDF: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'generatePdf', html: '<p>Test</p>' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should work with POST method', async () => {
+      aclTestServer = await startTestServer({
+        accessControl: [
+          {
+            role: 'guest',
+            GENERATE_PDF: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const response = await request(aclTestServer!.host)
+        .post('/')
+        .send({
+          action: 'generatePdf',
+          html: '<p>Test</p>'
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+  });
 });

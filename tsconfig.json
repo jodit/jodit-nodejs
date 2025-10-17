@@ -14,7 +14,8 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "jsx": "react",
-    "types": ["node", "jest"],
+    "types": ["node", "jest", "express", "multer"],
+    "typeRoots": ["./node_modules/@types"],
     "paths": {}
   },
   "include": ["src/**/*"],

@@ -145,7 +145,7 @@ docker run --rm -p 8080:8080 \
 ```bash
 npm run docs:generate  # Generate OpenAPI docs
 
-# Open docs/index.html in browser to view Swagger UI
+# Open dist/docs/index.html in browser to view Swagger UI
 ```
 
 **Note:** Due to the action-based API design (all endpoints on `/?action=X`), the auto-generated OpenAPI documentation may show only the last registered endpoint per HTTP method. For complete API documentation, refer to the "API Endpoints" and "Implemented Functions" sections below.
@@ -178,7 +178,12 @@ jodit-nodejs/
 │   └── with-express-session.js # Example with express-session (like PHP $_SESSION)
 ├── files/                   # Files directory (gitignored)
 ├── dist/                    # Compiled code (gitignored)
-├── docs/                    # Generated OpenAPI documentation
+│   └── docs/                # Generated OpenAPI documentation (gitignored)
+├── docs/                    # Documentation files
+│   ├── AUTHENTICATION.md    # Authentication & access control guide
+│   ├── CONFIG.md            # Configuration reference
+│   ├── STORAGE-ADAPTERS.md  # Custom storage adapters guide
+│   └── DEPLOYMENT.md        # Deployment guide
 ├── .github/
 │   └── workflows/
 │       └── connector.yml    # CI/CD workflow (test, docker, npm publish)
@@ -187,10 +192,7 @@ jodit-nodejs/
 ├── jest.config.js
 ├── eslint.config.js
 ├── .prettierrc
-├── README.md                # This file
-├── AUTHENTICATION.md        # Authentication & access control guide
-├── CONFIG.md                # Configuration reference
-└── DEPLOYMENT.md            # Deployment guide
+└── README.md                # This file
 ```
 
 ## Installation
@@ -466,7 +468,7 @@ Health check endpoint.
 
 ## Authentication & Access Control
 
-For detailed authentication and access control guide, see **[AUTHENTICATION.md](./AUTHENTICATION.md)**.
+For detailed authentication and access control guide, see **[AUTHENTICATION.md](./docs/AUTHENTICATION.md)**.
 
 ### Quick Example
 
@@ -519,7 +521,7 @@ await start({
 - **Extension filtering**: Restrict file types per role
 - **Dynamic rules**: Use functions for complex permission logic
 
-**See [AUTHENTICATION.md](./AUTHENTICATION.md) for:**
+**See [AUTHENTICATION.md](./docs/AUTHENTICATION.md) for:**
 - Cookie-based authentication (like PHP `$_SESSION`)
 - JWT token authentication
 - Express-session integration
@@ -528,7 +530,7 @@ await start({
 
 ## Configuration
 
-For detailed configuration reference, see **[CONFIG.md](./CONFIG.md)**.
+For detailed configuration reference, see **[CONFIG.md](./docs/CONFIG.md)**.
 
 ### Quick Configuration Example
 
@@ -568,7 +570,65 @@ await start({
 });
 ```
 
-**See [CONFIG.md](./CONFIG.md) for complete configuration reference.**
+**See [CONFIG.md](./docs/CONFIG.md) for complete configuration reference.**
+
+## Custom Storage Adapters
+
+For detailed guide on creating custom storage adapters, see **[STORAGE-ADAPTERS.md](./docs/STORAGE-ADAPTERS.md)**.
+
+Jodit Connector supports custom storage adapters, allowing you to store files in any backend:
+- **AWS S3** - Amazon Simple Storage Service
+- **Azure Blob** - Microsoft Azure Blob Storage
+- **Google Cloud Storage** - Google Cloud Platform storage
+- **FTP/SFTP** - Remote file servers
+- **In-Memory** - For testing and development
+- **Custom backends** - Database, API, or any other storage
+
+### Quick Example
+
+```typescript
+import { start } from 'jodit-nodejs';
+import { AwsS3StorageAdapter } from '@flystorage/aws-s3';
+import { S3Client } from '@aws-sdk/client-s3';
+
+// Create S3 client
+const s3Client = new S3Client({
+  region: 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
+  }
+});
+
+// Create S3 adapter
+const s3Adapter = new AwsS3StorageAdapter(s3Client, {
+  bucket: 'my-bucket',
+  prefix: 'uploads/'
+});
+
+// Use custom adapter
+await start({
+  port: 8081,
+  config: {
+    sources: {
+      s3: {
+        name: 's3',
+        root: '/uploads',
+        baseurl: 'https://my-bucket.s3.amazonaws.com/uploads',
+        storageAdapter: s3Adapter // Use S3 instead of local filesystem
+      }
+    }
+  }
+});
+```
+
+**See [STORAGE-ADAPTERS.md](./docs/STORAGE-ADAPTERS.md) for:**
+- Complete storage adapter interface documentation
+- In-memory adapter implementation example
+- AWS S3, Azure Blob, Google Cloud Storage examples
+- Creating custom adapters
+- Testing adapters
+- Best practices and troubleshooting
 
 ## Implemented Functions
 
@@ -728,7 +788,7 @@ git push origin v1.0.1
 - npm: `npm install jodit-nodejs`
 - DockerHub: `docker pull chupurnov/jodit-nodejs:latest`
 
-**For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)**
+**For detailed deployment instructions, see [DEPLOYMENT.md](./docs/DEPLOYMENT.md)**
 
 ## Differences from PHP Version
 

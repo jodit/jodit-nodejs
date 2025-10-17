@@ -166,6 +166,230 @@ describe('File Upload API', () => {
       await fs.unlink(testImagePath);
       await fs.unlink(testCsvPath);
     });
+
+    describe('Access Control', () => {
+      let aclTestServer: TestServer | null = null;
+
+      afterEach(async () => {
+        if (aclTestServer) {
+          await stopTestServer(aclTestServer);
+          aclTestServer = null;
+        }
+      });
+
+      it('should allow access when no access control rules defined', async () => {
+        aclTestServer = await startTestServer();
+        const testImagePath = path.join(testFilesPath, 'subdir', 'acl-test.png');
+        await fs.writeFile(testImagePath, 'test image content');
+
+        const response = await request(aclTestServer!.host)
+          .post('/')
+          .field('action', 'fileUpload')
+          .field('source', 'test')
+          .attach('files', testImagePath);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+
+        await fs.unlink(testImagePath);
+      });
+
+      it('should deny access when role does not have FILE_UPLOAD permission', async () => {
+        aclTestServer = await startTestServer({
+          sources: {
+            test: {
+              name: 'test',
+              title: 'Test Files',
+              root: testFilesPath,
+              baseurl: 'http://localhost:8081/files/test/'
+            }
+          },
+          accessControl: [
+            {
+              role: 'guest',
+              FILE_UPLOAD: false
+            }
+          ],
+          defaultRole: 'guest'
+        });
+
+        const testImagePath = path.join(testFilesPath, 'subdir', 'test.png');
+        await fs.writeFile(testImagePath, 'test image');
+
+        const response = await request(aclTestServer!.host)
+          .post('/')
+          .field('action', 'fileUpload')
+          .field('source', 'test')
+          .attach('files', testImagePath);
+
+        expect(response.status).toBe(403);
+        expect(response.body.success).toBe(false);
+        expect(response.body.data.code).toBe(403);
+        expect(response.body.data.messages).toContain('Access denied');
+
+        await fs.unlink(testImagePath);
+      });
+
+      it('should allow access when role has FILE_UPLOAD permission', async () => {
+        aclTestServer = await startTestServer({
+          sources: {
+            test: {
+              name: 'test',
+              title: 'Test Files',
+              root: testFilesPath,
+              baseurl: 'http://localhost:8081/files/test/'
+            }
+          },
+          accessControl: [
+            {
+              role: 'admin',
+              FILE_UPLOAD: true
+            }
+          ],
+          defaultRole: 'admin'
+        });
+
+        const testImagePath = path.join(testFilesPath, 'subdir', 'test.png');
+        await fs.writeFile(testImagePath, 'test image');
+
+        const response = await request(aclTestServer!.host)
+          .post('/')
+          .field('action', 'fileUpload')
+          .field('source', 'test')
+          .attach('files', testImagePath);
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+
+        await fs.unlink(testImagePath);
+      });
+
+      it('should check path-based permissions for FILE_UPLOAD action', async () => {
+        aclTestServer = await startTestServer({
+          sources: {
+            test: {
+              name: 'test',
+              title: 'Test Files',
+              root: testFilesPath,
+              baseurl: 'http://localhost:8081/files/test/'
+            }
+          },
+          accessControl: [
+            {
+              role: 'guest',
+              FILE_UPLOAD: true
+            },
+            {
+              role: 'guest',
+              path: '/restricted',
+              FILE_UPLOAD: false
+            }
+          ],
+          defaultRole: 'guest'
+        });
+
+        const publicImagePath = path.join(testFilesPath, 'subdir', 'public.png');
+        const restrictedImagePath = path.join(testFilesPath, 'subdir', 'restricted.png');
+        await fs.writeFile(publicImagePath, 'public image');
+        await fs.writeFile(restrictedImagePath, 'restricted image');
+
+        // Should allow upload in root path
+        const rootResponse = await request(aclTestServer!.host)
+          .post('/')
+          .field('action', 'fileUpload')
+          .field('source', 'test')
+          .field('path', '/')
+          .attach('files', publicImagePath);
+
+        expect(rootResponse.status).toBe(200);
+        expect(rootResponse.body.success).toBe(true);
+
+        // Should deny upload in /restricted path
+        const restrictedResponse = await request(aclTestServer!.host)
+          .post('/')
+          .field('action', 'fileUpload')
+          .field('source', 'test')
+          .field('path', '/restricted')
+          .attach('files', restrictedImagePath);
+
+        expect(restrictedResponse.status).toBe(403);
+        expect(restrictedResponse.body.success).toBe(false);
+        expect(restrictedResponse.body.data.messages).toContain('Access denied');
+
+        await fs.unlink(publicImagePath);
+        await fs.unlink(restrictedImagePath);
+      });
+
+      it('should use wildcard role to deny FILE_UPLOAD access to all roles', async () => {
+        aclTestServer = await startTestServer({
+          sources: {
+            test: {
+              name: 'test',
+              title: 'Test Files',
+              root: testFilesPath,
+              baseurl: 'http://localhost:8081/files/test/'
+            }
+          },
+          accessControl: [
+            {
+              role: '*',
+              FILE_UPLOAD: false
+            }
+          ],
+          defaultRole: 'guest'
+        });
+
+        const testImagePath = path.join(testFilesPath, 'subdir', 'test.png');
+        await fs.writeFile(testImagePath, 'test image');
+
+        const response = await request(aclTestServer!.host)
+          .post('/')
+          .field('action', 'fileUpload')
+          .field('source', 'test')
+          .attach('files', testImagePath);
+
+        expect(response.status).toBe(403);
+        expect(response.body.success).toBe(false);
+        expect(response.body.data.messages).toContain('Access denied');
+
+        await fs.unlink(testImagePath);
+      });
+
+      it('should work with POST method', async () => {
+        aclTestServer = await startTestServer({
+          sources: {
+            test: {
+              name: 'test',
+              title: 'Test Files',
+              root: testFilesPath,
+              baseurl: 'http://localhost:8081/files/test/'
+            }
+          },
+          accessControl: [
+            {
+              role: 'guest',
+              FILE_UPLOAD: false
+            }
+          ],
+          defaultRole: 'guest'
+        });
+
+        const testImagePath = path.join(testFilesPath, 'subdir', 'test.png');
+        await fs.writeFile(testImagePath, 'test image');
+
+        const response = await request(aclTestServer!.host)
+          .post('/')
+          .field('action', 'fileUpload')
+          .field('source', 'test')
+          .attach('files', testImagePath);
+
+        expect(response.status).toBe(403);
+        expect(response.body.success).toBe(false);
+        expect(response.body.data.messages).toContain('Access denied');
+
+        await fs.unlink(testImagePath);
+      });
+    });
   });
 });
 

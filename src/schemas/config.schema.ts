@@ -58,6 +58,15 @@ export const AppConfigSchema = z.object({
   createThumb: z.boolean().describe('Whether to create thumbnails'),
   thumbSize: z.number().describe('Thumbnail size in pixels'),
   thumbFolderName: z.string().describe('Name of the thumbnail folder'),
+  generateSvgThumbs: z
+    .boolean()
+    .describe('Whether to generate SVG thumbnails for non-image files'),
+  svgThumbWidth: z.number().describe('Width of generated SVG thumbnails'),
+  svgThumbHeight: z.number().describe('Height of generated SVG thumbnails'),
+  svgGenerator: z
+    .function()
+    .optional()
+    .describe('Custom function to generate SVG thumbnails'),
   excludeDirectoryNames: z
     .array(z.string())
     .describe('Directory names to exclude'),
@@ -75,8 +84,14 @@ export const AppConfigSchema = z.object({
     .string()
     .describe('Source class name for custom implementations'),
   accessControl: z
-    .array(AccessControlRuleSchema)
-    .describe('Access control rules'),
+    .union([z.array(AccessControlRuleSchema), z.function()])
+    .describe(
+      'Access control rules - can be array, sync function, or async function returning array'
+    ),
+  accessControlInstance: z
+    .any()
+    .optional()
+    .describe('Custom AccessControl instance implementing IAccessControl interface'),
   roleSessionVar: z.string().describe('Session variable name for user role'),
   defaultRole: z.string().describe('Default user role'),
   allowReplaceSourceFile: z

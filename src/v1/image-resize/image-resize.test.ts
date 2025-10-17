@@ -241,7 +241,211 @@ describe('Image Resize (GET /?action=imageResize)', () => {
       'box[h]': '100'
     });
 
-    expect(response.status).  toBe(404);
+    expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
+  });
+
+  describe('Access Control', () => {
+    let aclTestServer: TestServer | null = null;
+
+    afterEach(async () => {
+      if (aclTestServer) {
+        await stopTestServer(aclTestServer);
+        aclTestServer = null;
+      }
+    });
+
+    it('should allow access when no access control rules defined', async () => {
+      aclTestServer = await startTestServer();
+      await createTestImage('acl-test.png', 200, 200);
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'imageResize', source: 'test', name: 'acl-test.png', 'box[w]': '100', 'box[h]': '100' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should deny access when role does not have IMAGE_RESIZE permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            IMAGE_RESIZE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await createTestImage('test.png', 200, 200);
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'imageResize', source: 'test', name: 'test.png', 'box[w]': '100', 'box[h]': '100' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.code).toBe(403);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should allow access when role has IMAGE_RESIZE permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'admin',
+            IMAGE_RESIZE: true
+          }
+        ],
+        defaultRole: 'admin'
+      });
+
+      await createTestImage('test.png', 200, 200);
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'imageResize', source: 'test', name: 'test.png', 'box[w]': '100', 'box[h]': '100' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should check path-based permissions for IMAGE_RESIZE action', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            IMAGE_RESIZE: true
+          },
+          {
+            role: 'guest',
+            path: '/protected',
+            IMAGE_RESIZE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await createTestImage('public.png', 200, 200);
+      await fs.mkdir(path.join(testFilesPath, 'protected'), { recursive: true });
+      const protectedPath = path.join(testFilesPath, 'protected', 'private.png');
+      await sharp({
+        create: {
+          width: 200,
+          height: 200,
+          channels: 3,
+          background: { r: 255, g: 0, b: 0 }
+        }
+      })
+        .png()
+        .toFile(protectedPath);
+
+      // Should allow resize in root path
+      const rootResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'imageResize', source: 'test', path: '/', name: 'public.png', 'box[w]': '100', 'box[h]': '100' });
+
+      expect(rootResponse.status).toBe(200);
+      expect(rootResponse.body.success).toBe(true);
+
+      // Should deny resize in /protected path
+      const protectedResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'imageResize', source: 'test', path: '/protected', name: 'private.png', 'box[w]': '100', 'box[h]': '100' });
+
+      expect(protectedResponse.status).toBe(403);
+      expect(protectedResponse.body.success).toBe(false);
+      expect(protectedResponse.body.data.messages).toContain('Access denied');
+    });
+
+    it('should use wildcard role to deny IMAGE_RESIZE access to all roles', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: '*',
+            IMAGE_RESIZE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await createTestImage('test.png', 200, 200);
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'imageResize', source: 'test', name: 'test.png', 'box[w]': '100', 'box[h]': '100' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should work with POST method', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            IMAGE_RESIZE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await createTestImage('test.png', 200, 200);
+
+      const response = await request(aclTestServer!.host)
+        .post('/')
+        .send({
+          action: 'imageResize',
+          source: 'test',
+          name: 'test.png',
+          box: { w: 100, h: 100 }
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
   });
 });

@@ -242,4 +242,159 @@ describe('Folder Move (GET /?action=folderMove)', () => {
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
   });
+
+  describe('Access Control', () => {
+    let aclTestServer: TestServer | null = null;
+
+    afterEach(async () => {
+      if (aclTestServer) {
+        await stopTestServer(aclTestServer);
+        aclTestServer = null;
+      }
+    });
+
+    it('should allow access when no access control rules defined', async () => {
+      aclTestServer = await startTestServer();
+      const sourceFolder = path.join(testFilesPath, 'source-folder');
+      const destFolder = path.join(testFilesPath, 'destination');
+      await fs.mkdir(sourceFolder, { recursive: true });
+      await fs.mkdir(destFolder, { recursive: true });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderMove', source: 'test', from: '/source-folder', path: '/destination' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should deny access when role does not have FOLDER_MOVE permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FOLDER_MOVE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const sourceFolder = path.join(testFilesPath, 'source', 'folder-to-move');
+      await fs.mkdir(sourceFolder, { recursive: true });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderMove', source: 'test', from: '/source/folder-to-move', path: '/' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.code).toBe(403);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should allow access when role has FOLDER_MOVE permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'admin',
+            FOLDER_MOVE: true
+          }
+        ],
+        defaultRole: 'admin'
+      });
+
+      const sourceFolder = path.join(testFilesPath, 'source', 'folder-to-move');
+      await fs.mkdir(sourceFolder, { recursive: true });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderMove', source: 'test', from: '/source/folder-to-move', path: '/' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should use wildcard role to deny FOLDER_MOVE access to all roles', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: '*',
+            FOLDER_MOVE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const sourceFolder = path.join(testFilesPath, 'source', 'folder-to-move');
+      await fs.mkdir(sourceFolder, { recursive: true });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderMove', source: 'test', from: '/source/folder-to-move', path: '/' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should work with POST method', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FOLDER_MOVE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const sourceFolder = path.join(testFilesPath, 'source', 'folder-to-move');
+      await fs.mkdir(sourceFolder, { recursive: true });
+
+      const response = await request(aclTestServer!.host)
+        .post('/')
+        .send({
+          action: 'folderMove',
+          source: 'test',
+          from: '/source/folder-to-move',
+          path: '/'
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+  });
 });

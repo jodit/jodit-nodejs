@@ -1,5 +1,11 @@
 import type { Server } from 'http';
-import type { AppConfig } from './types';
+import type {
+  AppConfig,
+  SvgGenerator,
+  IAccessControl,
+  AccessControlConfig,
+  AccessControlRule
+} from './types';
 import type { AuthCallback } from './middlewares/auth';
 import packageJson from '../package.json' with { type: 'json' };
 import { logger } from './helpers/logger';
@@ -11,7 +17,14 @@ let server: Server | null = null;
 
 // Re-export createApp for direct use
 export { createApp };
-export type { AuthCallback, AppConfig };
+export type {
+  AuthCallback,
+  AppConfig,
+  SvgGenerator,
+  IAccessControl,
+  AccessControlConfig,
+  AccessControlRule
+};
 
 export interface StartOptions {
   port?: number;

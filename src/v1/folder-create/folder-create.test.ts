@@ -177,4 +177,186 @@ describe('Folder Create (GET /?action=folderCreate)', () => {
     const stats = await fs.stat(folderPath);
     expect(stats.isDirectory()).toBe(true);
   });
+
+  describe('Access Control', () => {
+    let aclTestServer: TestServer | null = null;
+
+    afterEach(async () => {
+      if (aclTestServer) {
+        await stopTestServer(aclTestServer);
+        aclTestServer = null;
+      }
+    });
+
+    it('should allow access when no access control rules defined', async () => {
+      aclTestServer = await startTestServer();
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderCreate', source: 'test', name: 'acl-test-folder' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should deny access when role does not have FOLDER_CREATE permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FOLDER_CREATE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderCreate', source: 'test', name: 'new-folder' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.code).toBe(403);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should allow access when role has FOLDER_CREATE permission', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'admin',
+            FOLDER_CREATE: true
+          }
+        ],
+        defaultRole: 'admin'
+      });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderCreate', source: 'test', name: 'new-folder' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should check path-based permissions for FOLDER_CREATE action', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FOLDER_CREATE: true
+          },
+          {
+            role: 'guest',
+            path: '/restricted',
+            FOLDER_CREATE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      await fs.mkdir(path.join(testFilesPath, 'restricted'), { recursive: true });
+
+      // Should allow folder creation in root path
+      const rootResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderCreate', source: 'test', path: '/', name: 'public-folder' });
+
+      expect(rootResponse.status).toBe(200);
+      expect(rootResponse.body.success).toBe(true);
+
+      // Should deny folder creation in /restricted path
+      const restrictedResponse = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderCreate', source: 'test', path: '/restricted', name: 'blocked-folder' });
+
+      expect(restrictedResponse.status).toBe(403);
+      expect(restrictedResponse.body.success).toBe(false);
+      expect(restrictedResponse.body.data.messages).toContain('Access denied');
+    });
+
+    it('should use wildcard role to deny FOLDER_CREATE access to all roles', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: '*',
+            FOLDER_CREATE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const response = await request(aclTestServer!.host)
+        .get('/')
+        .query({ action: 'folderCreate', source: 'test', name: 'new-folder' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+
+    it('should work with POST method', async () => {
+      aclTestServer = await startTestServer({
+        sources: {
+          test: {
+            name: 'test',
+            title: 'Test Files',
+            root: testFilesPath,
+            baseurl: 'http://localhost:8081/files/test/'
+          }
+        },
+        accessControl: [
+          {
+            role: 'guest',
+            FOLDER_CREATE: false
+          }
+        ],
+        defaultRole: 'guest'
+      });
+
+      const response = await request(aclTestServer!.host)
+        .post('/')
+        .send({
+          action: 'folderCreate',
+          source: 'test',
+          name: 'new-folder'
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.data.messages).toContain('Access denied');
+    });
+  });
 });
