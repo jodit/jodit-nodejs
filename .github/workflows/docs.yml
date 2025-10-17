@@ -39,6 +39,9 @@ jobs:
       # Проверим, что файл появился
       - name: Verify OpenAPI file exists
         run: test -f dist/docs/openapi.yaml
+      
+      - name: Copy OpenAPI file to docs
+        run: cp dist/docs/openapi.yaml docs/content/openapi.yaml
 
       # --- 4. Устанавливаем Python и MkDocs ---
       - name: Set up Python

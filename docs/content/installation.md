@@ -15,32 +15,67 @@ npm install jodit-nodejs
 
 ## Environment Variables
 
-You can configure the application using environment variables:
+You can configure the application using environment variables with npm or Docker:
+
+### Using npm
 
 ```bash
-# Set custom source name
-SOURCE_NAME="My Files" npm start
+# Basic setup - configure default source
+SOURCE_NAME="My Files" \
+SOURCE_ROOT="/var/www/uploads" \
+SOURCE_BASEURL="http://localhost:8081/uploads/" \
+npm start
 
-# Set custom source root directory
-SOURCE_ROOT="/path/to/files" npm start
-
-# Set custom source base URL
-SOURCE_BASEURL="http://example.com/files/" npm start
-
-# Set custom port (default: 8081)
-PORT=8080 npm start
-
-# Combine multiple variables
+# Production setup with custom port
 SOURCE_NAME="Production Files" \
 SOURCE_ROOT="/var/www/uploads" \
 SOURCE_BASEURL="https://cdn.example.com/uploads/" \
 PORT=8080 \
 npm start
 
-# Or provide full configuration via JSON
-CONFIG='{"debug":false,"allowCrossOrigin":true,"sources":{"production":{"title":"Production Files","root":"/var/www/uploads","baseurl":"https://cdn.example.com/uploads/"}}}' \
+# Using full JSON configuration
+CONFIG='{"debug":false,"allowCrossOrigin":true,"sources":{"production":{"name":"production","title":"Production Files","root":"/var/www/uploads","baseurl":"https://cdn.example.com/uploads/"}}}' \
 PORT=8080 \
 npm start
+
+# Using config file
+CONFIG_FILE="/etc/jodit/config.json" \
+PORT=8080 \
+npm start
+```
+
+### Using Docker
+
+```bash
+# Basic setup with environment variables
+docker run --rm -p 8081:8081 \
+  -e SOURCE_NAME="My Files" \
+  -e SOURCE_ROOT="/usr/src/app/files" \
+  -e SOURCE_BASEURL="http://localhost:8081/files/" \
+  -v $(pwd)/files:/usr/src/app/files \
+  chupurnov/jodit-nodejs
+
+# Production setup with custom port
+docker run --rm -p 8080:8080 \
+  -e PORT=8080 \
+  -e SOURCE_NAME="Production Files" \
+  -e SOURCE_ROOT="/usr/src/app/files" \
+  -e SOURCE_BASEURL="https://cdn.example.com/uploads/" \
+  -v /var/www/uploads:/usr/src/app/files \
+  chupurnov/jodit-nodejs
+
+# Using JSON configuration
+docker run --rm -p 8080:8080 \
+  -e PORT=8080 \
+  -e CONFIG='{"debug":false,"allowCrossOrigin":true,"sources":{"production":{"name":"production","title":"Production","root":"/usr/src/app/files","baseurl":"https://cdn.example.com/uploads/"}}}' \
+  -v /var/www/uploads:/usr/src/app/files \
+  chupurnov/jodit-nodejs
+
+# Using config file (recommended for complex configurations)
+docker run --rm -p 8081:8081 \
+  -v $(pwd)/config.json:/usr/src/app/config.json \
+  -v $(pwd)/files:/usr/src/app/files \
+  chupurnov/jodit-nodejs
 ```
 
 ### Available Environment Variables
