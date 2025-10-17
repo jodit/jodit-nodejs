@@ -1,4 +1,10 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import express, {
+  Application,
+  Request,
+  Response,
+  NextFunction,
+  Router
+} from 'express';
 import Boom from '@hapi/boom';
 import multer from 'multer';
 import os from 'os';
@@ -13,7 +19,39 @@ import { actions } from './v1';
 import { Config } from './config/config';
 import { requestContext } from './middlewares/request-context';
 
-export function createApp(customConfig?: Partial<AppConfig>): Application {
+/**
+ * Create Jodit Connector application
+ *
+ * @param customConfig - Custom configuration (optional)
+ * @param existingApp - Existing Express application to integrate with (optional)
+ * @param existingRouter - Existing Express router to use (optional)
+ * @returns Express application with Jodit Connector routes and middleware
+ *
+ * @example
+ * // Standalone mode (default)
+ * const app = createApp(config);
+ * app.listen(8081);
+ *
+ * @example
+ * // Integration with existing Express app
+ * const myApp = express();
+ * myApp.get('/health', (req, res) => res.send('OK'));
+ * createApp(config, myApp);
+ * myApp.listen(8081);
+ *
+ * @example
+ * // Custom router with path prefix
+ * const myApp = express();
+ * const myRouter = Router();
+ * createApp(config, myApp, myRouter);
+ * myApp.use('/jodit', myRouter); // Mount at /jodit prefix
+ * myApp.listen(8081);
+ */
+export function createApp(
+  customConfig?: Partial<AppConfig>,
+  existingApp?: Application,
+  existingRouter?: Router
+): Application {
   const appConfig: AppConfig =
     customConfig !== undefined
       ? { ...defaultConfig, ...customConfig }
@@ -31,22 +69,41 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
     throw Boom.badRequest(`Invalid application config: ${errors.join(', ')}`);
   }
 
-  const app: Application = express()
-    .disable('x-powered-by')
-    .use(express.json())
-    .use(express.urlencoded({ extended: true }));
+  // Use existing app or create new one
+  const app: Application =
+    existingApp ||
+    express()
+      .disable('x-powered-by')
+      .use(express.json())
+      .use(express.urlencoded({ extended: true }));
 
-  app.locals.config = new Config(appConfig);
+  // Create config instance for this router (stored in closure)
+  const configInstance = new Config(appConfig);
+
+  // Store config in app.locals only if app was created by us (backward compatibility)
+  if (!existingApp) {
+    app.locals.config = configInstance;
+  }
+
+  // Use existing router or create new one
+  const router: Router = existingRouter || Router();
 
   // Configure multer for file uploads (using system temp directory)
   const upload = multer({ dest: os.tmpdir() }).any();
 
-  // Apply middlewares
-  app.use(corsMiddleware);
-  app.use(authMiddleware);
+  // Middleware to attach config to request (for multi-instance support)
+  router.use((req: Request, _res: Response, next: NextFunction) => {
+    // Store config in app.locals for handlers to access
+    req.app.locals.config = configInstance;
+    next();
+  });
+
+  // Apply middlewares to router
+  router.use(corsMiddleware);
+  router.use(authMiddleware);
 
   // Routes
-  app.get('/ping', pingHandler);
+  router.get('/ping', pingHandler);
 
   const actionHandler = async (
     req: Request,
@@ -56,8 +113,9 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
     try {
       const action = req.context.action;
 
-      await app.locals.config.access.checkPermission(
-        await app.locals.config.getUserRole(),
+      // Use config from closure (each router has its own configInstance)
+      await configInstance.access.checkPermission(
+        await configInstance.getUserRole(),
         action,
         req.context.path
       );
@@ -77,15 +135,15 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
   };
 
   // POST endpoint for file uploads and other actions
-  app.post('/', upload, requestContext, actionHandler);
-  app.post('/:action', upload, requestContext, actionHandler);
+  router.post('/', upload, requestContext, actionHandler);
+  router.post('/:action', upload, requestContext, actionHandler);
   // Main API endpoint with validation
-  app.get('/', requestContext, actionHandler);
-  app.get('/:action', requestContext, actionHandler);
+  router.get('/', requestContext, actionHandler);
+  router.get('/:action', requestContext, actionHandler);
 
-  // Error handler
-  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    if (app.locals.config.params.debug === true) {
+  // Error handler on router
+  router.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    if (configInstance?.params?.debug === true) {
       logger.error(err);
     }
 
@@ -114,6 +172,11 @@ export function createApp(customConfig?: Partial<AppConfig>): Application {
       }
     });
   });
+
+  // Mount router to app if router was created internally (not passed by user)
+  if (!existingRouter) {
+    app.use('/', router);
+  }
 
   return app;
 }

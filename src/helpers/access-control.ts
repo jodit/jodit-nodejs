@@ -1,4 +1,8 @@
-import type { AccessControlRule, IAccessControl } from '../types';
+import type {
+  AccessControlConfig,
+  AccessControlRule,
+  IAccessControl
+} from '../types';
 import * as changeCase from 'change-case';
 import Boom from '@hapi/boom';
 
@@ -35,17 +39,13 @@ function normalizePath(path: string): string {
 }
 
 export class AccessControl implements IAccessControl {
-  private accessList: AccessControlRule[] | (() => Promise<AccessControlRule[]>);
+  private accessList: AccessControlConfig;
 
-  constructor(
-    accessList: AccessControlRule[] | (() => Promise<AccessControlRule[]>)
-  ) {
+  constructor(accessList: AccessControlConfig) {
     this.accessList = accessList;
   }
 
-  setAccessList(
-    list: AccessControlRule[] | (() => Promise<AccessControlRule[]>)
-  ): void {
+  setAccessList(list: AccessControlConfig): void {
     this.accessList = list;
   }
 

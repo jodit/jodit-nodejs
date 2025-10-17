@@ -73,9 +73,7 @@ export interface AccessControlRule {
  * Interface for AccessControl implementation
  */
 export interface IAccessControl {
-  setAccessList(
-    list: AccessControlRule[] | (() => Promise<AccessControlRule[]>)
-  ): void;
+  setAccessList(list: AccessControlConfig): void;
   checkPermission(
     role: string,
     action: string,
@@ -99,6 +97,7 @@ export interface IAccessControl {
  */
 export type AccessControlConfig =
   | AccessControlRule[]
+  | (() => AccessControlRule[])
   | (() => Promise<AccessControlRule[]>);
 
 export interface AppConfig {
@@ -164,7 +163,7 @@ export interface FilesActionResponse {
   sources: SourceData[];
 }
 
-export type MulterFile  = {
+export type MulterFile = {
   path: string;
   originalname: string;
-}
+};

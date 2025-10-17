@@ -782,13 +782,15 @@ import path from 'path';
 ## Access Control & Security
 
 ### `accessControl`
-- **Type**: `AccessControlRule[]`
+- **Type**: `AccessControlRule[] | (() => AccessControlRule[]) | (() => Promise<AccessControlRule[]>)`
 - **Default**: `[]` (no restrictions)
 - **Used**: ✅ Yes
 - **Purpose**: Define role-based permissions for actions
-- **Documentation**: See [Authentication & Access Control](./README.md#authentication--access-control)
+- **Documentation**: See [AUTHENTICATION.md](./AUTHENTICATION.md)
 
-**Example**:
+The `accessControl` can be provided in three ways:
+
+1. **Static array** - Rules defined at startup:
 ```typescript
 {
   accessControl: [
@@ -807,6 +809,98 @@ import path from 'path';
   ]
 }
 ```
+
+2. **Synchronous function** - Rules computed on-demand:
+```typescript
+{
+  accessControl: () => {
+    // Compute rules based on current state
+    return [
+      { role: 'guest', FILES: true, FILE_UPLOAD: false },
+      { role: 'admin', FILES: true, FILE_UPLOAD: true }
+    ];
+  }
+}
+```
+
+3. **Asynchronous function** - Rules loaded from database/API:
+```typescript
+{
+  accessControl: async () => {
+    // Load rules from database
+    const rules = await db.query('SELECT * FROM acl_rules');
+    return rules.map(r => ({
+      role: r.role,
+      FILES: r.allow_files,
+      FILE_UPLOAD: r.allow_upload
+    }));
+  }
+}
+```
+
+**When to use each approach**:
+- **Static array**: Simple, fixed rules that don't change
+- **Sync function**: Rules depend on application state or environment
+- **Async function**: Rules loaded from external sources (database, cache, API)
+
+**Important notes**:
+- Async functions are called on **every permission check**, allowing fresh rules
+- For performance, consider caching rules in the async function
+- Rules are evaluated in order (later rules override earlier ones)
+
+### `accessControlInstance`
+- **Type**: `IAccessControl`
+- **Default**: `undefined`
+- **Used**: ✅ Yes
+- **Purpose**: Provide a custom AccessControl implementation
+- **Use case**: Complete control over permission logic
+
+Allows you to provide your own AccessControl class that implements the `IAccessControl` interface:
+
+```typescript
+import { IAccessControl, AccessControlConfig } from 'jodit-nodejs';
+
+class CustomAccessControl implements IAccessControl {
+  private rules: AccessControlRule[] = [];
+
+  setAccessList(list: AccessControlConfig): void {
+    // Custom implementation
+    this.rules = Array.isArray(list) ? list : [];
+  }
+
+  async checkPermission(
+    role: string,
+    action: string,
+    path?: string,
+    fileExtension?: string
+  ): Promise<boolean> {
+    // Custom permission logic
+    const allowed = await this.isAllow(role, action, path, fileExtension);
+    if (!allowed) {
+      throw new Error('Access denied');
+    }
+    return true;
+  }
+
+  async isAllow(
+    role: string,
+    action: string,
+    path?: string,
+    fileExtension?: string
+  ): Promise<boolean> {
+    // Your custom permission logic here
+    // Can integrate with external systems, logging, etc.
+    return true;
+  }
+}
+
+// Use custom instance
+{
+  accessControlInstance: new CustomAccessControl()
+}
+```
+
+**Note**: When `accessControlInstance` is provided, the `accessControl` config option is ignored.
 
 ### `defaultRole`
 - **Type**: `string`
