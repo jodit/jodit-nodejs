@@ -41,7 +41,7 @@ plugins:
   - search
   - awesome-pages
   - swagger-ui:
-      swagger_path: ./openapi.yaml
+      spec_url: ./openapi.yaml
       outfile: api/quick-reference.md
 
 markdown_extensions:
