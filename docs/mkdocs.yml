@@ -38,11 +38,12 @@ theme:
     - content.code.annotate
 
 plugins:
-  - search
-  - awesome-pages
   - swagger-ui:
       spec_url: ./content/openapi.yaml
-      outfile: api/quick-reference.md
+      outfile: api-reference.md
+  - search
+  - awesome-pages
+
 
 markdown_extensions:
   - toc:
@@ -86,7 +87,7 @@ nav:
   - Deployment:
       - Docker: docker.md
       - CI/CD & Deployment: deployment.md
-  - API Reference: api/quick-reference.md
+  - API Reference: api-reference.md
 
 extra:
   social:
