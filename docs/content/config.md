@@ -1183,4 +1183,4 @@ npm start
 
 - [README.md](https://github.com/jodit/jodit-nodejs/blob/main/README.md) - General documentation
 - [deployment.md](./deployment.md) - Deployment instructions
-- [examples/](../examples/) - Configuration examples
+- [examples/](https://github.com/jodit/jodit-nodejs/tree/main/examples) - Configuration examples

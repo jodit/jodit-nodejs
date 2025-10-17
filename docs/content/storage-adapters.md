@@ -824,12 +824,12 @@ async *list(path: string, options: { deep: boolean }) {
 
 - [Flystorage Documentation](https://github.com/duna-oss/flystorage)
 - [StorageAdapter Interface](https://github.com/duna-oss/flystorage/blob/main/packages/file-storage/src/storage-adapter.ts)
-- [Example: In-Memory Adapter Test](./src/tests/integration/custom-storage-adapter.test.ts)
+- [Example: In-Memory Adapter Test](https://github.com/jodit/jodit-nodejs/blob/main/src/tests/integration/custom-storage-adapter.test.ts)
 
 ## Support
 
 If you need help creating a custom storage adapter:
 
-1. Check the [example implementation](./src/tests/integration/custom-storage-adapter.test.ts)
+1. Check the [example implementation](https://github.com/jodit/jodit-nodejs/blob/main/src/tests/integration/custom-storage-adapter.test.ts)
 2. Review the [StorageAdapter interface documentation](https://github.com/duna-oss/flystorage)
 3. Open an issue on [GitHub](https://github.com/jodit/jodit-nodejs/issues)

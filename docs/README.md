@@ -47,7 +47,7 @@ Build static documentation:
 mkdocs build
 ```
 
-Output will be in `../site/` directory.
+Output will be in `../dist/site/` directory.
 
 ## Deploy
 

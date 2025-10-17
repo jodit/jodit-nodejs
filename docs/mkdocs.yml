@@ -8,7 +8,7 @@ repo_url: https://github.com/jodit/jodit-nodejs
 edit_uri: edit/main/docs/content/
 
 docs_dir: content
-site_dir: ../site
+site_dir: ../dist/site
 
 theme:
   name: material
@@ -41,8 +41,8 @@ plugins:
   - search
   - awesome-pages
   - swagger-ui:
-      swagger_path: openapi.yaml
-      page_title: API Reference
+      swagger_path: ./openapi.yaml
+      outfile: api/quick-reference.md
 
 markdown_extensions:
   - toc:
@@ -86,6 +86,7 @@ nav:
   - Deployment:
       - Docker: docker.md
       - CI/CD & Deployment: deployment.md
+  - API Reference: api/quick-reference.md
 
 extra:
   social:
