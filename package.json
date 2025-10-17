@@ -43,7 +43,7 @@
     "docker:build": "docker build -t jodit-nodejs .",
     "docker:run": "docker run --rm -p 8081:8081 jodit-nodejs",
     "openapi:generate": "tsx scripts/generate-openapi.ts",
-    "docs:setup": "cd docs && . .venv/bin/activate  && pip install -r requirements.txt",
+    "docs:setup": "cd docs && python3 -m venv .venv && . .venv/bin/activate  && pip install -r requirements.txt",
     "docs:serve": "cd docs && . .venv/bin/activate  && mkdocs serve",
     "docs:build": "cd docs && . .venv/bin/activate  && mkdocs build",
     "docs:deploy": "cd docs && . .venv/bin/activate  && mkdocs gh-deploy",
