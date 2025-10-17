@@ -1,0 +1,1884 @@
+openapi: 3.0.0
+info:
+  version: 1.0.9
+  title: Jodit Connector API for Node.js
+  description: Jodit FileBrowser and Uploader connector for Node.js
+  contact:
+    url: https://xdsoft.net/jodit/
+  license:
+    name: MIT
+servers:
+  - url: https://xdsoft.net/jodit/finder/
+    description: Demo server
+  - url: http://localhost:8081/
+    description: Local development server
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - false
+          description: Request failed status
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              description: Error code
+              example: 400
+            messages:
+              type: array
+              items:
+                type: string
+              description: Error messages
+              example:
+                - Validation failed
+          required:
+            - code
+            - messages
+          description: Error data
+      required:
+        - success
+        - data
+    FileRenameSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+          description: Request success status
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              description: Response code
+              example: 220
+          required:
+            - code
+          description: Response data
+      required:
+        - success
+        - data
+    FileMoveSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+          description: Request success status
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              description: Response code
+              example: 220
+          required:
+            - code
+          description: Response data
+      required:
+        - success
+        - data
+    FileRemoveSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+          description: Request success status
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              description: Response code
+              example: 220
+          required:
+            - code
+          description: Response data
+      required:
+        - success
+        - data
+    FileUploadSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+          description: Request success status
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              description: Response code
+              example: 220
+            baseurl:
+              type: string
+              description: Base URL for uploaded files
+              example: http://localhost:8081/files/test/
+            files:
+              type: array
+              items:
+                type: string
+              description: List of uploaded file names
+              example:
+                - image.png
+                - document.pdf
+            isImages:
+              type: array
+              items:
+                type: boolean
+              description: Whether each file is an image
+              example:
+                - true
+                - false
+            messages:
+              type: array
+              items:
+                type: string
+              description: Upload status messages
+              example:
+                - File image.png was uploaded
+                - File document.pdf was uploaded
+          required:
+            - code
+            - baseurl
+            - files
+            - isImages
+            - messages
+          description: Response data
+      required:
+        - success
+        - data
+    FileUploadRemoteSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+          description: Request success status
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              description: Response code
+              example: 220
+            baseurl:
+              type: string
+              description: Base URL for the file
+              example: http://localhost:8081/files/test/
+            newfilename:
+              type: string
+              description: Saved file name
+              example: image.png
+            isImage:
+              type: boolean
+              description: Whether the file is an image
+              example: true
+          required:
+            - code
+            - baseurl
+            - newfilename
+            - isImage
+          description: Response data
+      required:
+        - success
+        - data
+    FileItem:
+      type: object
+      properties:
+        file:
+          type: string
+          description: File name
+          example: image.png
+        name:
+          type: string
+          description: Display name
+          example: image.png
+        type:
+          type: string
+          enum:
+            - file
+            - folder
+          description: Item type
+          example: file
+        size:
+          type: number
+          description: File size in bytes
+          example: 1024
+        changed:
+          type: string
+          description: Last modified date (ISO)
+          example: 2025-01-01T00:00:00.000Z
+        isImage:
+          type: boolean
+          description: Whether file is an image
+          example: true
+        thumb:
+          type: string
+          description: Thumbnail URL
+          example: /thumbs/image.png
+      required:
+        - file
+        - name
+        - type
+    SourceData:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Source name
+          example: test
+        title:
+          type: string
+          description: Source title
+          example: Test Files
+        baseurl:
+          type: string
+          description: Base URL for files
+          example: http://localhost:8081/files/test/
+        path:
+          type: string
+          description: Current path
+          example: /
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/FileItem"
+          description: List of files and folders
+      required:
+        - name
+        - title
+        - baseurl
+        - path
+        - files
+    FilesSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+          description: Request success status
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              description: Response code
+              example: 220
+            sources:
+              type: array
+              items:
+                $ref: "#/components/schemas/SourceData"
+              description: List of sources with files
+          required:
+            - code
+            - sources
+          description: Response data
+      required:
+        - success
+        - data
+    FolderCreateSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              enum:
+                - 220
+            messages:
+              type: array
+              items:
+                type: string
+              example:
+                - Directory successfully created
+          required:
+            - code
+            - messages
+      required:
+        - success
+        - data
+    FolderMoveSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              enum:
+                - 220
+          required:
+            - code
+      required:
+        - success
+        - data
+    FolderRemoveSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              enum:
+                - 220
+          required:
+            - code
+      required:
+        - success
+        - data
+    FolderRenameSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              enum:
+                - 220
+          required:
+            - code
+      required:
+        - success
+        - data
+    FoldersSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              enum:
+                - 220
+            sources:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: test
+                  title:
+                    type: string
+                    example: Test Files
+                  baseurl:
+                    type: string
+                    example: http://localhost:8081/files/test/
+                  path:
+                    type: string
+                    example: /
+                  folders:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - ..
+                      - folder1
+                      - folder2
+                required:
+                  - name
+                  - title
+                  - baseurl
+                  - path
+                  - folders
+          required:
+            - code
+            - sources
+      required:
+        - success
+        - data
+    GetLocalFileByUrlSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+          description: Request success status
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              description: Response code
+              example: 220
+            path:
+              type: string
+              description: Directory path relative to source root
+              example: /
+            name:
+              type: string
+              description: File name
+              example: image.png
+            source:
+              type: string
+              description: Source name
+              example: test
+          required:
+            - code
+            - path
+            - name
+            - source
+          description: Response data
+      required:
+        - success
+        - data
+    ImageCropSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              enum:
+                - 220
+          required:
+            - code
+      required:
+        - success
+        - data
+    ImageResizeSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              enum:
+                - 220
+          required:
+            - code
+      required:
+        - success
+        - data
+    PermissionsSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+        data:
+          type: object
+          properties:
+            code:
+              type: number
+              enum:
+                - 220
+            permissions:
+              type: object
+              properties:
+                allowFiles:
+                  type: boolean
+                  example: true
+                allowFileMove:
+                  type: boolean
+                  example: true
+                allowFileUpload:
+                  type: boolean
+                  example: true
+                allowFileUploadRemote:
+                  type: boolean
+                  example: true
+                allowFileRemove:
+                  type: boolean
+                  example: true
+                allowFileRename:
+                  type: boolean
+                  example: true
+                allowFolders:
+                  type: boolean
+                  example: true
+                allowFolderMove:
+                  type: boolean
+                  example: true
+                allowFolderCreate:
+                  type: boolean
+                  example: true
+                allowFolderRemove:
+                  type: boolean
+                  example: true
+                allowFolderRename:
+                  type: boolean
+                  example: true
+                allowImageResize:
+                  type: boolean
+                  example: true
+                allowImageCrop:
+                  type: boolean
+                  example: true
+              required:
+                - allowFiles
+                - allowFileMove
+                - allowFileUpload
+                - allowFileUploadRemote
+                - allowFileRemove
+                - allowFileRename
+                - allowFolders
+                - allowFolderMove
+                - allowFolderCreate
+                - allowFolderRemove
+                - allowFolderRename
+                - allowImageResize
+                - allowImageCrop
+          required:
+            - code
+            - permissions
+      required:
+        - success
+        - data
+    PingResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum:
+            - true
+          description: Service is running
+      required:
+        - success
+  parameters: {}
+paths:
+  /fileDownload:
+    get:
+      operationId: fileDownload
+      summary: Download file
+      description: Downloads a file with proper headers for browser download
+      tags:
+        - Files
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - fileDownload
+            description: Action type
+            example: fileDownload
+          required: false
+          description: Action type
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name
+            example: test
+          required: false
+          description: Source name
+          name: source
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: Path within source
+            example: /
+          required: false
+          description: Path within source
+          name: path
+          in: query
+        - schema:
+            type: string
+            description: File name to download
+            example: document.pdf
+          required: true
+          description: File name to download
+          name: name
+          in: query
+      responses:
+        "200":
+          description: File download stream
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Bad request - validation error or not a file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: File or source not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /fileRename:
+    get:
+      operationId: fileRename
+      summary: Rename file or folder
+      description: Renames a file or folder
+      tags:
+        - Files
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - fileRename
+            description: Action type
+            example: fileRename
+          required: false
+          description: Action type
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name
+            example: test
+          required: false
+          description: Source name
+          name: source
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: Path within source
+            example: /
+          required: false
+          description: Path within source
+          name: path
+          in: query
+        - schema:
+            type: string
+            description: Current file/folder name
+            example: old-name.txt
+          required: true
+          description: Current file/folder name
+          name: name
+          in: query
+        - schema:
+            type: string
+            description: New file/folder name
+            example: new-name.txt
+          required: true
+          description: New file/folder name
+          name: newname
+          in: query
+      responses:
+        "200":
+          description: File/folder successfully renamed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileRenameSuccessResponse"
+        "400":
+          description: Bad request - validation error or file already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: File/folder or source not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /fileMove:
+    get:
+      operationId: fileMove
+      summary: Move file or folder
+      description: Moves a file or folder to a different location
+      tags:
+        - Files
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - fileMove
+            description: Action type
+            example: fileMove
+          required: false
+          description: Action type
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name
+            example: test
+          required: false
+          description: Source name
+          name: source
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: Destination path within source
+            example: /subfolder
+          required: false
+          description: Destination path within source
+          name: path
+          in: query
+        - schema:
+            type: string
+            description: Source file/folder path to move
+            example: /file.txt
+          required: true
+          description: Source file/folder path to move
+          name: from
+          in: query
+      responses:
+        "200":
+          description: File/folder successfully moved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileMoveSuccessResponse"
+        "400":
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: File/folder or source not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /fileRemove:
+    get:
+      operationId: fileRemove
+      summary: Remove file
+      description: Removes a file from the specified source
+      tags:
+        - Files
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - fileRemove
+            description: Action type
+            example: fileRemove
+          required: false
+          description: Action type
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name
+            example: test
+          required: false
+          description: Source name
+          name: source
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: Path within source
+            example: /
+          required: false
+          description: Path within source
+          name: path
+          in: query
+        - schema:
+            type: string
+            description: File name to remove
+            example: image.png
+          required: true
+          description: File name to remove
+          name: name
+          in: query
+      responses:
+        "200":
+          description: File successfully removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileRemoveSuccessResponse"
+        "400":
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: File or source not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /fileUpload:
+    post:
+      operationId: fileUpload
+      summary: Upload files
+      description: Upload one or more files to the specified source via multipart/form-data
+      tags:
+        - Files
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - fileUpload
+            description: Action type
+            example: fileUpload
+          required: false
+          description: Action type
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name
+            example: test
+          required: false
+          description: Source name
+          name: source
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: Path within source
+            example: /
+          required: false
+          description: Path within source
+          name: path
+          in: query
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Files to upload
+              required:
+                - files
+      responses:
+        "200":
+          description: Files successfully uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileUploadSuccessResponse"
+        "400":
+          description: Bad request - validation error or no files uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden - file extension not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /fileUploadRemote:
+    get:
+      operationId: fileUploadRemote
+      summary: Upload file from remote URL
+      description: Downloads a file from a remote URL and saves it to the source
+      tags:
+        - Files
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - fileUploadRemote
+            description: Action type
+            example: fileUploadRemote
+          required: false
+          description: Action type
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name
+            example: test
+          required: false
+          description: Source name
+          name: source
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: Path within source
+            example: /
+          required: false
+          description: Path within source
+          name: path
+          in: query
+        - schema:
+            type: string
+            format: uri
+            description: Remote file URL to download
+            example: https://example.com/image.png
+          required: true
+          description: Remote file URL to download
+          name: url
+          in: query
+      responses:
+        "200":
+          description: File successfully uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileUploadRemoteSuccessResponse"
+        "400":
+          description: Bad request - invalid URL or target directory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden - file validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /files:
+    get:
+      operationId: files
+      summary: Get list of files
+      description: Returns list of files from specified source
+      tags:
+        - Files
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - files
+            description: Action type
+            example: files
+          required: false
+          description: Action type
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name
+            example: test
+          required: false
+          description: Source name
+          name: source
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: Path within source
+            example: /
+          required: false
+          description: Path within source
+          name: path
+          in: query
+        - schema:
+            anyOf:
+              - type: string
+              - type: object
+                properties:
+                  withFolders:
+                    anyOf:
+                      - type: boolean
+                      - type: string
+                  sortBy:
+                    type: string
+                    enum:
+                      - name-asc
+                      - name-desc
+                      - changed-asc
+                      - changed-desc
+                    description: Sort order
+                  limit:
+                    anyOf:
+                      - type: number
+                      - type: string
+                  offset:
+                    anyOf:
+                      - type: number
+                      - type: string
+                  onlyImages:
+                    anyOf:
+                      - type: boolean
+                      - type: string
+                  foldersPosition:
+                    type: string
+                    enum:
+                      - top
+                      - bottom
+            description: Modifiers (e.g., "withFolders")
+            example: withFolders
+          required: false
+          description: Modifiers (e.g., "withFolders")
+          name: mods
+          in: query
+      responses:
+        "200":
+          description: Successful response with files list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilesSuccessResponse"
+        "400":
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /folderCreate:
+    get:
+      operationId: folderCreate
+      summary: Create new folder
+      description: Creates a new folder in the specified source
+      tags:
+        - Folders
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - folderCreate
+            description: Action name
+            example: folderCreate
+          required: false
+          description: Action name
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name (defaults to "files")
+            example: test
+          required: false
+          description: Source name (defaults to "files")
+          name: source
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: 'Parent directory path within source (default: "/")'
+            example: /
+          required: false
+          description: 'Parent directory path within source (default: "/")'
+          name: path
+          in: query
+        - schema:
+            type: string
+            description: Name of the new folder
+            example: new-folder
+          required: true
+          description: Name of the new folder
+          name: name
+          in: query
+      responses:
+        "200":
+          description: Folder successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FolderCreateSuccessResponse"
+        "400":
+          description: Bad request - validation error or folder already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Source or directory not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error - folder was not created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /folderMove:
+    get:
+      operationId: folderMove
+      summary: Move folder
+      description: Moves a folder to a different location
+      tags:
+        - Folders
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - folderMove
+            description: Action name
+            example: folderMove
+          required: false
+          description: Action name
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name (defaults to "files")
+            example: test
+          required: false
+          description: Source name (defaults to "files")
+          name: source
+          in: query
+        - schema:
+            type: string
+            description: Source folder path relative to source root
+            example: /old-location/folder-name
+          required: true
+          description: Source folder path relative to source root
+          name: from
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: 'Destination directory path (default: "/")'
+            example: /new-location/
+          required: false
+          description: 'Destination directory path (default: "/")'
+          name: path
+          in: query
+      responses:
+        "200":
+          description: Folder successfully moved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FolderMoveSuccessResponse"
+        "400":
+          description: Bad request - validation error, not a directory, or destination
+            already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Source, folder, or destination directory not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /folderRemove:
+    get:
+      operationId: folderRemove
+      summary: Remove folder
+      description: Removes a folder and all its contents from the specified source
+      tags:
+        - Folders
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - folderRemove
+            description: Action name
+            example: folderRemove
+          required: false
+          description: Action name
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name (defaults to "files")
+            example: test
+          required: false
+          description: Source name (defaults to "files")
+          name: source
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: 'Parent directory path within source (default: "/")'
+            example: /
+          required: false
+          description: 'Parent directory path within source (default: "/")'
+          name: path
+          in: query
+        - schema:
+            type: string
+            description: Name of the folder to remove
+            example: old-folder
+          required: true
+          description: Name of the folder to remove
+          name: name
+          in: query
+      responses:
+        "200":
+          description: Folder successfully removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FolderRemoveSuccessResponse"
+        "400":
+          description: Bad request - validation error or not a directory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Source or directory not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /folderRename:
+    get:
+      operationId: folderRename
+      summary: Rename folder
+      description: Renames a folder
+      tags:
+        - Folders
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - folderRename
+            description: Action name
+            example: folderRename
+          required: false
+          description: Action name
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name (defaults to "files")
+            example: test
+          required: false
+          description: Source name (defaults to "files")
+          name: source
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: 'Parent directory path within source (default: "/")'
+            example: /
+          required: false
+          description: 'Parent directory path within source (default: "/")'
+          name: path
+          in: query
+        - schema:
+            type: string
+            description: Current folder name
+            example: old-folder-name
+          required: true
+          description: Current folder name
+          name: name
+          in: query
+        - schema:
+            type: string
+            description: New folder name
+            example: new-folder-name
+          required: true
+          description: New folder name
+          name: newname
+          in: query
+      responses:
+        "200":
+          description: Folder successfully renamed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FolderRenameSuccessResponse"
+        "400":
+          description: Bad request - validation error, not a directory, or new name
+            already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Source or folder not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /folders:
+    get:
+      operationId: folders
+      summary: Get folders list
+      description: Returns list of folders from specified source(s)
+      tags:
+        - Folders
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - folders
+            description: Action name
+            example: folders
+          required: false
+          description: Action name
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name (if not specified, returns folders from all sources)
+            example: test
+          required: false
+          description: Source name (if not specified, returns folders from all sources)
+          name: source
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: 'Path within source (default: "/")'
+            example: /
+          required: false
+          description: 'Path within source (default: "/")'
+          name: path
+          in: query
+        - schema:
+            anyOf:
+              - type: boolean
+              - type: string
+                enum:
+                  - "false"
+              - type: string
+                enum:
+                  - "true"
+            description: "Include parent directory (..) navigation (default: true)"
+            example: true
+          required: false
+          description: "Include parent directory (..) navigation (default: true)"
+          name: dots
+          in: query
+      responses:
+        "200":
+          description: Successful response with folders list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FoldersSuccessResponse"
+        "400":
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /generateDocx:
+    get:
+      operationId: generateDocx
+      summary: Generate DOCX document
+      description: Converts HTML content to DOCX format using @turbodocx/html-to-docx
+      tags:
+        - Documents
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - generateDocx
+            description: Action name
+            example: generateDocx
+          required: false
+          description: Action name
+          name: action
+          in: query
+        - schema:
+            type: string
+            minLength: 1
+            description: HTML content to convert to DOCX
+            example: <h1>Hello World</h1><p>This is a test document.</p>
+          required: true
+          description: HTML content to convert to DOCX
+          name: html
+          in: query
+      responses:
+        "200":
+          description: DOCX file successfully generated
+          content:
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Bad request - missing html parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /generatePdf:
+    get:
+      operationId: generatePdf
+      summary: Generate PDF document
+      description: Converts HTML content to PDF format
+      tags:
+        - Documents
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - generatePdf
+            description: Action name
+            example: generatePdf
+          required: false
+          description: Action name
+          name: action
+          in: query
+        - schema:
+            type: string
+            minLength: 1
+            description: HTML content to convert to PDF
+            example: <h1>Hello World</h1><p>This is a test document.</p>
+          required: true
+          description: HTML content to convert to PDF
+          name: html
+          in: query
+        - schema:
+            anyOf:
+              - type: string
+              - type: object
+                properties:
+                  format:
+                    type: string
+                    enum:
+                      - A4
+                      - A3
+                      - Letter
+                      - Legal
+                      - Tabloid
+                    description: Paper format
+                  page_orientation:
+                    type: string
+                    enum:
+                      - portrait
+                      - landscape
+                    description: Page orientation
+                  defaultFont:
+                    type: string
+                    enum:
+                      - courier
+                      - helvetica
+                      - times
+                    description: Default font for PDF (only standard PDF fonts supported)
+            description: PDF generation options
+          required: false
+          description: PDF generation options
+          name: options
+          in: query
+      responses:
+        "200":
+          description: PDF file successfully generated
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Bad request - missing html parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error - failed to generate PDF
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /getLocalFileByUrl:
+    get:
+      operationId: getLocalFileByUrl
+      summary: Resolve local file by URL
+      description: Resolves a URL to local file path, name and source
+      tags:
+        - Files
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - getLocalFileByUrl
+            description: Action type
+            example: getLocalFileByUrl
+          required: false
+          description: Action type
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Full URL to resolve to local file
+            example: http://localhost:8081/files/test/image.png
+          required: true
+          description: Full URL to resolve to local file
+          name: url
+          in: query
+      responses:
+        "200":
+          description: File successfully resolved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetLocalFileByUrlSuccessResponse"
+        "400":
+          description: Bad request - invalid URL or file not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /imageCrop:
+    get:
+      operationId: imageCrop
+      summary: Crop image
+      description: Crops an image to specified coordinates and dimensions
+      tags:
+        - Images
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - imageCrop
+          required: false
+          name: action
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: source
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: path
+          in: query
+        - schema:
+            type: string
+          required: true
+          name: name
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: newname
+          in: query
+        - schema:
+            type: object
+            properties:
+              x:
+                type: integer
+                minimum: 0
+              y:
+                type: integer
+                minimum: 0
+              w:
+                type: integer
+                minimum: 0
+                exclusiveMinimum: true
+              h:
+                type: integer
+                minimum: 0
+                exclusiveMinimum: true
+            required:
+              - x
+              - y
+              - w
+              - h
+          required: true
+          name: box
+          in: query
+      responses:
+        "200":
+          description: Image successfully cropped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageCropSuccessResponse"
+        "400":
+          description: Bad request - validation error, invalid dimensions or coordinates,
+            or file already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Source or image file not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error - failed to crop image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /imageResize:
+    get:
+      operationId: imageResize
+      summary: Resize image
+      description: Resizes an image to specified dimensions
+      tags:
+        - Images
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - imageResize
+          required: false
+          name: action
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: source
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: path
+          in: query
+        - schema:
+            type: string
+          required: true
+          name: name
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: newname
+          in: query
+        - schema:
+            type: object
+            properties:
+              w:
+                type: integer
+                minimum: 0
+                exclusiveMinimum: true
+              h:
+                type: integer
+                minimum: 0
+                exclusiveMinimum: true
+            required:
+              - w
+              - h
+          required: true
+          name: box
+          in: query
+      responses:
+        "200":
+          description: Image successfully resized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageResizeSuccessResponse"
+        "400":
+          description: Bad request - validation error, invalid dimensions, or file already
+            exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Source or image file not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error - failed to resize image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /permissions:
+    get:
+      operationId: permissions
+      summary: Get permissions
+      description: Returns user permissions for the specified source
+      tags:
+        - System
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - permissions
+            description: Action name
+            example: permissions
+          required: false
+          description: Action name
+          name: action
+          in: query
+        - schema:
+            type: string
+            description: Source name (defaults to "files")
+            example: test
+          required: false
+          description: Source name (defaults to "files")
+          name: source
+          in: query
+        - schema:
+            type: string
+            default: /
+            description: 'Path within source (default: "/")'
+            example: /
+          required: false
+          description: 'Path within source (default: "/")'
+          name: path
+          in: query
+      responses:
+        "200":
+          description: Successful response with permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PermissionsSuccessResponse"
+        "400":
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /ping:
+    get:
+      operationId: ping
+      summary: Health check
+      description: Check if the service is running
+      tags:
+        - System
+      responses:
+        "200":
+          description: Service is running
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PingResponse"
