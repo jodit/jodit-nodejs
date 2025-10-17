@@ -55,7 +55,7 @@ jobs:
       # --- 5. Собираем MkDocs ---
       - name: Build MkDocs site
         working-directory: docs
-        run: mkdocs build --strict --clean
+        run: npm run docs:build
 
       # --- 6. Публикуем на GitHub Pages ---
       - name: Deploy to GitHub Pages
