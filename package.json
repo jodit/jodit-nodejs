@@ -42,7 +42,7 @@
     "format": "prettier --write ./src",
     "docker:build": "docker build -t jodit-nodejs .",
     "docker:run": "docker run --rm -p 8081:8081 jodit-nodejs",
-    "docs:generate": "node --no-warnings --loader ts-node/esm -r ts-node/register scripts/generate-openapi.ts",
+    "docs:generate": "tsx scripts/generate-openapi.ts",
     "docs:serve": "npx http-server ./dist/docs -o -p 8082",
     "stat": "npx cloc ./src --include-lang=TypeScript --exclude-dir=node_modules,compose,dist && npx jscpd ./src | grep \"│\""
   },

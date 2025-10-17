@@ -1,3 +1,8 @@
+---
+title: Configuration Reference
+description: Comprehensive reference for all configuration options in Jodit Connector Node.js, including file handling, image processing, thumbnails, access control, and source-level overrides.
+---
+
 # Configuration Reference
 
 This document provides a comprehensive reference for all configuration options available in Jodit Connector Node.js.
@@ -786,7 +791,7 @@ import path from 'path';
 - **Default**: `[]` (no restrictions)
 - **Used**: ✅ Yes
 - **Purpose**: Define role-based permissions for actions
-- **Documentation**: See [AUTHENTICATION.md](./AUTHENTICATION.md)
+- **Documentation**: See [authentication.md](./authentication.md)
 
 The `accessControl` can be provided in three ways:
 
@@ -1176,6 +1181,6 @@ npm start
 
 ## See Also
 
-- [README.md](./README.md) - General documentation
-- [DEPLOYMENT.md](./DEPLOYMENT.md) - Deployment instructions
-- [examples/](./examples/) - Configuration examples
+- [README.md](../README.md) - General documentation
+- [deployment.md](./deployment.md) - Deployment instructions
+- [examples/](../examples/) - Configuration examples

@@ -1,3 +1,8 @@
+---
+title: Custom Storage Adapters
+description: Complete guide to creating and using custom storage adapters in Jodit Connector Node.js for AWS S3, Azure Blob, Google Cloud Storage, and other backends.
+---
+
 # Custom Storage Adapters
 
 ## Overview

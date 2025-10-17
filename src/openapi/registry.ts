@@ -23,7 +23,7 @@ export function initRegistry(): Promise<OpenAPIRegistry> {
           );
         }
 
-        const route = (await import(opentAIScheme)).default.default;
+        const route = (await import(opentAIScheme)).default;
 
         registry.registerPath(route);
       })

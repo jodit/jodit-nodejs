@@ -1,3 +1,8 @@
+---
+title: Authentication & Access Control
+description: Comprehensive guide to implementing authentication and access control in Jodit Connector Node.js, including cookie-based auth, JWT tokens, express-session integration, and dynamic ACL rules.
+---
+
 # Authentication & Access Control
 
 This document provides a comprehensive guide to implementing authentication and access control in Jodit Connector Node.js.
@@ -1030,8 +1035,8 @@ const config = {
 
 ## See Also
 
-- [CONFIG.md](./CONFIG.md) - Configuration reference (see `accessControl` and `defaultRole`)
-- [examples/with-cookie-auth.js](./examples/with-cookie-auth.js) - Cookie authentication example
-- [examples/with-jwt-auth.js](./examples/with-jwt-auth.js) - JWT authentication example
-- [examples/with-express-session.js](./examples/with-express-session.js) - Express-session example
-- [README.md](./README.md) - General documentation
+- [config.md](./config.md) - Configuration reference (see `accessControl` and `defaultRole`)
+- [examples/with-cookie-auth.js](../examples/with-cookie-auth.js) - Cookie authentication example
+- [examples/with-jwt-auth.js](../examples/with-jwt-auth.js) - JWT authentication example
+- [examples/with-express-session.js](../examples/with-express-session.js) - Express-session example
+- [README.md](../README.md) - General documentation

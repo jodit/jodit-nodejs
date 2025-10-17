@@ -1,3 +1,8 @@
+---
+title: Deployment Guide
+description: Comprehensive guide for deploying Jodit Connector Node.js, including GitHub Actions CI/CD, Docker deployment, npm publishing, and troubleshooting.
+---
+
 # Deployment Guide
 
 This guide explains how to configure and deploy the Jodit Connector package.
