@@ -1,3 +1,4 @@
+import os from 'node:os';
 import express, {
   Application,
   Request,
@@ -7,7 +8,6 @@ import express, {
 } from 'express';
 import Boom from '@hapi/boom';
 import multer from 'multer';
-import os from 'os';
 import type { AppConfig } from './types';
 import { config as defaultConfig } from './config';
 import { logger } from './helpers/logger';
@@ -18,6 +18,7 @@ import { AppConfigSchema } from './schemas';
 import { actions } from './v1';
 import { Config } from './config/config';
 import { requestContext } from './middlewares/request-context';
+import packageJson from '../package.json' with { type: 'json' };
 
 /**
  * Create Jodit Connector application
@@ -74,6 +75,12 @@ export function createApp(
     existingApp ||
     express()
       .disable('x-powered-by')
+      .use((req, res, next) => {
+        if (packageJson.version) {
+          res.header('X-App-version', packageJson.version);
+        }
+        next();
+      })
       .use(express.json())
       .use(express.urlencoded({ extended: true }));
 
