@@ -13,4 +13,7 @@ Dockerfile
 eslint.config.js
 jest.config.js
 nodemon.json
+jest.config.ts
+tsup.config.ts
+.prettierrc
 
