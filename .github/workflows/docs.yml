@@ -16,34 +16,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # --- 1. Забираем код ---
+      # --- 1. Checkout repository ---
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # --- 2. Устанавливаем Node для генерации OpenAPI ---
+      # --- 2. Set up Node.js for OpenAPI generation ---
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'   # или твоя версия
+          node-version: '22'
           cache: 'npm'
 
       - name: Install Node deps
         run: npm ci
 
-      # --- 3. Генерируем openapi.yaml ---
+      # --- 3. Generate openapi.yaml ---
       - name: Generate OpenAPI schema
         run: npm run openapi:generate
-        # или, если твой скрипт принимает аргументы:
-        # run: npx tsx scripts/generate-openapi.ts --out docs/openapi.yaml
 
-      # Проверим, что файл появился
+      # Verify that the file was created
       - name: Verify OpenAPI file exists
         run: test -f dist/docs/openapi.yaml
-      
+
       - name: Copy OpenAPI file to docs
         run: cp dist/docs/openapi.yaml docs/content/openapi.yaml
 
-      # --- 4. Устанавливаем Python и MkDocs ---
+      # --- 4. Set up Python and MkDocs ---
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -55,7 +53,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # --- 5. Собираем MkDocs ---
+      # --- 5. Build MkDocs site ---
       - name: Build MkDocs site
         working-directory: docs
         run: mkdocs build --clean

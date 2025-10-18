@@ -39,7 +39,7 @@ theme:
 
 plugins:
   - swagger-ui:
-      spec_url: ./content/openapi.yaml
+      spec_url: https://jodit.github.io/jodit-nodejs/openapi.yaml
       outfile: api-reference.md
   - search
   - awesome-pages
