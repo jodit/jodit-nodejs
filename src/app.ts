@@ -98,6 +98,16 @@ export function createApp(
     next();
   });
 
+  // Middleware to block GET requests if onlyPOST is enabled
+  router.use((req: Request, res: Response, next: NextFunction) => {
+    if (configInstance.params.onlyPOST && req.method === 'GET') {
+      const boomError = Boom.methodNotAllowed('GET requests are disabled. Use POST instead.');
+      boomError.output.payload.messages = [boomError.message];
+      return next(boomError);
+    }
+    next();
+  });
+
   // Apply middlewares to router
   router.use(corsMiddleware);
   router.use(authMiddleware);

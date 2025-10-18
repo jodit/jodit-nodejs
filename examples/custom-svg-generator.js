@@ -71,7 +71,7 @@ async function main() {
           name: 'default',
           title: 'My Files',
           root: path.join(process.cwd(), './files'),
-          baseurl: 'http://localhost:8081/files/'
+          baseurl: 'http://localhost:8080/files/'
         }
       }
     }

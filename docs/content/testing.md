@@ -108,7 +108,7 @@ describe('Custom Feature', () => {
       test: {
         name: 'test',
         root: './files/test',
-        baseurl: 'http://localhost:8081/files/test/'
+        baseurl: 'http://localhost:8080/files/test/'
       }
     }
   });

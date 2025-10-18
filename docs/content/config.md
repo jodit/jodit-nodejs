@@ -38,7 +38,7 @@ await start({
       uploads: {
         title: 'Uploads',
         root: '/path/to/files',
-        baseurl: 'http://localhost:8081/files/'
+        baseurl: 'http://localhost:8080/files/'
       }
     }
   }
@@ -941,6 +941,53 @@ class CustomAccessControl implements IAccessControl {
 }
 ```
 
+### `onlyPOST`
+- **Type**: `boolean`
+- **Default**: `false`
+- **Used**: ✅ Yes
+- **Purpose**: Restrict API to only accept POST requests
+- **Usage**: When `true`, all GET requests will be blocked with 405 Method Not Allowed
+- **Security**: Useful for preventing CSRF attacks and ensuring all API calls use POST method
+
+**Example**:
+```typescript
+{
+  onlyPOST: true  // Block all GET requests, only allow POST
+}
+```
+
+**Why use `onlyPOST`?**
+
+By default, Jodit Connector accepts both GET and POST requests. However, in some scenarios you may want to force all requests to use POST method:
+
+1. **CSRF Protection**: GET requests can be triggered from any webpage (via `<img>` tags, `<script>` tags, etc.). By requiring POST, you ensure requests must come from your application's forms.
+
+2. **Security Compliance**: Some security policies require all API mutations to use POST method.
+
+3. **Parameter Privacy**: POST request bodies are not logged in web server access logs, unlike GET query parameters.
+
+When `onlyPOST` is enabled:
+- All GET requests return 405 Method Not Allowed error
+- POST requests continue to work normally
+- This applies to all endpoints including `/ping`
+
+**Client-side configuration** (Jodit editor):
+
+```javascript
+Jodit.make('#editor', {
+  uploader: {
+    url: 'http://localhost:8081/',
+    method: 'POST'  // Always use POST when onlyPOST is enabled
+  },
+  filebrowser: {
+    ajax: {
+      url: 'http://localhost:8081/',
+      method: 'POST'  // Always use POST when onlyPOST is enabled
+    }
+  }
+});
+```
+
 ### `allowReplaceSourceFile`
 - **Type**: `boolean`
 - **Default**: `true`
@@ -1021,7 +1068,7 @@ The following parameters are defined in the configuration but are **not currentl
       name: 'default',
       title: 'Files',
       root: '/var/www/files',
-      baseurl: 'http://localhost:8081/files/'
+      baseurl: 'http://localhost:8080/files/'
     }
   }
 }
@@ -1088,7 +1135,7 @@ The following parameters are defined in the configuration but are **not currentl
       name: 'fast',
       title: 'Fast Storage',
       root: '/ssd/files',
-      baseurl: 'http://localhost:8081/files/'
+      baseurl: 'http://localhost:8080/files/'
     }
   }
 }

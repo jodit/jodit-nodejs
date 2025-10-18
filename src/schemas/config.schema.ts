@@ -77,6 +77,7 @@ export const AppConfigSchema = z.object({
   memoryLimit: z.string().describe('PHP-style memory limit (e.g., "256M")'),
   timeoutLimit: z.number().describe('Request timeout in seconds'),
   allowCrossOrigin: z.boolean().describe('Enable CORS'),
+  onlyPOST: z.boolean().describe('Only allow POST requests, disable GET endpoints'),
   safeThumbsCountInOneTime: z
     .number()
     .describe('Safe number of thumbnails to create at once'),

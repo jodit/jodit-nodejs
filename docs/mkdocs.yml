@@ -13,6 +13,8 @@ site_dir: ../dist/site
 theme:
   name: material
   language: en
+  # favicon: assets/images/favicon.svg
+  # logo: assets/images/jodit-icon-simple.svg
   palette:
     - scheme: default
       primary: white
@@ -70,12 +72,11 @@ nav:
       - CI/CD & Deployment: deployment.md
 
 extra:
+  homepage: https://xdsoft.net/jodit/
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/jodit/jodit-nodejs
     - icon: fontawesome/brands/npm
       link: https://www.npmjs.com/package/jodit-nodejs
-  version:
-    provider: mike
 
 copyright: Copyright &copy; 2025 Jodit Team

@@ -10,3 +10,6 @@ _thumbs
 files/test
 old-api
 docs/.venv/
+
+CLAUDE.md
+.claude

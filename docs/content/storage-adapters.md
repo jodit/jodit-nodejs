@@ -569,7 +569,7 @@ describe('My Custom Adapter Integration', () => {
         custom: {
           name: 'custom',
           root: process.cwd(),
-          baseurl: 'http://localhost:8081/files/custom/',
+          baseurl: 'http://localhost:8080/files/custom/',
           storageAdapter: customAdapter
         }
       }

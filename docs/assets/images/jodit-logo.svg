@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 128" width="400" height="128">
+  <defs>
+    <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357ABD;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Icon part -->
+  <g>
+    <!-- Background rounded square -->
+    <rect x="8" y="8" width="112" height="112" rx="24" fill="url(#logo-gradient)"/>
+
+    <!-- Letter J -->
+    <g transform="translate(64, 64)">
+      <path d="M 15 -35
+               L 15 15
+               Q 15 28 2 28
+               Q -11 28 -11 15
+               L -11 10"
+            fill="none"
+            stroke="white"
+            stroke-width="12"
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
+      <rect x="9" y="-50" width="12" height="8" rx="2" fill="white"/>
+      <line x1="22" y1="-35" x2="22" y2="-15"
+            stroke="#FFB74D"
+            stroke-width="3"
+            stroke-linecap="round"
+            opacity="0.9"/>
+    </g>
+  </g>
+
+  <!-- Text part -->
+  <g transform="translate(140, 64)">
+    <text x="0" y="0" font-family="'Segoe UI', Arial, sans-serif" font-size="48" font-weight="700" fill="#2C3E50" letter-spacing="-1">
+      <tspan x="0" dy="12">Jodit</tspan>
+    </text>
+    <text x="0" y="28" font-family="'Segoe UI', Arial, sans-serif" font-size="16" font-weight="400" fill="#7F8C8D" letter-spacing="1">
+      <tspan x="0" dy="0">WYSIWYG Editor</tspan>
+    </text>
+  </g>
+</svg>

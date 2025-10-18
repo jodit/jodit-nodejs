@@ -163,7 +163,7 @@ start({
       uploads: {
         title: 'Uploads',
         root: '/path/to/files',
-        baseurl: 'http://localhost:8081/files/'
+        baseurl: 'http://localhost:8080/files/'
       }
     }
   }

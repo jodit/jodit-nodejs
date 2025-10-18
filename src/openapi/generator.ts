@@ -40,7 +40,7 @@ export async function generateOpenApiSpec(): Promise<
     },
     servers: [
       {
-        url: 'https://xdsoft.net/jodit/finder/',
+        url: 'https://xdsoft.net/jodit/finder2/',
         description: 'Demo server'
       },
       {

@@ -43,6 +43,7 @@ export const config: AppConfig = {
   memoryLimit: '256M',
   timeoutLimit: 60,
   allowCrossOrigin: false,
+  onlyPOST: false,
   safeThumbsCountInOneTime: 20,
   sourceClassName: 'FileSystem',
   accessControl: [],

@@ -65,6 +65,22 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/jodit-nodejs:latest
           cache-to: type=inline
 
+      - name: Image digest
+        run: echo ${{ steps.docker.outputs.digest }}
+
+      - name: Executing remote ssh commands server1.xdsoft.net
+        uses: appleboy/ssh-action@master
+        with:
+            host: ${{ secrets.HOST_SERVER }}
+            username: ${{ secrets.USERNAME_SERVER }}
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
+            port: ${{ secrets.PORT }}
+            script: docker system prune -f -a &&
+                cd /var/www/xdsoft &&
+                docker compose pull jodit-nodejs &&
+                docker compose restart jodit-nodejs &&
+                docker compose up -d jodit-nodejs --force-recreate
+
   publish:
     runs-on: ubuntu-latest
     needs: test

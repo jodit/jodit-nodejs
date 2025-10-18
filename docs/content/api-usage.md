@@ -24,7 +24,8 @@ const customConfig: Partial<AppConfig> = {
     myfiles: {
       title: 'My Files',
       root: '/path/to/files',
-      baseurl: 'http://localhost:8081/files/'
+        // NGINX or CDN base URL for accessing files
+        baseurl: 'http://localhost:8080/uploads/'
     }
   }
 };
@@ -74,7 +75,8 @@ async function startWithConfig() {
       myfiles: {
         title: 'My Files',
         root: '/path/to/files',
-        baseurl: 'http://localhost:8081/files/'
+        // NGINX or CDN base URL for accessing files
+        baseurl: 'http://localhost:8080/uploads/'
       }
     }
   };
@@ -149,7 +151,8 @@ const customConfig = {
     myfiles: {
       title: 'My Files',
       root: '/path/to/files',
-      baseurl: 'http://localhost:8081/files/'
+        // NGINX or CDN base URL for accessing files
+        baseurl: 'http://localhost:8080/uploads/'
     }
   }
 };
@@ -209,7 +212,7 @@ node examples/with-express-session.js
 ## Next Steps
 
 - **[Express Integration](./express-integration.md)** - Integrate with existing Express apps
-- **[API Reference](./api-reference.md)** - Complete API endpoints documentation
+- **[API Reference](./api.md)** - Complete API endpoints documentation
 - **[Authentication](./authentication.md)** - Set up authentication methods
 - **[Access Control](./access-control.md)** - Configure permissions and ACL rules
 - **[Configuration](./config.md)** - Explore all configuration options

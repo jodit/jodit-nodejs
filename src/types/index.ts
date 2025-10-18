@@ -124,6 +124,7 @@ export interface AppConfig {
   memoryLimit: string;
   timeoutLimit: number;
   allowCrossOrigin: boolean;
+  onlyPOST: boolean;
   safeThumbsCountInOneTime: number;
   sourceClassName: string;
   accessControl: AccessControlConfig;

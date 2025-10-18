@@ -21,7 +21,7 @@ const app = createApp({
       name: 'uploads',
       title: 'User Uploads',
       root: '/var/www/uploads',
-      baseurl: 'http://localhost:8081/uploads/'
+      baseurl: 'http://localhost:8080/uploads/'
     }
   }
 });
@@ -58,7 +58,7 @@ createApp({
       name: 'files',
       title: 'Files',
       root: '/var/www/files',
-      baseurl: 'http://localhost:8081/files/'
+      baseurl: 'http://localhost:8080/files/'
     }
   }
 }, myApp);
@@ -89,7 +89,7 @@ createApp({
       name: 'uploads',
       title: 'Uploads',
       root: '/var/www/uploads',
-      baseurl: 'http://localhost:8081/uploads/'
+      baseurl: 'http://localhost:8080/uploads/'
     }
   }
 }, myApp, joditRouter);
@@ -123,7 +123,7 @@ createApp({
       name: 'public',
       title: 'Public Files',
       root: '/var/www/public',
-      baseurl: 'http://localhost:8081/public/'
+      baseurl: 'http://localhost:8080/public/'
     }
   },
   defaultRole: 'guest',
@@ -147,7 +147,7 @@ createApp({
       name: 'admin',
       title: 'Admin Files',
       root: '/var/www/admin',
-      baseurl: 'http://localhost:8081/admin/'
+      baseurl: 'http://localhost:8080/admin/'
     }
   },
   defaultRole: 'guest',
@@ -183,7 +183,7 @@ myApp.listen(8081);
 
 ## Next Steps
 
-- **[API Reference](./api-reference.md)** - Complete API endpoints documentation
+- **[API Reference](./api.md)** - Complete API endpoints documentation
 - **[Authentication](./authentication.md)** - Set up authentication methods
 - **[Access Control](./access-control.md)** - Configure permissions and ACL rules
 - **[Configuration](./config.md)** - Explore all configuration options

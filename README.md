@@ -68,7 +68,8 @@ await start({
         name: 'uploads',
         title: 'User Uploads',
         root: '/var/www/uploads',
-        baseurl: 'http://localhost:8081/uploads/'
+        // NGINX or CDN base URL for accessing files
+        baseurl: 'http://localhost:8080/uploads/'
       }
     }
   }
@@ -101,6 +102,34 @@ await start({
 });
 ```
 
+### Security: POST-only Mode
+
+For enhanced security, you can restrict the API to only accept POST requests:
+
+```typescript
+import { start } from 'jodit-nodejs';
+
+await start({
+  port: 8081,
+  config: {
+    onlyPOST: true,  // Block all GET requests
+    sources: {
+      uploads: {
+        name: 'uploads',
+        title: 'User Uploads',
+        root: '/var/www/uploads',
+        baseurl: 'http://localhost:8080/uploads/'
+      }
+    }
+  }
+});
+```
+
+When `onlyPOST` is enabled:
+- All GET requests return 405 Method Not Allowed
+- Provides protection against CSRF attacks
+- Prevents parameter leakage in server logs
+
 ## Documentation
 
 📖 **[Complete Documentation](https://jodit.github.io/jodit-nodejs/)** - Full documentation with guides and API reference
@@ -127,6 +156,7 @@ await start({
 - ✅ **Document generation** - PDF and DOCX from HTML
 - ✅ **Access control** - role-based permissions, path restrictions
 - ✅ **Authentication** - cookie, JWT, express-session support
+- ✅ **Security** - POST-only mode, CSRF protection
 - ✅ **Express integration** - standalone or integrate with existing apps
 - ✅ **Custom storage** - local filesystem, S3, Azure, Google Cloud, etc.
 - ✅ **TypeScript** - full type safety with strict typing

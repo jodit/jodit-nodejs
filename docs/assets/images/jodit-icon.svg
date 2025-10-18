@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="jodit-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357ABD;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="url(#jodit-gradient)"/>
+
+  <!-- Letter J with modern design -->
+  <g transform="translate(64, 64)">
+    <!-- Main J stroke -->
+    <path d="M 15 -35
+             L 15 15
+             Q 15 28 2 28
+             Q -11 28 -11 15
+             L -11 10"
+          fill="none"
+          stroke="white"
+          stroke-width="12"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+
+    <!-- J dot (styled as a small rectangle for modern look) -->
+    <rect x="9" y="-50" width="12" height="8" rx="2" fill="white"/>
+
+    <!-- Editing cursor accent -->
+    <line x1="22" y1="-35" x2="22" y2="-15"
+          stroke="#FFB74D"
+          stroke-width="3"
+          stroke-linecap="round"
+          opacity="0.9"/>
+  </g>
+
+  <!-- Subtle text editing lines decoration -->
+  <g opacity="0.15">
+    <line x1="25" y1="25" x2="45" y2="25" stroke="white" stroke-width="2"/>
+    <line x1="25" y1="32" x2="40" y2="32" stroke="white" stroke-width="2"/>
+  </g>
+</svg>

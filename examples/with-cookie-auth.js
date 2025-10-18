@@ -41,7 +41,7 @@ async function main() {
         uploads: {
           title: 'Uploads',
           root: './files/uploads',
-          baseurl: 'http://localhost:8081/files/uploads/'
+          baseurl: 'http://localhost:8080/files/uploads/'
         }
       }
     },

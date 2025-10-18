@@ -59,6 +59,75 @@ Example `config.json`:
 }
 ```
 
+### Via Docker Compose
+
+Create a `docker-compose.yml` file:
+
+```yaml
+version: '3.8'
+
+services:
+  jodit-connector:
+    image: chupurnov/jodit-nodejs:latest
+    container_name: jodit-connector
+    restart: unless-stopped
+    ports:
+      - "8087:8081"
+    volumes:
+      - ./config.json:/usr/src/app/config.json
+      - ./files:/usr/src/app/files
+    environment:
+      - NODE_ENV=production
+      - PORT=8081
+```
+
+Run with:
+
+```bash
+docker-compose up -d
+```
+
+### Nginx Reverse Proxy
+
+To serve Jodit Connector behind nginx, add this configuration to your nginx site config:
+
+```nginx
+location /jodit/finder/ {
+    proxy_pass http://127.0.0.1:8087/;
+}
+```
+
+**Important**: When using a reverse proxy, update your `config.json` to reflect the public URL:
+
+```json
+{
+  "sources": {
+    "uploads": {
+      "name": "uploads",
+      "title": "My Files",
+      "root": "/usr/src/app/files",
+      "baseurl": "https://yourdomain.com/files/"
+    }
+  }
+}
+```
+
+And configure Jodit Editor to use the proxied URL:
+
+```javascript
+Jodit.make('#editor', {
+  uploader: {
+    url: '/jodit/finder/',
+    method: 'POST'
+  },
+  filebrowser: {
+    ajax: {
+      url: '/jodit/finder/'
+    }
+  }
+});
+```
+
 ## Quick Start
 
 ### Basic Usage (TypeScript)
@@ -99,7 +168,7 @@ await start({
         name: 'uploads',
         title: 'User Uploads',
         root: '/var/www/uploads',
-        baseurl: 'http://localhost:8081/uploads/'
+        baseurl: 'http://localhost:8080/uploads/'
       }
     }
   }
@@ -158,7 +227,7 @@ jodit-nodejs/
 - **[Installation & Setup](./installation.md)** - Environment variables and configuration
 - **[API Usage](./api-usage.md)** - Complete usage examples for TypeScript, CommonJS, ES Modules
 - **[Express Integration](./express-integration.md)** - Integration patterns with existing Express apps
-- **[API Reference](./api-reference.md)** - Complete API endpoints documentation
+- **[API Reference](./api.md)** - Complete API endpoints documentation
 - **[Authentication](./authentication.md)** - Cookie auth, JWT, express-session
 - **[Access Control](./access-control.md)** - ACL rules, permissions, dynamic rules
 - **[Configuration](./config.md)** - All configuration options
