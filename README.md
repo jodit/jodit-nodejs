@@ -7,7 +7,10 @@
 
 Node.js/TypeScript implementation of the Jodit File Browser and Uploader connector.
 
-Analog of the PHP version: [jodit-connector-application](https://github.com/xdan/jodit-connectors)
+**Links:**
+- [Jodit Editor](https://xdsoft.net/jodit/) - The WYSIWYG HTML editor
+- [Complete Documentation](https://jodit.github.io/jodit-nodejs/) - Full documentation and API reference
+- [PHP Connector](https://github.com/xdan/jodit-connectors) - Original PHP implementation
 
 ## Technology Stack
 
@@ -100,18 +103,21 @@ await start({
 
 ## Documentation
 
-📖 **[Complete Documentation](./docs/index.md)** - Full API reference and guides
+📖 **[Complete Documentation](https://jodit.github.io/jodit-nodejs/)** - Full documentation with guides and API reference
 
-**Specialized Guides:**
-- **[Authentication & Access Control](./docs/authentication.md)** - Cookie auth, JWT, express-session, ACL rules
-- **[Configuration Reference](./docs/config.md)** - All configuration options
-- **[Custom Storage Adapters](./docs/storage-adapters.md)** - AWS S3, Azure, Google Cloud, custom backends
-- **[Deployment Guide](./docs/deployment.md)** - CI/CD, Docker, npm publishing
+**Quick Links:**
+- [Getting Started](https://jodit.github.io/jodit-nodejs/) - Installation and quick start
+- [Authentication](https://jodit.github.io/jodit-nodejs/authentication/) - Cookie auth, JWT, express-session
+- [Access Control](https://jodit.github.io/jodit-nodejs/access-control/) - ACL rules and permissions
+- [Configuration](https://jodit.github.io/jodit-nodejs/config/) - All configuration options
+- [Express Integration](https://jodit.github.io/jodit-nodejs/express-integration/) - Integration patterns
+- [Storage Adapters](https://jodit.github.io/jodit-nodejs/storage-adapters/) - AWS S3, Azure, Google Cloud
+- [Docker Deployment](https://jodit.github.io/jodit-nodejs/docker/) - Docker guide
+- [API Reference](https://jodit.github.io/jodit-nodejs/api-reference/) - Complete API endpoints
 
-**API Documentation:**
-- 📖 [Swagger UI (GitHub Pages)](https://jodit.github.io/jodit-nodejs/)
-- 📄 [OpenAPI Spec (YAML)](https://jodit.github.io/jodit-nodejs/openapi.yaml)
-- 📄 [OpenAPI Spec (JSON)](https://jodit.github.io/jodit-nodejs/openapi.json)
+**OpenAPI Specification:**
+- 📄 [OpenAPI YAML](https://jodit.github.io/jodit-nodejs/openapi.yaml)
+- 📄 [OpenAPI JSON](https://jodit.github.io/jodit-nodejs/openapi.json)
 
 ## Key Features
 
