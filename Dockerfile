@@ -33,6 +33,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true;
 RUN npm ci
 
 COPY ./tsconfig.json ./
+COPY ./tsup.config.ts ./
 COPY ./src ./src
 RUN npm run build
 
@@ -53,5 +54,4 @@ RUN mkdir -p /usr/src/app/files
 # Set environment variable to read config from file
 ENV CONFIG_FILE=/usr/src/app/config.json
 
-CMD ["du", "-sh", "node_modules"]
-# CMD ["node", "--env-file=.env", "dist/run.js"]
+CMD ["node", "--env-file=.env", "dist/run.js"]
