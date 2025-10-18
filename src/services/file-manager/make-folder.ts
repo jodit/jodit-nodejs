@@ -19,8 +19,7 @@ export async function makeFolder(
 
   const root = await ctx.getRoot();
   const parentPath = path.join(root, relativePath ?? './');
-  const parentRelative =
-    parentPath.replace(root, '').replace(/^\//, '') || '/';
+  const parentRelative = parentPath.replace(root, '').replace(/^\//, '') || '/';
 
   // Check if parent directory exists
   try {

@@ -43,7 +43,10 @@ export function createProxiedConfig(
   sourceConfig: SourceConfig
 ): Config {
   const proxiedParams = new Proxy(baseConfig.params, {
-    get<Key extends keyof AppConfig>(target: AppConfig, prop: Key): AppConfig[Key] {
+    get<Key extends keyof AppConfig>(
+      target: AppConfig,
+      prop: Key
+    ): AppConfig[Key] {
       // Don't allow overriding 'sources' at source level to prevent circular references
       if (prop === 'sources') {
         return target[prop];
@@ -82,7 +85,10 @@ export class Config {
     // Determine which storage adapter to use
     let storageAdapter;
 
-    if (!sourceConfig.storageAdapter || sourceConfig.storageAdapter === 'local') {
+    if (
+      !sourceConfig.storageAdapter ||
+      sourceConfig.storageAdapter === 'local'
+    ) {
       // Default: use LocalStorageAdapter
       storageAdapter = new LocalStorageAdapter(sourceConfig.root);
     } else {

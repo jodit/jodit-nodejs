@@ -195,14 +195,12 @@ describe('File Move (GET /?action=fileMove)', () => {
       aclTestServer = await startTestServer();
       await createTestFile('test-acl.txt', 'content');
 
-      const response = await request(aclTestServer!.host)
-        .get('/')
-        .query({
-          action: 'fileMove',
-          source: 'test',
-          from: '/test-acl.txt',
-          path: '/subdir'
-        });
+      const response = await request(aclTestServer!.host).get('/').query({
+        action: 'fileMove',
+        source: 'test',
+        from: '/test-acl.txt',
+        path: '/subdir'
+      });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -229,14 +227,12 @@ describe('File Move (GET /?action=fileMove)', () => {
 
       await createTestFile('test-move.txt', 'content');
 
-      const response = await request(aclTestServer!.host)
-        .get('/')
-        .query({
-          action: 'fileMove',
-          source: 'test',
-          from: '/test-move.txt',
-          path: '/subdir'
-        });
+      const response = await request(aclTestServer!.host).get('/').query({
+        action: 'fileMove',
+        source: 'test',
+        from: '/test-move.txt',
+        path: '/subdir'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);
@@ -265,14 +261,12 @@ describe('File Move (GET /?action=fileMove)', () => {
 
       await createTestFile('test-admin.txt', 'content');
 
-      const response = await request(aclTestServer!.host)
-        .get('/')
-        .query({
-          action: 'fileMove',
-          source: 'test',
-          from: '/test-admin.txt',
-          path: '/subdir'
-        });
+      const response = await request(aclTestServer!.host).get('/').query({
+        action: 'fileMove',
+        source: 'test',
+        from: '/test-admin.txt',
+        path: '/subdir'
+      });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -299,14 +293,12 @@ describe('File Move (GET /?action=fileMove)', () => {
 
       await createTestFile('test.txt', 'content');
 
-      const response = await request(aclTestServer!.host)
-        .get('/')
-        .query({
-          action: 'fileMove',
-          source: 'test',
-          from: '/test.txt',
-          path: '/subdir'
-        });
+      const response = await request(aclTestServer!.host).get('/').query({
+        action: 'fileMove',
+        source: 'test',
+        from: '/test.txt',
+        path: '/subdir'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);
@@ -334,14 +326,12 @@ describe('File Move (GET /?action=fileMove)', () => {
 
       await createTestFile('test.txt', 'content');
 
-      const response = await request(aclTestServer!.host)
-        .post('/')
-        .send({
-          action: 'fileMove',
-          source: 'test',
-          from: '/test.txt',
-          path: '/subdir'
-        });
+      const response = await request(aclTestServer!.host).post('/').send({
+        action: 'fileMove',
+        source: 'test',
+        from: '/test.txt',
+        path: '/subdir'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

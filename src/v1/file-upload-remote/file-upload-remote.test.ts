@@ -301,7 +301,12 @@ describe('File Upload Remote (GET /?action=fileUploadRemote)', () => {
       // Should allow remote upload in root path
       const rootResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileUploadRemote', source: 'test', path: '/', url: remoteUrl });
+        .query({
+          action: 'fileUploadRemote',
+          source: 'test',
+          path: '/',
+          url: remoteUrl
+        });
 
       expect(rootResponse.status).toBe(200);
       expect(rootResponse.body.success).toBe(true);
@@ -309,7 +314,12 @@ describe('File Upload Remote (GET /?action=fileUploadRemote)', () => {
       // Should deny remote upload in /uploads path
       const uploadsResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileUploadRemote', source: 'test', path: '/uploads', url: remoteUrl });
+        .query({
+          action: 'fileUploadRemote',
+          source: 'test',
+          path: '/uploads',
+          url: remoteUrl
+        });
 
       expect(uploadsResponse.status).toBe(403);
       expect(uploadsResponse.body.success).toBe(false);
@@ -367,13 +377,11 @@ describe('File Upload Remote (GET /?action=fileUploadRemote)', () => {
 
       const remoteUrl = `http://localhost:${mockServerPort}/test-image.png`;
 
-      const response = await request(aclTestServer!.host)
-        .post('/')
-        .send({
-          action: 'fileUploadRemote',
-          source: 'test',
-          url: remoteUrl
-        });
+      const response = await request(aclTestServer!.host).post('/').send({
+        action: 'fileUploadRemote',
+        source: 'test',
+        url: remoteUrl
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

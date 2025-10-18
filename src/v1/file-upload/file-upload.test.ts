@@ -137,7 +137,10 @@ describe('File Upload API', () => {
     });
 
     it('should upload files with array-style field names (files[0], files[1])', async () => {
-      const testImagePath = path.join(testFilesPath, './subdir/test-array-1.png');
+      const testImagePath = path.join(
+        testFilesPath,
+        './subdir/test-array-1.png'
+      );
       const testCsvPath = path.join(testFilesPath, './subdir/test-array-2.csv');
 
       // Create test files
@@ -157,7 +160,10 @@ describe('File Upload API', () => {
         success: true,
         data: {
           code: 220,
-          files: expect.arrayContaining(['test-array-1.png', 'test-array-2.csv']),
+          files: expect.arrayContaining([
+            'test-array-1.png',
+            'test-array-2.csv'
+          ]),
           isImages: expect.any(Array)
         }
       });
@@ -179,7 +185,11 @@ describe('File Upload API', () => {
 
       it('should allow access when no access control rules defined', async () => {
         aclTestServer = await startTestServer();
-        const testImagePath = path.join(testFilesPath, 'subdir', 'acl-test.png');
+        const testImagePath = path.join(
+          testFilesPath,
+          'subdir',
+          'acl-test.png'
+        );
         await fs.writeFile(testImagePath, 'test image content');
 
         const response = await request(aclTestServer!.host)
@@ -288,8 +298,16 @@ describe('File Upload API', () => {
           defaultRole: 'guest'
         });
 
-        const publicImagePath = path.join(testFilesPath, 'subdir', 'public.png');
-        const restrictedImagePath = path.join(testFilesPath, 'subdir', 'restricted.png');
+        const publicImagePath = path.join(
+          testFilesPath,
+          'subdir',
+          'public.png'
+        );
+        const restrictedImagePath = path.join(
+          testFilesPath,
+          'subdir',
+          'restricted.png'
+        );
         await fs.writeFile(publicImagePath, 'public image');
         await fs.writeFile(restrictedImagePath, 'restricted image');
 
@@ -314,7 +332,9 @@ describe('File Upload API', () => {
 
         expect(restrictedResponse.status).toBe(403);
         expect(restrictedResponse.body.success).toBe(false);
-        expect(restrictedResponse.body.data.messages).toContain('Access denied');
+        expect(restrictedResponse.body.data.messages).toContain(
+          'Access denied'
+        );
 
         await fs.unlink(publicImagePath);
         await fs.unlink(restrictedImagePath);

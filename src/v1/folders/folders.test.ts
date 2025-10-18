@@ -333,12 +333,10 @@ describe('Folders (GET /?action=folders)', () => {
         defaultRole: 'guest'
       });
 
-      const response = await request(aclTestServer!.host)
-        .post('/')
-        .send({
-          action: 'folders',
-          source: 'test'
-        });
+      const response = await request(aclTestServer!.host).post('/').send({
+        action: 'folders',
+        source: 'test'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

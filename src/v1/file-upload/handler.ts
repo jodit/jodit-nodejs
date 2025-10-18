@@ -24,16 +24,18 @@ export async function fileUploadHandler(
   });
 
   // Get the expected field name for uploaded files
-  const filesKey = source.sourceConfig.defaultFilesKey || config.params.defaultFilesKey;
+  const filesKey =
+    source.sourceConfig.defaultFilesKey || config.params.defaultFilesKey;
 
   // Filter files uploaded with the correct field name
   // Accept both exact match (e.g., 'default') and array-style names (e.g., 'files[0]', 'files[1]')
-  const uploadedFiles = req.files && Array.isArray(req.files)
-    ? req.files.filter(file =>
-        file.fieldname === filesKey ||
-        file.fieldname.startsWith('files[')
-      )
-    : [];
+  const uploadedFiles =
+    req.files && Array.isArray(req.files)
+      ? req.files.filter(
+          file =>
+            file.fieldname === filesKey || file.fieldname.startsWith('files[')
+        )
+      : [];
 
   // Check if files were uploaded
   if (uploadedFiles.length === 0) {

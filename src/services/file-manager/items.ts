@@ -30,10 +30,7 @@ export async function items(
     throw Boom.notFound('Path does not exist');
   }
 
-  let relativeCalcPath = fullPathDirectory.replace(
-    rootDirecrtoryForSource,
-    ''
-  );
+  let relativeCalcPath = fullPathDirectory.replace(rootDirecrtoryForSource, '');
   if (relativeCalcPath.length > 1 && relativeCalcPath.startsWith(path.sep)) {
     relativeCalcPath = relativeCalcPath.substring(1);
   }

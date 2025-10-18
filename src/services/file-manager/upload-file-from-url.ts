@@ -67,8 +67,7 @@ export async function uploadFileFromUrl(
 
   // Handle file name conflicts based on strategy
   if (await ctx.storage.fileExists(targetRelative, {}).catch(() => false)) {
-    const strategy =
-      ctx.config.params.saveSameFileNameStrategy || 'addNumber';
+    const strategy = ctx.config.params.saveSameFileNameStrategy || 'addNumber';
 
     switch (strategy) {
       case 'error':

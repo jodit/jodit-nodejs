@@ -261,7 +261,13 @@ describe('Image Resize (GET /?action=imageResize)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'imageResize', source: 'test', name: 'acl-test.png', 'box[w]': '100', 'box[h]': '100' });
+        .query({
+          action: 'imageResize',
+          source: 'test',
+          name: 'acl-test.png',
+          'box[w]': '100',
+          'box[h]': '100'
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -290,7 +296,13 @@ describe('Image Resize (GET /?action=imageResize)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'imageResize', source: 'test', name: 'test.png', 'box[w]': '100', 'box[h]': '100' });
+        .query({
+          action: 'imageResize',
+          source: 'test',
+          name: 'test.png',
+          'box[w]': '100',
+          'box[h]': '100'
+        });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);
@@ -321,7 +333,13 @@ describe('Image Resize (GET /?action=imageResize)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'imageResize', source: 'test', name: 'test.png', 'box[w]': '100', 'box[h]': '100' });
+        .query({
+          action: 'imageResize',
+          source: 'test',
+          name: 'test.png',
+          'box[w]': '100',
+          'box[h]': '100'
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -352,8 +370,14 @@ describe('Image Resize (GET /?action=imageResize)', () => {
       });
 
       await createTestImage('public.png', 200, 200);
-      await fs.mkdir(path.join(testFilesPath, 'protected'), { recursive: true });
-      const protectedPath = path.join(testFilesPath, 'protected', 'private.png');
+      await fs.mkdir(path.join(testFilesPath, 'protected'), {
+        recursive: true
+      });
+      const protectedPath = path.join(
+        testFilesPath,
+        'protected',
+        'private.png'
+      );
       await sharp({
         create: {
           width: 200,
@@ -368,7 +392,14 @@ describe('Image Resize (GET /?action=imageResize)', () => {
       // Should allow resize in root path
       const rootResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'imageResize', source: 'test', path: '/', name: 'public.png', 'box[w]': '100', 'box[h]': '100' });
+        .query({
+          action: 'imageResize',
+          source: 'test',
+          path: '/',
+          name: 'public.png',
+          'box[w]': '100',
+          'box[h]': '100'
+        });
 
       expect(rootResponse.status).toBe(200);
       expect(rootResponse.body.success).toBe(true);
@@ -376,7 +407,14 @@ describe('Image Resize (GET /?action=imageResize)', () => {
       // Should deny resize in /protected path
       const protectedResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'imageResize', source: 'test', path: '/protected', name: 'private.png', 'box[w]': '100', 'box[h]': '100' });
+        .query({
+          action: 'imageResize',
+          source: 'test',
+          path: '/protected',
+          name: 'private.png',
+          'box[w]': '100',
+          'box[h]': '100'
+        });
 
       expect(protectedResponse.status).toBe(403);
       expect(protectedResponse.body.success).toBe(false);
@@ -406,7 +444,13 @@ describe('Image Resize (GET /?action=imageResize)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'imageResize', source: 'test', name: 'test.png', 'box[w]': '100', 'box[h]': '100' });
+        .query({
+          action: 'imageResize',
+          source: 'test',
+          name: 'test.png',
+          'box[w]': '100',
+          'box[h]': '100'
+        });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

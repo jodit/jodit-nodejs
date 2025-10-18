@@ -235,13 +235,11 @@ describe('Custom SVG Generator', () => {
       safeThumbsCountInOneTime: 100 // Ensure thumbnails are generated
     });
 
-    const response = await request(testServer.host)
-      .get('/')
-      .query({
-        action: 'files',
-        source: 'test',
-        mods: 'withFolders'
-      });
+    const response = await request(testServer.host).get('/').query({
+      action: 'files',
+      source: 'test',
+      mods: 'withFolders'
+    });
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);

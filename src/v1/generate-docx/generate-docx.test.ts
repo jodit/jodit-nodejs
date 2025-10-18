@@ -251,7 +251,11 @@ describe('Generate DOCX (GET /?action=generateDocx)', () => {
       // Should deny DOCX generation in /restricted path
       const restrictedResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'generateDocx', path: '/restricted', html: '<p>Test</p>' });
+        .query({
+          action: 'generateDocx',
+          path: '/restricted',
+          html: '<p>Test</p>'
+        });
 
       expect(restrictedResponse.status).toBe(403);
       expect(restrictedResponse.body.success).toBe(false);
@@ -289,12 +293,10 @@ describe('Generate DOCX (GET /?action=generateDocx)', () => {
         defaultRole: 'guest'
       });
 
-      const response = await request(aclTestServer!.host)
-        .post('/')
-        .send({
-          action: 'generateDocx',
-          html: '<p>Test</p>'
-        });
+      const response = await request(aclTestServer!.host).post('/').send({
+        action: 'generateDocx',
+        html: '<p>Test</p>'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

@@ -89,7 +89,6 @@ describe('Files API', () => {
           })
           .set('Accept', 'application/json');
 
-          
         expect(response.status).toBe(200);
         expect(response.body.data.sources[0].path).toEqual('subfolder');
         expect(response.body.data.sources[0].files[1].file).toEqual(

@@ -70,5 +70,4 @@ describe('Async Access Control', () => {
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
   });
-
 });

@@ -68,7 +68,7 @@ describe('File Rename (GET /?action=fileRename)', () => {
   it('should preserve file extension when renaming', async () => {
     // Create test file
     const oldName = 'document.pdf';
-    const newName = 'renamed-doc'; 
+    const newName = 'renamed-doc';
     await createTestFile(oldName, 'pdf content');
 
     const response = await request(testServer!.host).get('/').query({
@@ -272,7 +272,12 @@ describe('File Rename (GET /?action=fileRename)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileRename', source: 'test', name: 'acl-test.txt', newname: 'renamed.txt' });
+        .query({
+          action: 'fileRename',
+          source: 'test',
+          name: 'acl-test.txt',
+          newname: 'renamed.txt'
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -301,7 +306,12 @@ describe('File Rename (GET /?action=fileRename)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileRename', source: 'test', name: 'test.txt', newname: 'renamed.txt' });
+        .query({
+          action: 'fileRename',
+          source: 'test',
+          name: 'test.txt',
+          newname: 'renamed.txt'
+        });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);
@@ -332,7 +342,12 @@ describe('File Rename (GET /?action=fileRename)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileRename', source: 'test', name: 'test.txt', newname: 'renamed.txt' });
+        .query({
+          action: 'fileRename',
+          source: 'test',
+          name: 'test.txt',
+          newname: 'renamed.txt'
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -368,7 +383,13 @@ describe('File Rename (GET /?action=fileRename)', () => {
       // Should allow rename in root path
       const rootResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileRename', source: 'test', path: '/', name: 'public.txt', newname: 'renamed-public.txt' });
+        .query({
+          action: 'fileRename',
+          source: 'test',
+          path: '/',
+          name: 'public.txt',
+          newname: 'renamed-public.txt'
+        });
 
       expect(rootResponse.status).toBe(200);
       expect(rootResponse.body.success).toBe(true);
@@ -376,7 +397,13 @@ describe('File Rename (GET /?action=fileRename)', () => {
       // Should deny rename in /subdir path
       const subdirResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileRename', source: 'test', path: '/subdir', name: 'protected.txt', newname: 'renamed-protected.txt' });
+        .query({
+          action: 'fileRename',
+          source: 'test',
+          path: '/subdir',
+          name: 'protected.txt',
+          newname: 'renamed-protected.txt'
+        });
 
       expect(subdirResponse.status).toBe(403);
       expect(subdirResponse.body.success).toBe(false);
@@ -406,7 +433,12 @@ describe('File Rename (GET /?action=fileRename)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileRename', source: 'test', name: 'test.txt', newname: 'renamed.txt' });
+        .query({
+          action: 'fileRename',
+          source: 'test',
+          name: 'test.txt',
+          newname: 'renamed.txt'
+        });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);
@@ -434,14 +466,12 @@ describe('File Rename (GET /?action=fileRename)', () => {
 
       await createTestFile('test.txt', 'content');
 
-      const response = await request(aclTestServer!.host)
-        .post('/')
-        .send({
-          action: 'fileRename',
-          source: 'test',
-          name: 'test.txt',
-          newname: 'renamed.txt'
-        });
+      const response = await request(aclTestServer!.host).post('/').send({
+        action: 'fileRename',
+        source: 'test',
+        name: 'test.txt',
+        newname: 'renamed.txt'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

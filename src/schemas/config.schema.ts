@@ -77,7 +77,9 @@ export const AppConfigSchema = z.object({
   memoryLimit: z.string().describe('PHP-style memory limit (e.g., "256M")'),
   timeoutLimit: z.number().describe('Request timeout in seconds'),
   allowCrossOrigin: z.boolean().describe('Enable CORS'),
-  onlyPOST: z.boolean().describe('Only allow POST requests, disable GET endpoints'),
+  onlyPOST: z
+    .boolean()
+    .describe('Only allow POST requests, disable GET endpoints'),
   safeThumbsCountInOneTime: z
     .number()
     .describe('Safe number of thumbnails to create at once'),
@@ -92,7 +94,9 @@ export const AppConfigSchema = z.object({
   accessControlInstance: z
     .any()
     .optional()
-    .describe('Custom AccessControl instance implementing IAccessControl interface'),
+    .describe(
+      'Custom AccessControl instance implementing IAccessControl interface'
+    ),
   roleSessionVar: z.string().describe('Session variable name for user role'),
   defaultRole: z.string().describe('Default user role'),
   allowReplaceSourceFile: z

@@ -1,4 +1,4 @@
-import type { StatEntry } from "@flystorage/file-storage";
+import type { StatEntry } from '@flystorage/file-storage';
 
 export interface IResolveFile {
   readonly path: string;
@@ -35,7 +35,7 @@ export interface ISourceItem {
 }
 
 export interface IItemFile {
-  stat: StatEntry
+  stat: StatEntry;
   name: string;
   size: number;
   mtime: number;

@@ -45,9 +45,7 @@ export async function movePath(
   // Check if source exists using storage
   const sourceExists =
     (await ctx.storage.fileExists(sourceRelative, {}).catch(() => false)) ||
-    (await ctx.storage
-      .directoryExists(sourceRelative, {})
-      .catch(() => false));
+    (await ctx.storage.directoryExists(sourceRelative, {}).catch(() => false));
 
   if (!sourceExists) {
     throw Boom.notFound('Folder or directory not exists');
@@ -74,9 +72,7 @@ export async function movePath(
   // Check if target already exists
   const targetExists =
     (await ctx.storage.fileExists(targetRelative, {}).catch(() => false)) ||
-    (await ctx.storage
-      .directoryExists(targetRelative, {})
-      .catch(() => false));
+    (await ctx.storage.directoryExists(targetRelative, {}).catch(() => false));
 
   if (targetExists) {
     if (isFolder) {
@@ -84,9 +80,7 @@ export async function movePath(
         'Folder with same name already exists in destination'
       );
     }
-    throw Boom.badRequest(
-      'File with same name already exists in destination'
-    );
+    throw Boom.badRequest('File with same name already exists in destination');
   }
 
   try {

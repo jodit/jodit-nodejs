@@ -79,7 +79,8 @@ export abstract class BaseSource {
   }
 
   protected getExtension(fileOrPath: string | StatEntry): string {
-    const filePath = typeof fileOrPath === 'string' ? fileOrPath : fileOrPath.path;
+    const filePath =
+      typeof fileOrPath === 'string' ? fileOrPath : fileOrPath.path;
     return path.extname(filePath).toLowerCase().replace(/^./, '');
   }
 }

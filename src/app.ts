@@ -101,7 +101,9 @@ export function createApp(
   // Middleware to block GET requests if onlyPOST is enabled
   router.use((req: Request, res: Response, next: NextFunction) => {
     if (configInstance.params.onlyPOST && req.method === 'GET') {
-      const boomError = Boom.methodNotAllowed('GET requests are disabled. Use POST instead.');
+      const boomError = Boom.methodNotAllowed(
+        'GET requests are disabled. Use POST instead.'
+      );
       boomError.output.payload.messages = [boomError.message];
       return next(boomError);
     }
@@ -152,36 +154,38 @@ export function createApp(
   router.get('/:action', requestContext, actionHandler);
 
   // Error handler on router
-  router.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    if (configInstance?.params?.debug === true) {
-      logger.error(err);
-    }
+  router.use(
+    (err: Error, _req: Request, res: Response, _next: NextFunction) => {
+      if (configInstance?.params?.debug === true) {
+        logger.error(err);
+      }
 
-    // Check if it's a Boom error
-    if (Boom.isBoom(err)) {
-      const statusCode = err.output.statusCode;
-      const messages = (err.output.payload as { messages?: string[] })
-        .messages ?? [err.message];
+      // Check if it's a Boom error
+      if (Boom.isBoom(err)) {
+        const statusCode = err.output.statusCode;
+        const messages = (err.output.payload as { messages?: string[] })
+          .messages ?? [err.message];
 
-      res.status(statusCode).json({
+        res.status(statusCode).json({
+          success: false,
+          data: {
+            code: statusCode,
+            messages
+          }
+        });
+        return;
+      }
+
+      // Handle regular errors
+      res.status(500).json({
         success: false,
         data: {
-          code: statusCode,
-          messages
+          code: 500,
+          messages: [err.message]
         }
       });
-      return;
     }
-
-    // Handle regular errors
-    res.status(500).json({
-      success: false,
-      data: {
-        code: 500,
-        messages: [err.message]
-      }
-    });
-  });
+  );
 
   // Mount router to app if router was created internally (not passed by user)
   if (!existingRouter) {

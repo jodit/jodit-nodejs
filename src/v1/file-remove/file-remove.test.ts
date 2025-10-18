@@ -234,7 +234,12 @@ describe('File Remove (GET /?action=fileRemove)', () => {
       // Should allow removal in root path
       const rootResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileRemove', source: 'test', path: '/', name: 'public.txt' });
+        .query({
+          action: 'fileRemove',
+          source: 'test',
+          path: '/',
+          name: 'public.txt'
+        });
 
       expect(rootResponse.status).toBe(200);
       expect(rootResponse.body.success).toBe(true);
@@ -242,7 +247,12 @@ describe('File Remove (GET /?action=fileRemove)', () => {
       // Should deny removal in /subdir path
       const subdirResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileRemove', source: 'test', path: '/subdir', name: 'protected.txt' });
+        .query({
+          action: 'fileRemove',
+          source: 'test',
+          path: '/subdir',
+          name: 'protected.txt'
+        });
 
       expect(subdirResponse.status).toBe(403);
       expect(subdirResponse.body.success).toBe(false);
@@ -300,13 +310,11 @@ describe('File Remove (GET /?action=fileRemove)', () => {
 
       await createTestFile('test.txt', 'content');
 
-      const response = await request(aclTestServer!.host)
-        .post('/')
-        .send({
-          action: 'fileRemove',
-          source: 'test',
-          name: 'test.txt'
-        });
+      const response = await request(aclTestServer!.host).post('/').send({
+        action: 'fileRemove',
+        source: 'test',
+        name: 'test.txt'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

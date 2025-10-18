@@ -174,7 +174,11 @@ describe('File Download (GET /?action=fileDownload)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileDownload', source: 'test', name: 'acl-test.txt' });
+        .query({
+          action: 'fileDownload',
+          source: 'test',
+          name: 'acl-test.txt'
+        });
 
       expect(response.status).toBe(200);
     });
@@ -269,15 +273,27 @@ describe('File Download (GET /?action=fileDownload)', () => {
       // Should allow download in root path
       const rootResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileDownload', source: 'test', path: '/', name: 'public.txt' });
+        .query({
+          action: 'fileDownload',
+          source: 'test',
+          path: '/',
+          name: 'public.txt'
+        });
 
       expect(rootResponse.status).toBe(200);
-      expect(rootResponse.headers['content-type']).toBe('application/octet-stream');
+      expect(rootResponse.headers['content-type']).toBe(
+        'application/octet-stream'
+      );
 
       // Should deny download in /subdir path
       const subdirResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'fileDownload', source: 'test', path: '/subdir', name: 'protected.txt' });
+        .query({
+          action: 'fileDownload',
+          source: 'test',
+          path: '/subdir',
+          name: 'protected.txt'
+        });
 
       expect(subdirResponse.status).toBe(403);
       expect(subdirResponse.body.success).toBe(false);
@@ -335,13 +351,11 @@ describe('File Download (GET /?action=fileDownload)', () => {
 
       await createTestFile('test.txt', 'content');
 
-      const response = await request(aclTestServer!.host)
-        .post('/')
-        .send({
-          action: 'fileDownload',
-          source: 'test',
-          name: 'test.txt'
-        });
+      const response = await request(aclTestServer!.host).post('/').send({
+        action: 'fileDownload',
+        source: 'test',
+        name: 'test.txt'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

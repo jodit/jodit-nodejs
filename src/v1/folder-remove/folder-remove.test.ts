@@ -225,11 +225,17 @@ describe('Folder Remove (GET /?action=folderRemove)', () => {
 
     it('should allow access when no access control rules defined', async () => {
       aclTestServer = await startTestServer();
-      await fs.mkdir(path.join(testFilesPath, 'acl-test-folder'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'acl-test-folder'), {
+        recursive: true
+      });
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderRemove', source: 'test', name: 'acl-test-folder' });
+        .query({
+          action: 'folderRemove',
+          source: 'test',
+          name: 'acl-test-folder'
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -254,7 +260,9 @@ describe('Folder Remove (GET /?action=folderRemove)', () => {
         defaultRole: 'guest'
       });
 
-      await fs.mkdir(path.join(testFilesPath, 'test-folder'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'test-folder'), {
+        recursive: true
+      });
 
       const response = await request(aclTestServer!.host)
         .get('/')
@@ -285,7 +293,9 @@ describe('Folder Remove (GET /?action=folderRemove)', () => {
         defaultRole: 'admin'
       });
 
-      await fs.mkdir(path.join(testFilesPath, 'test-folder'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'test-folder'), {
+        recursive: true
+      });
 
       const response = await request(aclTestServer!.host)
         .get('/')
@@ -319,13 +329,22 @@ describe('Folder Remove (GET /?action=folderRemove)', () => {
         defaultRole: 'guest'
       });
 
-      await fs.mkdir(path.join(testFilesPath, 'public-folder'), { recursive: true });
-      await fs.mkdir(path.join(testFilesPath, 'protected', 'private-folder'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'public-folder'), {
+        recursive: true
+      });
+      await fs.mkdir(path.join(testFilesPath, 'protected', 'private-folder'), {
+        recursive: true
+      });
 
       // Should allow removal in root path
       const rootResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderRemove', source: 'test', path: '/', name: 'public-folder' });
+        .query({
+          action: 'folderRemove',
+          source: 'test',
+          path: '/',
+          name: 'public-folder'
+        });
 
       expect(rootResponse.status).toBe(200);
       expect(rootResponse.body.success).toBe(true);
@@ -333,7 +352,12 @@ describe('Folder Remove (GET /?action=folderRemove)', () => {
       // Should deny removal in /protected path
       const protectedResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderRemove', source: 'test', path: '/protected', name: 'private-folder' });
+        .query({
+          action: 'folderRemove',
+          source: 'test',
+          path: '/protected',
+          name: 'private-folder'
+        });
 
       expect(protectedResponse.status).toBe(403);
       expect(protectedResponse.body.success).toBe(false);
@@ -359,7 +383,9 @@ describe('Folder Remove (GET /?action=folderRemove)', () => {
         defaultRole: 'guest'
       });
 
-      await fs.mkdir(path.join(testFilesPath, 'test-folder'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'test-folder'), {
+        recursive: true
+      });
 
       const response = await request(aclTestServer!.host)
         .get('/')
@@ -389,15 +415,15 @@ describe('Folder Remove (GET /?action=folderRemove)', () => {
         defaultRole: 'guest'
       });
 
-      await fs.mkdir(path.join(testFilesPath, 'test-folder'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'test-folder'), {
+        recursive: true
+      });
 
-      const response = await request(aclTestServer!.host)
-        .post('/')
-        .send({
-          action: 'folderRemove',
-          source: 'test',
-          name: 'test-folder'
-        });
+      const response = await request(aclTestServer!.host).post('/').send({
+        action: 'folderRemove',
+        source: 'test',
+        name: 'test-folder'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

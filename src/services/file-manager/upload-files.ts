@@ -21,13 +21,13 @@ export async function uploadFiles(
   try {
     for (const uploadedFile of files) {
       // Make filename safe
-      const fileName = sanitize(uploadedFile.originalname, { replacement: '_' });
+      const fileName = sanitize(uploadedFile.originalname, {
+        replacement: '_'
+      });
       let targetPath = path.join(dirPath, fileName);
 
       // Handle file name conflicts based on strategy
-      if (
-        await ctx.storage.fileExists(path.relative(root, targetPath), {})
-      ) {
+      if (await ctx.storage.fileExists(path.relative(root, targetPath), {})) {
         const strategy =
           ctx.config.params.saveSameFileNameStrategy || 'addNumber';
 
@@ -50,10 +50,7 @@ export async function uploadFiles(
               targetPath = path.join(dirPath, newFileName);
               counter++;
             } while (
-              await ctx.storage.fileExists(
-                path.relative(root, targetPath),
-                {}
-              )
+              await ctx.storage.fileExists(path.relative(root, targetPath), {})
             );
             break;
           }

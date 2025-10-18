@@ -262,7 +262,12 @@ describe('Folder Move (GET /?action=folderMove)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderMove', source: 'test', from: '/source-folder', path: '/destination' });
+        .query({
+          action: 'folderMove',
+          source: 'test',
+          from: '/source-folder',
+          path: '/destination'
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -292,7 +297,12 @@ describe('Folder Move (GET /?action=folderMove)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderMove', source: 'test', from: '/source/folder-to-move', path: '/' });
+        .query({
+          action: 'folderMove',
+          source: 'test',
+          from: '/source/folder-to-move',
+          path: '/'
+        });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);
@@ -324,7 +334,12 @@ describe('Folder Move (GET /?action=folderMove)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderMove', source: 'test', from: '/source/folder-to-move', path: '/' });
+        .query({
+          action: 'folderMove',
+          source: 'test',
+          from: '/source/folder-to-move',
+          path: '/'
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -354,7 +369,12 @@ describe('Folder Move (GET /?action=folderMove)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderMove', source: 'test', from: '/source/folder-to-move', path: '/' });
+        .query({
+          action: 'folderMove',
+          source: 'test',
+          from: '/source/folder-to-move',
+          path: '/'
+        });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);
@@ -383,14 +403,12 @@ describe('Folder Move (GET /?action=folderMove)', () => {
       const sourceFolder = path.join(testFilesPath, 'source', 'folder-to-move');
       await fs.mkdir(sourceFolder, { recursive: true });
 
-      const response = await request(aclTestServer!.host)
-        .post('/')
-        .send({
-          action: 'folderMove',
-          source: 'test',
-          from: '/source/folder-to-move',
-          path: '/'
-        });
+      const response = await request(aclTestServer!.host).post('/').send({
+        action: 'folderMove',
+        source: 'test',
+        from: '/source/folder-to-move',
+        path: '/'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

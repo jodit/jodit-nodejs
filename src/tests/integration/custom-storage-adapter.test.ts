@@ -1,9 +1,5 @@
 import request from 'supertest';
-import {
-  startTestServer,
-  stopTestServer,
-  TestServer
-} from '../test-server';
+import { startTestServer, stopTestServer, TestServer } from '../test-server';
 import { Readable } from 'stream';
 import {
   StorageAdapter,
@@ -93,7 +89,11 @@ class InMemoryStorageAdapter implements StorageAdapter {
     }
 
     // Check if it's a directory
-    if (this.directories.has(normalizedPath) || normalizedPath === '' || normalizedPath === '/') {
+    if (
+      this.directories.has(normalizedPath) ||
+      normalizedPath === '' ||
+      normalizedPath === '/'
+    ) {
       return {
         path: normalizedPath,
         type: 'directory',
@@ -106,7 +106,10 @@ class InMemoryStorageAdapter implements StorageAdapter {
     throw new Error(`Path not found: ${path}`);
   }
 
-  async *list(path: string, options: { deep: boolean }): AsyncGenerator<StatEntry> {
+  async *list(
+    path: string,
+    options: { deep: boolean }
+  ): AsyncGenerator<StatEntry> {
     const normalizedPath = this.normalizePath(path);
     const prefix = normalizedPath ? normalizedPath + '/' : '';
     const yielded = new Set<string>();
@@ -114,8 +117,14 @@ class InMemoryStorageAdapter implements StorageAdapter {
     // List files
     for (const [filePath, buffer] of this.files.entries()) {
       // Check if file is in this directory or subdirectory
-      if (normalizedPath === '' || normalizedPath === '/' || filePath.startsWith(prefix)) {
-        const relativePath = normalizedPath ? filePath.substring(prefix.length) : filePath;
+      if (
+        normalizedPath === '' ||
+        normalizedPath === '/' ||
+        filePath.startsWith(prefix)
+      ) {
+        const relativePath = normalizedPath
+          ? filePath.substring(prefix.length)
+          : filePath;
 
         // For non-deep listing, only include direct children
         if (!options.deep && relativePath.includes('/')) {
@@ -170,13 +179,21 @@ class InMemoryStorageAdapter implements StorageAdapter {
 
     // Also check for implicit directories (directories that contain files but weren't explicitly created)
     for (const filePath of this.files.keys()) {
-      if (normalizedPath === '' || normalizedPath === '/' || filePath.startsWith(prefix)) {
-        const relativePath = normalizedPath ? filePath.substring(prefix.length) : filePath;
+      if (
+        normalizedPath === '' ||
+        normalizedPath === '/' ||
+        filePath.startsWith(prefix)
+      ) {
+        const relativePath = normalizedPath
+          ? filePath.substring(prefix.length)
+          : filePath;
         const parts = relativePath.split('/').filter(Boolean);
 
         if (parts.length > 1) {
           // This file is in a subdirectory
-          const immediateDir = normalizedPath ? `${normalizedPath}/${parts[0]}` : parts[0];
+          const immediateDir = normalizedPath
+            ? `${normalizedPath}/${parts[0]}`
+            : parts[0];
           if (!options.deep) {
             childDirs.add(immediateDir);
           }
@@ -205,7 +222,11 @@ class InMemoryStorageAdapter implements StorageAdapter {
 
   async directoryExists(path: string): Promise<boolean> {
     const normalizedPath = this.normalizePath(path);
-    return this.directories.has(normalizedPath) || normalizedPath === '' || normalizedPath === '/';
+    return (
+      this.directories.has(normalizedPath) ||
+      normalizedPath === '' ||
+      normalizedPath === '/'
+    );
   }
 
   async deleteDirectory(path: string): Promise<void> {
@@ -237,7 +258,11 @@ class InMemoryStorageAdapter implements StorageAdapter {
     this.directories.delete(normalizedPath);
   }
 
-  async moveFile(from: string, to: string, _options: MoveFileOptions): Promise<void> {
+  async moveFile(
+    from: string,
+    to: string,
+    _options: MoveFileOptions
+  ): Promise<void> {
     const normalizedFrom = this.normalizePath(from);
     const normalizedTo = this.normalizePath(to);
 
@@ -256,7 +281,11 @@ class InMemoryStorageAdapter implements StorageAdapter {
     }
   }
 
-  async copyFile(from: string, to: string, _options: CopyFileOptions): Promise<void> {
+  async copyFile(
+    from: string,
+    to: string,
+    _options: CopyFileOptions
+  ): Promise<void> {
     const normalizedFrom = this.normalizePath(from);
     const normalizedTo = this.normalizePath(to);
 
@@ -287,7 +316,10 @@ class InMemoryStorageAdapter implements StorageAdapter {
     throw new Error('Not implemented: publicUrl');
   }
 
-  async temporaryUrl(_path: string, _options: TemporaryUrlOptions): Promise<string> {
+  async temporaryUrl(
+    _path: string,
+    _options: TemporaryUrlOptions
+  ): Promise<string> {
     throw new Error('Not implemented: temporaryUrl');
   }
 
@@ -342,7 +374,11 @@ describe('Custom Storage Adapter Integration', () => {
     await customAdapter.write('test.txt', Readable.from('Hello World'), {});
     await customAdapter.write('image.png', Readable.from('fake-png-data'), {});
     await customAdapter.createDirectory('subdir', {});
-    await customAdapter.write('subdir/nested.txt', Readable.from('Nested file'), {});
+    await customAdapter.write(
+      'subdir/nested.txt',
+      Readable.from('Nested file'),
+      {}
+    );
 
     testServer = await startTestServer({
       sources: {
@@ -471,13 +507,11 @@ describe('Custom Storage Adapter Integration', () => {
     });
 
     it('should download a file from in-memory storage', async () => {
-      const response = await request(testServer!.host)
-        .get('/')
-        .query({
-          action: 'fileDownload',
-          source: 'memory',
-          name: 'test.txt'
-        });
+      const response = await request(testServer!.host).get('/').query({
+        action: 'fileDownload',
+        source: 'memory',
+        name: 'test.txt'
+      });
 
       expect(response.status).toBe(200);
       // Response body is a Buffer for binary data
@@ -503,7 +537,11 @@ describe('Custom Storage Adapter Integration', () => {
     });
 
     it('should rename a file in in-memory storage', async () => {
-      await customAdapter.write('old-name.txt', Readable.from('rename test'), {});
+      await customAdapter.write(
+        'old-name.txt',
+        Readable.from('rename test'),
+        {}
+      );
 
       const response = await request(testServer!.host)
         .post('/')

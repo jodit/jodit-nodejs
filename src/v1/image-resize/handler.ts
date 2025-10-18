@@ -35,7 +35,10 @@ export async function imageResizeHandler(
   }
 
   // Get newname if provided
-  const newname = req.context.getField<string | undefined>('newname', undefined);
+  const newname = req.context.getField<string | undefined>(
+    'newname',
+    undefined
+  );
 
   // Resize image through source interface
   await source.resizeImage(name, validatedData.box, newname, req.context.path);

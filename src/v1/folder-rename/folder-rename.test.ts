@@ -242,11 +242,18 @@ describe('Folder Rename (GET /?action=folderRename)', () => {
 
     it('should allow access when no access control rules defined', async () => {
       aclTestServer = await startTestServer();
-      await fs.mkdir(path.join(testFilesPath, 'acl-folder'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'acl-folder'), {
+        recursive: true
+      });
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderRename', source: 'test', name: 'acl-folder', newname: 'renamed-folder' });
+        .query({
+          action: 'folderRename',
+          source: 'test',
+          name: 'acl-folder',
+          newname: 'renamed-folder'
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -271,11 +278,18 @@ describe('Folder Rename (GET /?action=folderRename)', () => {
         defaultRole: 'guest'
       });
 
-      await fs.mkdir(path.join(testFilesPath, 'test-folder'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'test-folder'), {
+        recursive: true
+      });
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderRename', source: 'test', name: 'test-folder', newname: 'renamed-folder' });
+        .query({
+          action: 'folderRename',
+          source: 'test',
+          name: 'test-folder',
+          newname: 'renamed-folder'
+        });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);
@@ -302,11 +316,18 @@ describe('Folder Rename (GET /?action=folderRename)', () => {
         defaultRole: 'admin'
       });
 
-      await fs.mkdir(path.join(testFilesPath, 'test-folder'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'test-folder'), {
+        recursive: true
+      });
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderRename', source: 'test', name: 'test-folder', newname: 'renamed-folder' });
+        .query({
+          action: 'folderRename',
+          source: 'test',
+          name: 'test-folder',
+          newname: 'renamed-folder'
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -337,12 +358,20 @@ describe('Folder Rename (GET /?action=folderRename)', () => {
       });
 
       await fs.mkdir(path.join(testFilesPath, 'public'), { recursive: true });
-      await fs.mkdir(path.join(testFilesPath, 'locked', 'private'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'locked', 'private'), {
+        recursive: true
+      });
 
       // Should allow rename in root path
       const rootResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderRename', source: 'test', path: '/', name: 'public', newname: 'public-renamed' });
+        .query({
+          action: 'folderRename',
+          source: 'test',
+          path: '/',
+          name: 'public',
+          newname: 'public-renamed'
+        });
 
       expect(rootResponse.status).toBe(200);
       expect(rootResponse.body.success).toBe(true);
@@ -350,7 +379,13 @@ describe('Folder Rename (GET /?action=folderRename)', () => {
       // Should deny rename in /locked path
       const lockedResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderRename', source: 'test', path: '/locked', name: 'private', newname: 'private-renamed' });
+        .query({
+          action: 'folderRename',
+          source: 'test',
+          path: '/locked',
+          name: 'private',
+          newname: 'private-renamed'
+        });
 
       expect(lockedResponse.status).toBe(403);
       expect(lockedResponse.body.success).toBe(false);
@@ -376,11 +411,18 @@ describe('Folder Rename (GET /?action=folderRename)', () => {
         defaultRole: 'guest'
       });
 
-      await fs.mkdir(path.join(testFilesPath, 'test-folder'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'test-folder'), {
+        recursive: true
+      });
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderRename', source: 'test', name: 'test-folder', newname: 'renamed-folder' });
+        .query({
+          action: 'folderRename',
+          source: 'test',
+          name: 'test-folder',
+          newname: 'renamed-folder'
+        });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);
@@ -406,16 +448,16 @@ describe('Folder Rename (GET /?action=folderRename)', () => {
         defaultRole: 'guest'
       });
 
-      await fs.mkdir(path.join(testFilesPath, 'test-folder'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'test-folder'), {
+        recursive: true
+      });
 
-      const response = await request(aclTestServer!.host)
-        .post('/')
-        .send({
-          action: 'folderRename',
-          source: 'test',
-          name: 'test-folder',
-          newname: 'renamed-folder'
-        });
+      const response = await request(aclTestServer!.host).post('/').send({
+        action: 'folderRename',
+        source: 'test',
+        name: 'test-folder',
+        newname: 'renamed-folder'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

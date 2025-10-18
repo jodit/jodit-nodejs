@@ -342,7 +342,11 @@ describe('Generate PDF (GET /?action=generatePdf)', () => {
       // Should deny PDF generation in /restricted path
       const restrictedResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'generatePdf', path: '/restricted', html: '<p>Test</p>' });
+        .query({
+          action: 'generatePdf',
+          path: '/restricted',
+          html: '<p>Test</p>'
+        });
 
       expect(restrictedResponse.status).toBe(403);
       expect(restrictedResponse.body.success).toBe(false);
@@ -380,12 +384,10 @@ describe('Generate PDF (GET /?action=generatePdf)', () => {
         defaultRole: 'guest'
       });
 
-      const response = await request(aclTestServer!.host)
-        .post('/')
-        .send({
-          action: 'generatePdf',
-          html: '<p>Test</p>'
-        });
+      const response = await request(aclTestServer!.host).post('/').send({
+        action: 'generatePdf',
+        html: '<p>Test</p>'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

@@ -356,7 +356,15 @@ describe('Image Crop (GET /?action=imageCrop)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'imageCrop', source: 'test', name: 'acl-test.png', 'box[x]': '10', 'box[y]': '10', 'box[w]': '100', 'box[h]': '100' });
+        .query({
+          action: 'imageCrop',
+          source: 'test',
+          name: 'acl-test.png',
+          'box[x]': '10',
+          'box[y]': '10',
+          'box[w]': '100',
+          'box[h]': '100'
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -385,7 +393,15 @@ describe('Image Crop (GET /?action=imageCrop)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'imageCrop', source: 'test', name: 'test.png', 'box[x]': '10', 'box[y]': '10', 'box[w]': '100', 'box[h]': '100' });
+        .query({
+          action: 'imageCrop',
+          source: 'test',
+          name: 'test.png',
+          'box[x]': '10',
+          'box[y]': '10',
+          'box[w]': '100',
+          'box[h]': '100'
+        });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);
@@ -416,7 +432,15 @@ describe('Image Crop (GET /?action=imageCrop)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'imageCrop', source: 'test', name: 'test.png', 'box[x]': '10', 'box[y]': '10', 'box[w]': '100', 'box[h]': '100' });
+        .query({
+          action: 'imageCrop',
+          source: 'test',
+          name: 'test.png',
+          'box[x]': '10',
+          'box[y]': '10',
+          'box[w]': '100',
+          'box[h]': '100'
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -463,7 +487,16 @@ describe('Image Crop (GET /?action=imageCrop)', () => {
       // Should allow crop in root path
       const rootResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'imageCrop', source: 'test', path: '/', name: 'public.png', 'box[x]': '10', 'box[y]': '10', 'box[w]': '100', 'box[h]': '100' });
+        .query({
+          action: 'imageCrop',
+          source: 'test',
+          path: '/',
+          name: 'public.png',
+          'box[x]': '10',
+          'box[y]': '10',
+          'box[w]': '100',
+          'box[h]': '100'
+        });
 
       expect(rootResponse.status).toBe(200);
       expect(rootResponse.body.success).toBe(true);
@@ -471,7 +504,16 @@ describe('Image Crop (GET /?action=imageCrop)', () => {
       // Should deny crop in /secure path
       const secureResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'imageCrop', source: 'test', path: '/secure', name: 'private.png', 'box[x]': '10', 'box[y]': '10', 'box[w]': '100', 'box[h]': '100' });
+        .query({
+          action: 'imageCrop',
+          source: 'test',
+          path: '/secure',
+          name: 'private.png',
+          'box[x]': '10',
+          'box[y]': '10',
+          'box[w]': '100',
+          'box[h]': '100'
+        });
 
       expect(secureResponse.status).toBe(403);
       expect(secureResponse.body.success).toBe(false);
@@ -501,7 +543,15 @@ describe('Image Crop (GET /?action=imageCrop)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'imageCrop', source: 'test', name: 'test.png', 'box[x]': '10', 'box[y]': '10', 'box[w]': '100', 'box[h]': '100' });
+        .query({
+          action: 'imageCrop',
+          source: 'test',
+          name: 'test.png',
+          'box[x]': '10',
+          'box[y]': '10',
+          'box[w]': '100',
+          'box[h]': '100'
+        });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

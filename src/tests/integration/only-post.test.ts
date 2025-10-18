@@ -207,5 +207,4 @@ describe('onlyPOST Configuration', () => {
       expect(response.body.success).toBe(false);
     });
   });
-
 });

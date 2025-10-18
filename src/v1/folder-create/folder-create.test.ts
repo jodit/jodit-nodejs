@@ -193,7 +193,11 @@ describe('Folder Create (GET /?action=folderCreate)', () => {
 
       const response = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderCreate', source: 'test', name: 'acl-test-folder' });
+        .query({
+          action: 'folderCreate',
+          source: 'test',
+          name: 'acl-test-folder'
+        });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -279,12 +283,19 @@ describe('Folder Create (GET /?action=folderCreate)', () => {
         defaultRole: 'guest'
       });
 
-      await fs.mkdir(path.join(testFilesPath, 'restricted'), { recursive: true });
+      await fs.mkdir(path.join(testFilesPath, 'restricted'), {
+        recursive: true
+      });
 
       // Should allow folder creation in root path
       const rootResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderCreate', source: 'test', path: '/', name: 'public-folder' });
+        .query({
+          action: 'folderCreate',
+          source: 'test',
+          path: '/',
+          name: 'public-folder'
+        });
 
       expect(rootResponse.status).toBe(200);
       expect(rootResponse.body.success).toBe(true);
@@ -292,7 +303,12 @@ describe('Folder Create (GET /?action=folderCreate)', () => {
       // Should deny folder creation in /restricted path
       const restrictedResponse = await request(aclTestServer!.host)
         .get('/')
-        .query({ action: 'folderCreate', source: 'test', path: '/restricted', name: 'blocked-folder' });
+        .query({
+          action: 'folderCreate',
+          source: 'test',
+          path: '/restricted',
+          name: 'blocked-folder'
+        });
 
       expect(restrictedResponse.status).toBe(403);
       expect(restrictedResponse.body.success).toBe(false);
@@ -346,13 +362,11 @@ describe('Folder Create (GET /?action=folderCreate)', () => {
         defaultRole: 'guest'
       });
 
-      const response = await request(aclTestServer!.host)
-        .post('/')
-        .send({
-          action: 'folderCreate',
-          source: 'test',
-          name: 'new-folder'
-        });
+      const response = await request(aclTestServer!.host).post('/').send({
+        action: 'folderCreate',
+        source: 'test',
+        name: 'new-folder'
+      });
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

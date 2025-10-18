@@ -122,12 +122,18 @@ export async function createTestFile(
 
   // Check if basePath is an absolute path that points outside of project (like /Users/...)
   // If so, use it directly. Otherwise, treat as relative to testFilesPath
-  if (basePath && path.isAbsolute(basePath) && basePath.includes(process.cwd())) {
+  if (
+    basePath &&
+    path.isAbsolute(basePath) &&
+    basePath.includes(process.cwd())
+  ) {
     // Full absolute path
     filePath = path.join(basePath, fileName);
   } else {
     // Relative path (including paths like '/subdir', 'subdir', or '')
-    const relativePath = basePath.startsWith('/') ? basePath.substring(1) : basePath;
+    const relativePath = basePath.startsWith('/')
+      ? basePath.substring(1)
+      : basePath;
     filePath = path.join(testFilesPath, relativePath, fileName);
   }
 

@@ -175,9 +175,9 @@ describe('AccessControl', () => {
           }
         ]);
 
-        expect(await ac.isAllow('user', 'FILES', '/private/folder/file.txt', '*')).toBe(
-          false
-        );
+        expect(
+          await ac.isAllow('user', 'FILES', '/private/folder/file.txt', '*')
+        ).toBe(false);
       });
 
       it('should normalize paths with backslashes', async () => {
@@ -189,9 +189,9 @@ describe('AccessControl', () => {
           }
         ]);
 
-        expect(await ac.isAllow('user', 'FILES', '/private/subfolder/file.txt', '*')).toBe(
-          false
-        );
+        expect(
+          await ac.isAllow('user', 'FILES', '/private/subfolder/file.txt', '*')
+        ).toBe(false);
       });
 
       it('should normalize paths with multiple slashes', async () => {
@@ -203,9 +203,9 @@ describe('AccessControl', () => {
           }
         ]);
 
-        expect(await ac.isAllow('user', 'FILES', '/private/subfolder/file.txt', '*')).toBe(
-          false
-        );
+        expect(
+          await ac.isAllow('user', 'FILES', '/private/subfolder/file.txt', '*')
+        ).toBe(false);
       });
 
       it('should skip rule when path does not match', async () => {
@@ -341,8 +341,12 @@ describe('AccessControl', () => {
           }
         ]);
 
-        expect(await ac.isAllow('user', 'FILES', '/allowed/path', '*')).toBe(true);
-        expect(await ac.isAllow('user', 'FILES', '/denied/path', '*')).toBe(false);
+        expect(await ac.isAllow('user', 'FILES', '/allowed/path', '*')).toBe(
+          true
+        );
+        expect(await ac.isAllow('user', 'FILES', '/denied/path', '*')).toBe(
+          false
+        );
       });
 
       it('should treat non-boolean function result as true', async () => {
@@ -405,9 +409,9 @@ describe('AccessControl', () => {
         ]);
 
         // All conditions match - should deny
-        expect(await ac.isAllow('user', 'FILE_UPLOAD', '/uploads/image.jpg', 'jpg')).toBe(
-          false
-        );
+        expect(
+          await ac.isAllow('user', 'FILE_UPLOAD', '/uploads/image.jpg', 'jpg')
+        ).toBe(false);
 
         // Different role - should allow (use default)
         expect(
@@ -415,14 +419,14 @@ describe('AccessControl', () => {
         ).toBe(true);
 
         // Different path - should allow (use default)
-        expect(await ac.isAllow('user', 'FILE_UPLOAD', '/public/image.jpg', 'jpg')).toBe(
-          true
-        );
+        expect(
+          await ac.isAllow('user', 'FILE_UPLOAD', '/public/image.jpg', 'jpg')
+        ).toBe(true);
 
         // Different extension - should allow (use default)
-        expect(await ac.isAllow('user', 'FILE_UPLOAD', '/uploads/file.txt', 'txt')).toBe(
-          true
-        );
+        expect(
+          await ac.isAllow('user', 'FILE_UPLOAD', '/uploads/file.txt', 'txt')
+        ).toBe(true);
       });
 
       it('should handle overlapping rules with different specificity', async () => {
