@@ -1,0 +1,1 @@
+<swagger-ui src="https://jodit.github.io/jodit-nodejs/openapi.yaml"/>

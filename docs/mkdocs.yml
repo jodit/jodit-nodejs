@@ -15,32 +15,37 @@ theme:
   language: en
   palette:
     - scheme: default
-      primary: indigo
-      accent: indigo
+      primary: white
+      accent: white
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: white
+      accent: white
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
   features:
-    - navigation.instant
+    # - navigation.instant
+    # - navigation.instant.prefetch
     - navigation.tracking
-    - navigation.sections
-    - navigation.expand
+    # - navigation.sections
+    - navigation.path
+    - navigation.indexes
+  #   - navigation.expand
     - navigation.top
     - search.suggest
     - search.highlight
     - content.code.copy
     - content.code.annotate
+    - content.action.edit
 
 plugins:
-  - swagger-ui:
-      spec_url: https://jodit.github.io/jodit-nodejs/openapi.yaml
-      outfile: api-reference.md
+  - swagger-ui-tag
+  # - swagger-ui:
+      # spec_url: https://jodit.github.io/jodit-nodejs/openapi.yaml
+      # outfile: api-swagger.md
   - search
   - awesome-pages
 
@@ -51,7 +56,8 @@ nav:
       - API Usage: api-usage.md
       - Express Integration: express-integration.md
   - Reference:
-      - API Endpoints: api-reference.md
+      - API Endpoints: api.md
+      - API Reference: api-swagger.md
       - Authentication: authentication.md
       - Access Control: access-control.md
       - Configuration: config.md
@@ -62,7 +68,6 @@ nav:
   - Deployment:
       - Docker: docker.md
       - CI/CD & Deployment: deployment.md
-  - API Reference: api-reference.md
 
 extra:
   social:

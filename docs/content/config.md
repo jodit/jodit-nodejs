@@ -16,7 +16,7 @@ This document provides a comprehensive reference for all configuration options a
 - [File Handling](#file-handling)
 - [Image Processing](#image-processing)
 - [Thumbnails](#thumbnails)
-- [Access Control & Security](#access-control--security)
+- [Access Control & Security](#access-control)
 - [Performance](#performance)
 - [PDF Generation](#pdf-generation)
 - [Unused/Legacy Parameters](#unusedlegacy-parameters)
@@ -784,7 +784,7 @@ import path from 'path';
 
 ---
 
-## Access Control & Security
+## Access Control
 
 ### `accessControl`
 - **Type**: `AccessControlRule[] | (() => AccessControlRule[]) | (() => Promise<AccessControlRule[]>)`
