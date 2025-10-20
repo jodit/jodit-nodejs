@@ -60,7 +60,7 @@ jobs:
     
         
       - name: Copy demo page
-        run: cp demo/index.html docs/site/demo.html
+        run: cp demo/index.html dist/site/demo.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
