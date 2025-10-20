@@ -7,6 +7,8 @@ description: Quick start guide for Jodit Connector Node.js - installation, basic
 
 Welcome to Jodit Connector Node.js - a TypeScript implementation of the Jodit File Browser and Uploader connector.
 
+[Demo](./demo.html)
+
 ## Overview
 
 Jodit Connector Node.js provides a complete file management backend for the Jodit Editor, with support for:

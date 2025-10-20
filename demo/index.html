@@ -20,9 +20,18 @@
     <script src="https://unpkg.com/jodit-pro@4/es2021/plugins/finder/finder.min.js"></script>
 
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
       body {
         font-family: Arial, sans-serif;
-        margin: 20px;
         background-color: #f5f5f5;
 
         box-sizing: border-box;
@@ -33,11 +42,14 @@
 
       .container {
         max-width: 1200px;
-        margin: 0 auto;
+        height: calc(100% - 40px);
+        margin: 20px auto;
         background: white;
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
       }
 
       h1 {
@@ -46,123 +58,31 @@
         margin-bottom: 30px;
       }
 
-      .editor-container {
-        margin: 20px 0;
-      }
-
-      .config-panel {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-      }
-
-      .config-panel h3 {
-        margin-top: 0;
-        color: #495057;
-      }
-
-      .form-group {
-        margin-bottom: 15px;
-      }
-
-      label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-        color: #333;
-      }
-
-      input[type='text'],
-      input[type='url'] {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-      }
-
-      button {
-        background: #007bff;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-      }
-
-      button:hover {
-        background: #0056b3;
-      }
-
-      .status {
-        margin-top: 10px;
-        padding: 10px;
-        border-radius: 4px;
-        display: none;
-      }
-
-      .status.success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-      }
-
-      .status.error {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
+      .browser {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        overflow: auto;
+        border: 1px solid #f6f6f6;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Jodit Editor Demo with File Connector</h1>
+      <h1>Jodit PRO Editor Demo with File Connector</h1>
 
-      <div class="config-panel">
-        <h3>Configuration</h3>
-        <div class="form-group">
-          <label for="serverUrl">Server URL:</label>
-          <input
-            type="url"
-            id="serverUrl"
-            value="http://localhost:8081"
-            placeholder="http://localhost:8081"
-          />
-        </div>
-        <button onclick="initialize()">Initialize File Browser</button>
-        <div class="status" id="status"></div>
-      </div>
+      <div class="browser" id="browser"></div>
     </div>
 
     <script>
       let filebrowser = null;
-
-      function showStatus(message, type = 'success') {
-        const statusEl = document.getElementById('status');
-        statusEl.textContent = message;
-        statusEl.className = `status ${type}`;
-        statusEl.style.display = 'block';
-
-        setTimeout(() => {
-          statusEl.style.display = 'none';
-        }, 8080);
-      }
+      const host = window.location.hostname.match(/localhost|127\.0\.0\.1/)
+        ? 'http://localhost:8081'
+        : 'https://xdsoft.net/jodit/finder2/';
+        
+      const serverUrl = host;
 
       function initialize() {
-        const serverUrl = document.getElementById('serverUrl').value.trim();
-
-        if (!serverUrl) {
-          showStatus('Please enter a server URL', 'error');
-          return;
-        }
-
-        // Destroy existing editor if any
-        if (filebrowser) {
-          filebrowser.destruct();
-        }
-
         const config = {
           ajax: {
             url: serverUrl
@@ -176,30 +96,16 @@
         filebrowser = new Jodit.modules.FileBrowserPro(config);
         filebrowser.open();
 
-        showStatus('Editor initialized successfully!', 'success');
+        Object.assign(filebrowser.dialog.style, {
+          position: 'static',
+          width: '100%',
+          height: '100%',
+          padding: 0
+        });
+
+        document.getElementById('browser').appendChild(filebrowser.dialog);
       }
       initialize();
-
-      // Initialize editor on page load with default settings
-      document.addEventListener('DOMContentLoaded', function () {
-        // Check if server is running by making a ping request
-        fetch('http://localhost:8081/ping')
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              showStatus(
-                'Server is running! You can initialize the editor.',
-                'success'
-              );
-            }
-          })
-          .catch(error => {
-            showStatus(
-              'Server is not running. Please start the server first.',
-              'error'
-            );
-          });
-      });
     </script>
   </body>
 </html>
