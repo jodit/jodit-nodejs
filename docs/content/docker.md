@@ -185,7 +185,7 @@ docker-compose up -d
 Pull from DockerHub:
 
 ```bash
-docker pull chupurnov/jodit-nodejs:latest
+docker pull xdsoft/jodit-nodejs:latest
 ```
 
 ### With Reverse Proxy (nginx)

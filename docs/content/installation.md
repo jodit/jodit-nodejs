@@ -53,7 +53,7 @@ docker run --rm -p 8081:8081 \
   -e SOURCE_ROOT="/usr/src/app/files" \
   -e SOURCE_BASEURL="http://localhost:8081/files/" \
   -v $(pwd)/files:/usr/src/app/files \
-  chupurnov/jodit-nodejs
+  xdsoft/jodit-nodejs
 
 # Production setup with custom port
 docker run --rm -p 8080:8080 \
@@ -62,20 +62,20 @@ docker run --rm -p 8080:8080 \
   -e SOURCE_ROOT="/usr/src/app/files" \
   -e SOURCE_BASEURL="https://cdn.example.com/uploads/" \
   -v /var/www/uploads:/usr/src/app/files \
-  chupurnov/jodit-nodejs
+  xdsoft/jodit-nodejs
 
 # Using JSON configuration
 docker run --rm -p 8080:8080 \
   -e PORT=8080 \
   -e CONFIG='{"debug":false,"allowCrossOrigin":true,"sources":{"production":{"name":"production","title":"Production","root":"/usr/src/app/files","baseurl":"https://cdn.example.com/uploads/"}}}' \
   -v /var/www/uploads:/usr/src/app/files \
-  chupurnov/jodit-nodejs
+  xdsoft/jodit-nodejs
 
 # Using config file (recommended for complex configurations)
 docker run --rm -p 8081:8081 \
   -v $(pwd)/config.json:/usr/src/app/config.json \
   -v $(pwd)/files:/usr/src/app/files \
-  chupurnov/jodit-nodejs
+  xdsoft/jodit-nodejs
 ```
 
 ### Available Environment Variables

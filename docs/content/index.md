@@ -33,16 +33,16 @@ npm install jodit-nodejs
 
 ```bash
 # Pull from DockerHub
-docker pull chupurnov/jodit-nodejs:latest
+docker pull xdsoft/jodit-nodejs:latest
 
 # Run with default config
-docker run --rm -p 8081:8081 chupurnov/jodit-nodejs
+docker run --rm -p 8081:8081 xdsoft/jodit-nodejs
 
 # Run with custom config file
 docker run --rm -p 8081:8081 \
   -v $(pwd)/config.json:/usr/src/app/config.json \
   -v $(pwd)/files:/usr/src/app/files \
-  chupurnov/jodit-nodejs
+  xdsoft/jodit-nodejs
 ```
 
 Example `config.json`:
@@ -70,7 +70,7 @@ version: '3.8'
 
 services:
   jodit-connector:
-    image: chupurnov/jodit-nodejs:latest
+    image: xdsoft/jodit-nodejs:latest
     container_name: jodit-connector
     restart: unless-stopped
     ports:
