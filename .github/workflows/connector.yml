@@ -6,6 +6,10 @@ on:
   push:
     tags: ["*"]
 
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -107,4 +111,4 @@ jobs:
 
       - name: Publish to npm
         run: |
-          NPM_TOKEN=${{ secrets.NPM_TOKEN }} npm publish ./ --access public
+         npm publish
