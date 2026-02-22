@@ -92,6 +92,9 @@ describe('Image Crop (GET /?action=imageCrop)', () => {
     });
 
     expect(response.status).toBe(200);
+    expect(response.body.data.newPath).toBe(
+      'http://localhost:8081/files/test/cropped.png'
+    );
 
     // Verify new image was created
     const croppedPath = path.join(testFilesPath, 'cropped.png');

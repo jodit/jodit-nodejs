@@ -95,7 +95,11 @@ export const ImageResizeSuccessResponseSchema = z
   .object({
     success: z.literal(true),
     data: z.object({
-      code: z.literal(220)
+      code: z.literal(220),
+      newPath: z.string().openapi({
+        description: 'Full URL of the resized image',
+        example: 'https://example.com/files/image-resized.jpg'
+      })
     })
   })
   .openapi('ImageResizeSuccessResponse');

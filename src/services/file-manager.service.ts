@@ -138,7 +138,7 @@ export class FileManagerService extends BaseSource {
     box: { x: number; y: number; w: number; h: number },
     newName?: string,
     relativePath?: string
-  ): Promise<void> {
+  ): Promise<string> {
     return fm.cropImage(this.getContext(), name, box, newName, relativePath);
   }
 
@@ -147,7 +147,7 @@ export class FileManagerService extends BaseSource {
     box: { w: number; h: number },
     newName?: string,
     relativePath?: string
-  ): Promise<void> {
+  ): Promise<string> {
     return fm.resizeImage(this.getContext(), name, box, newName, relativePath);
   }
 }

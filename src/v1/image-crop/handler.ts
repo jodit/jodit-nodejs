@@ -41,12 +41,13 @@ export async function imageCropHandler(
   );
 
   // Crop image through source interface
-  await source.cropImage(name, validatedData.box, newname, req.context.path);
+  const destRelative = await source.cropImage(name, validatedData.box, newname, req.context.path);
 
   res.json({
     success: true,
     data: {
-      code: 220
+      code: 220,
+      newPath: source.sourceConfig.baseurl + destRelative
     }
   });
 }

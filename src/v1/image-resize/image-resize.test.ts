@@ -88,6 +88,9 @@ describe('Image Resize (GET /?action=imageResize)', () => {
     });
 
     expect(response.status).toBe(200);
+    expect(response.body.data.newPath).toBe(
+      'http://localhost:8081/files/test/resized.png'
+    );
 
     // Verify new image was created
     const resizedPath = path.join(testFilesPath, 'resized.png');

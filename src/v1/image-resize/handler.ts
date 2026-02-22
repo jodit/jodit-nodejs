@@ -41,12 +41,13 @@ export async function imageResizeHandler(
   );
 
   // Resize image through source interface
-  await source.resizeImage(name, validatedData.box, newname, req.context.path);
+  const destRelative = await source.resizeImage(name, validatedData.box, newname, req.context.path);
 
   res.json({
     success: true,
     data: {
-      code: 220
+      code: 220,
+      newPath: source.sourceConfig.baseurl + destRelative
     }
   });
 }
