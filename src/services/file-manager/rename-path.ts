@@ -1,6 +1,8 @@
 import path from 'node:path';
 import Boom from '@hapi/boom';
 import type { FileManagerContext } from './types';
+import { validatePath } from './validate-path';
+import { isPathWithinRoot } from '../../helpers/base-source';
 
 /**
  * Rename a file or folder
@@ -14,10 +16,17 @@ export async function renamePath(
 ): Promise<void> {
   const dirPath = await ctx.getPath(relativePath);
   const root = await ctx.getRoot();
-  const fromPath = path.join(dirPath, fromName);
+
+  // Validate source path is within root AND within current directory
+  const fromPath = await validatePath(ctx, path.join(dirPath, fromName));
 
   if (!fromPath) {
     throw Boom.badRequest('Need source path');
+  }
+
+  // Prevent ../traversal in fromName escaping the current directory
+  if (!isPathWithinRoot(fromPath, dirPath)) {
+    throw Boom.notFound('Path does not exist');
   }
 
   // Convert to relative path for storage
@@ -48,10 +57,16 @@ export async function renamePath(
     fromPath
   );
 
-  let destinationPath = path.join(dirPath, newName);
+  // Validate destination path is within root AND within current directory
+  let destinationPath = await validatePath(ctx, path.join(dirPath, newName));
 
   if (!destinationPath) {
     throw Boom.badRequest('Need destination path');
+  }
+
+  // Prevent ../traversal in newName escaping the current directory
+  if (!isPathWithinRoot(destinationPath, dirPath)) {
+    throw Boom.notFound('Path does not exist');
   }
 
   await ctx.access.checkPermission(

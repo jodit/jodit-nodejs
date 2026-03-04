@@ -2,6 +2,7 @@ import path from 'node:path';
 import Boom from '@hapi/boom';
 import type { FileManagerContext } from './types';
 import { isDirectory } from './is-directory';
+import { validatePath } from './validate-path';
 
 /**
  * Move a file or folder to another location
@@ -12,7 +13,9 @@ export async function movePath(
   toPath?: string
 ): Promise<void> {
   const root = await ctx.getRoot();
-  const sourcePath = path.join(root, from);
+
+  // Validate source path is within root (prevents ../traversal in from)
+  const sourcePath = await validatePath(ctx, path.join(root, from));
 
   // Check if destination path exists before calling getPath
   if (toPath) {

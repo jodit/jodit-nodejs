@@ -5,6 +5,7 @@ import { Readable } from 'node:stream';
 import sanitize from 'sanitize-filename';
 import type { FileManagerContext } from './types';
 import { validatePath } from './validate-path';
+import { isPathWithinRoot } from '../../helpers/base-source';
 
 /**
  * Resize an image
@@ -26,6 +27,11 @@ export async function resizeImage(
   );
 
   const sourcePath = await validatePath(ctx, path.join(dirPath, name));
+
+  // Prevent ../traversal in name escaping the current directory
+  if (!isPathWithinRoot(sourcePath, dirPath)) {
+    throw Boom.notFound('Path does not exist');
+  }
 
   const sourceRelative = sourcePath.replace(root, '').replace(/^\//, '');
 

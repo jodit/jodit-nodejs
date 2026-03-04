@@ -2,6 +2,7 @@ import path from 'node:path';
 import Boom from '@hapi/boom';
 import type { FileManagerContext } from './types';
 import { validatePath } from './validate-path';
+import { isPathWithinRoot } from '../../helpers/base-source';
 
 /**
  * Remove a folder from storage
@@ -20,8 +21,13 @@ export async function folderRemove(
     dirPath
   );
 
-  // Validate the path is within root
+  // Validate the path is within root and within current directory
   const targetPath = await validatePath(ctx, path.join(dirPath, name));
+
+  // Prevent ../traversal in name escaping the current directory
+  if (!isPathWithinRoot(targetPath, dirPath)) {
+    throw Boom.notFound('Path does not exist');
+  }
 
   // Convert to relative path for storage
   const folderRelative = targetPath.replace(root, '').replace(/^\//, '');

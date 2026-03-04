@@ -1,5 +1,9 @@
 import path from 'node:path';
 import Boom from '@hapi/boom';
+import {
+  isPathWithinRoot,
+  verifyRealPath
+} from '../../helpers/base-source';
 import type { FileManagerContext } from './types';
 
 /**
@@ -15,10 +19,13 @@ export async function validatePath(
   // Normalize and resolve the path
   const normalized = path.resolve(pathname);
 
-  // Security check: ensure path is within root
-  if (!normalized.startsWith(root)) {
+  // Strict boundary check with path separator
+  if (!isPathWithinRoot(normalized, root)) {
     throw Boom.notFound('Path does not exist');
   }
+
+  // Verify symlinks don't escape root
+  await verifyRealPath(normalized, root);
 
   return normalized;
 }

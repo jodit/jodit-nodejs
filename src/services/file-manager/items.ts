@@ -7,6 +7,7 @@ import type { FileManagerContext, IItemFile } from './types';
 import { filterFile } from './filter-file';
 import { sortByMode } from './sort-files';
 import { makeThumb } from './make-thumb';
+import { isPathWithinRoot } from '../../helpers/base-source';
 
 /**
  * Get list of files and folders with pagination and sorting
@@ -26,7 +27,7 @@ export async function items(
   const fullPathDirectory = await ctx.getPath(relativePath);
   const rootDirecrtoryForSource = await ctx.getRoot();
 
-  if (!fullPathDirectory.startsWith(rootDirecrtoryForSource)) {
+  if (!isPathWithinRoot(fullPathDirectory, rootDirecrtoryForSource)) {
     throw Boom.notFound('Path does not exist');
   }
 

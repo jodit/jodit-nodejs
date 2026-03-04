@@ -1,4 +1,5 @@
 import path from 'node:path';
+import fs from 'node:fs/promises';
 import Boom from '@hapi/boom';
 import type { SourceConfig } from '../types';
 import type { Config } from '../config/config';
@@ -26,20 +27,21 @@ export abstract class BaseSource {
   }
 
   async getPath(relativePath?: string): Promise<string> {
-    let root = await this.getRoot();
+    const root = await this.getRoot();
 
-    let pathname = path.resolve(
+    const pathname = path.resolve(
       normalizePath(path.join(root, relativePath ?? './'))
     );
 
-    //always check whether we are below the root category is not reached
-    if (pathname && pathname.startsWith(root) !== false) {
-      root = pathname;
-    } else {
+    // Strict boundary check: require exact match or proper separator
+    if (!isPathWithinRoot(pathname, root)) {
       throw Boom.notFound('Path does not exist');
     }
 
-    return root;
+    // Verify symlinks don't escape root
+    await verifyRealPath(pathname, root);
+
+    return pathname;
   }
 
   isExcluded(file: StatEntry): boolean {
@@ -87,4 +89,41 @@ export abstract class BaseSource {
 
 function normalizePath(path: string): string {
   return path.replace(/\\/g, '/').replace(/\/+/g, '/');
+}
+
+/**
+ * Check whether pathname is exactly root or a proper subdirectory of root.
+ * Prevents prefix collision attacks like "/var/uploads-evil" matching "/var/uploads".
+ */
+export function isPathWithinRoot(pathname: string, root: string): boolean {
+  return pathname === root || pathname.startsWith(root + path.sep);
+}
+
+/**
+ * Verify that the real filesystem path (after resolving symlinks)
+ * is still within root. Prevents symlink escape attacks.
+ */
+export async function verifyRealPath(
+  pathname: string,
+  root: string
+): Promise<void> {
+  try {
+    const realRoot = await fs.realpath(root);
+    const realPathname = await fs.realpath(pathname);
+
+    if (!isPathWithinRoot(realPathname, realRoot)) {
+      throw Boom.notFound('Path does not exist');
+    }
+  } catch (err) {
+    if ((err as { code?: string }).code === 'ENOENT') {
+      // Path doesn't exist on disk yet — logical check above is sufficient
+      return;
+    }
+
+    if (Boom.isBoom(err)) {
+      throw err;
+    }
+
+    throw Boom.notFound('Path does not exist');
+  }
 }

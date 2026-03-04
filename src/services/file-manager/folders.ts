@@ -2,6 +2,7 @@ import path from 'node:path';
 import Boom from '@hapi/boom';
 import type { ISourceFolders } from '../../types/rest-api';
 import type { FileManagerContext } from './types';
+import { isPathWithinRoot } from '../../helpers/base-source';
 
 /**
  * Get list of folders in a directory
@@ -14,7 +15,7 @@ export async function folders(
   const fullPathDirectory = await ctx.getPath(relativePath);
   const rootDirectoryForSource = await ctx.getRoot();
 
-  if (!fullPathDirectory.startsWith(rootDirectoryForSource)) {
+  if (!isPathWithinRoot(fullPathDirectory, rootDirectoryForSource)) {
     throw Boom.notFound('Path does not exist');
   }
 

@@ -3,6 +3,7 @@ import { Readable } from 'node:stream';
 import Boom from '@hapi/boom';
 import type { FileManagerContext } from './types';
 import { validatePath } from './validate-path';
+import { isPathWithinRoot } from '../../helpers/base-source';
 
 /**
  * Download a file from storage
@@ -22,8 +23,13 @@ export async function fileDownload(
 
   const root = await ctx.getRoot();
 
-  // Validate the path is within root
+  // Validate the path is within root and within current directory
   const targetPath = await validatePath(ctx, path.join(dirPath, target));
+
+  // Prevent ../traversal in name escaping the current directory
+  if (!isPathWithinRoot(targetPath, dirPath)) {
+    throw Boom.notFound('Path does not exist');
+  }
 
   // Convert absolute path to relative for storage adapter
   const relativePathForStorage = targetPath.replace(root, '');
