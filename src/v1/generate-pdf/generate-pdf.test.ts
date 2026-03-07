@@ -254,6 +254,51 @@ describe('Generate PDF (GET /?action=generatePdf)', () => {
     });
   });
 
+  it('should generate PDF from POST request with html in body', async () => {
+    const html = '<h1>POST Test</h1><p>This is sent via POST.</p>';
+
+    const response = await request(testServer!.host)
+      .post('/')
+      .send({ action: 'generatePdf', html });
+
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toBe('application/pdf');
+
+    const pdfSignature = response.body.toString('utf8', 0, 4);
+    expect(pdfSignature).toBe('%PDF');
+  });
+
+  it('should generate PDF from POST request with options in body', async () => {
+    const response = await request(testServer!.host)
+      .post('/')
+      .send({
+        action: 'generatePdf',
+        html: '<p>POST with options</p>',
+        options: { format: 'A3', page_orientation: 'landscape' }
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toBe('application/pdf');
+
+    const pdfSignature = response.body.toString('utf8', 0, 4);
+    expect(pdfSignature).toBe('%PDF');
+  });
+
+  it('should generate PDF from POST with urlencoded body and bracket notation', async () => {
+    const response = await request(testServer!.host)
+      .post('/')
+      .type('form')
+      .send(
+        'action=generatePdf&html=%3Cp%3EHello%3C%2Fp%3E&options%5Bformat%5D=A3'
+      );
+
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toBe('application/pdf');
+
+    const pdfSignature = response.body.toString('utf8', 0, 4);
+    expect(pdfSignature).toBe('%PDF');
+  });
+
   describe('Access Control', () => {
     let aclTestServer: TestServer | null = null;
 

@@ -1,12 +1,20 @@
 import type { Request } from 'express';
+import qs from 'qs';
 import { mergeWithoutNulls } from './merge-without-nulls';
 
 export class RequestContext {
   data: Record<string, unknown>;
 
   constructor(req: Request) {
+    // Parse query string with qs to support bracket notation (e.g., options[format]=A4)
+    // Express 5 uses "simple" query parser by default which doesn't handle brackets
+    const queryString = req.url.split('?')[1] || '';
+    const parsedQuery = queryString
+      ? qs.parse(queryString)
+      : req.query;
+
     this.data = mergeWithoutNulls(
-      mergeWithoutNulls(req.body, req.query),
+      mergeWithoutNulls(req.body, parsedQuery),
       req.params ?? {}
     );
   }

@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import Boom from '@hapi/boom';
-import qs from 'qs';
 import { GeneratePdfQuerySchema, PdfOptionsSchema } from '../../schemas';
 import { logger } from '../../helpers/logger';
 import { withBrowser } from '../../helpers/browser-pool';
@@ -14,13 +13,8 @@ export async function generatePdfHandler(
   req: Request,
   res: Response
 ): Promise<void> {
-  // Parse query string to handle bracket notation (e.g., options[format]=A4)
-  // Express doesn't parse this by default for GET requests
-  const queryString = req.url.split('?')[1] || '';
-  const parsedQuery = queryString ? qs.parse(queryString) : req.query;
-
-  // Validate query parameters
-  const queryValidation = GeneratePdfQuerySchema.safeParse(parsedQuery);
+  // Validate query parameters using merged context data (body + query + params)
+  const queryValidation = GeneratePdfQuerySchema.safeParse(req.context.data);
 
   if (queryValidation.success === false) {
     const messages = queryValidation.error.issues.map(
