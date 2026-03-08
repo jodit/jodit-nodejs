@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Boom from '@hapi/boom';
 import HTMLtoDOCX from '@turbodocx/html-to-docx';
+import * as cheerio from 'cheerio';
 import { GenerateDocxQuerySchema } from '../../schemas';
 import { logger } from '../../helpers/logger';
 
@@ -30,9 +31,14 @@ export async function generateDocxHandler(
   logger.debug('Generating DOCX document from HTML');
 
   try {
+    // Strip <style> and <script> tags — DOCX doesn't support them and they render as plain text
+    const $ = cheerio.load(query.html);
+    $('style, script').remove();
+    const cleanHtml = $.html();
+
     // Convert HTML to DOCX using turbodocx
     const docxResult = await HTMLtoDOCX(
-      query.html,
+      cleanHtml,
       null, // no header
       {
         margins: {

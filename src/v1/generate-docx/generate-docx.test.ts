@@ -157,6 +157,61 @@ describe('Generate DOCX (GET /?action=generateDocx)', () => {
     expect(response.body.length).toBeGreaterThan(100);
   });
 
+  it('should strip <style> tags from HTML before conversion', async () => {
+    const html =
+      '<style>.jodit { box-sizing: border-box; }</style><p>Hello world!</p>';
+    const response = await requestDocx(html);
+
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toContain(
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    );
+
+    // Check it's a valid DOCX file
+    const zipSignature = response.body.toString('hex', 0, 4);
+    expect(zipSignature).toBe('504b0304');
+
+    // The DOCX content should not contain the style tag text
+    const content = response.body.toString('utf8');
+    expect(content).not.toContain('box-sizing');
+  });
+
+  it('should strip multiple <style> tags', async () => {
+    const html =
+      '<style>* { margin: 0; }</style><style>.test { color: red; }</style><p>Content</p>';
+    const response = await requestDocx(html);
+
+    expect(response.status).toBe(200);
+    const content = response.body.toString('utf8');
+    expect(content).not.toContain('margin');
+    expect(content).not.toContain('color: red');
+  });
+
+  it('should generate DOCX from POST request with html in body', async () => {
+    const response = await request(testServer!.host)
+      .post('/')
+      .send({ action: 'generateDocx', html: '<p>POST test</p>' })
+      .buffer(true)
+      .parse((res, callback) => {
+        res.setEncoding('binary');
+        let data = '';
+        res.on('data', chunk => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          callback(null, Buffer.from(data, 'binary'));
+        });
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toContain(
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    );
+
+    const zipSignature = response.body.toString('hex', 0, 4);
+    expect(zipSignature).toBe('504b0304');
+  });
+
   describe('Access Control', () => {
     let aclTestServer: TestServer | null = null;
 
