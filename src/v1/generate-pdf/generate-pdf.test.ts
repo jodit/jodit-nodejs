@@ -299,6 +299,28 @@ describe('Generate PDF (GET /?action=generatePdf)', () => {
     expect(pdfSignature).toBe('%PDF');
   });
 
+  it('should generate PDF from POST with urlencoded body containing styles and cyrillic text', async () => {
+    const response = await request(testServer!.host)
+      .post('/')
+      .type('form')
+      .send(
+        'action=generatePdf' +
+          '&html=%3Cstyle%3E.jodit%2C.jodit%20*%2C.jodit-container%2C.jodit-container%20*%20%7B%20box-sizing%3A%20border-box%3B%20%7D%0A' +
+          '*%20%7B%20box-sizing%3A%20border-box%3B%20padding%3A%200px%3B%20margin%3A%200px%3B%20%7D%0A%3C%2Fstyle%3E%0A' +
+          '%3Cstyle%3E%3C%2Fstyle%3E%0A' +
+          '%3Cp%3E%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%20%D0%BC%D0%B8%D1%80!!!%3Cbr%3E%3C%2Fp%3E' +
+          '&options%5BdefaultFont%5D=courier' +
+          '&options%5Bformat%5D=A4' +
+          '&options%5Bpage_orientation%5D=portrait'
+      );
+
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toBe('application/pdf');
+
+    const pdfSignature = response.body.toString('utf8', 0, 4);
+    expect(pdfSignature).toBe('%PDF');
+  });
+
   describe('Access Control', () => {
     let aclTestServer: TestServer | null = null;
 
