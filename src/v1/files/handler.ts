@@ -33,7 +33,8 @@ export async function filesHandler(req: Request, res: Response): Promise<void> {
           'mods/sortBy',
           config.params.defaultSortBy
         ),
-        foldersPosition: req.context.getField('mods/foldersPosition', 'default')
+        foldersPosition: req.context.getField('mods/foldersPosition', 'default'),
+        filterWord: req.context.getField('mods/filterWord', '')
       })
     );
   }

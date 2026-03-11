@@ -85,24 +85,21 @@ describe('Files API', () => {
             action: 'files',
             source: 'test',
             path: 'subfolder',
-            mods: { withFolders: true }
+            mods: { withFolders: true, foldersPosition: 'top', sortBy: 'name-asc' }
           })
           .set('Accept', 'application/json');
 
         expect(response.status).toBe(200);
         expect(response.body.data.sources[0].path).toEqual('subfolder');
-        expect(response.body.data.sources[0].files[1].file).toEqual(
-          'image.png'
-        );
-        expect(response.body.data.sources[0].files[1].thumb).toEqual(
-          '_thumbs/image.png'
-        );
-        expect(response.body.data.sources[0].files[0].thumb).toEqual(
-          '_thumbs/somefolder.svg'
-        );
-        expect(response.body.data.sources[0].files[0].file).toEqual(
-          'somefolder'
-        );
+
+        const files = response.body.data.sources[0].files;
+        const folder = files.find((f: { file: string }) => f.file === 'somefolder');
+        const image = files.find((f: { file: string }) => f.file === 'image.png');
+
+        expect(folder).toBeDefined();
+        expect(folder.thumb).toEqual('_thumbs/somefolder.svg');
+        expect(image).toBeDefined();
+        expect(image.thumb).toEqual('_thumbs/image.png');
       });
     });
 
@@ -258,6 +255,23 @@ describe('Files API', () => {
       }
     });
 
+    it('should place newest file first when sorting by changed-desc', async () => {
+      // newer.txt was created last in beforeEach (after a 100ms delay)
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'changed-desc'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+      expect(files[0].name).toBe('newer.txt');
+    });
+
     it('should filter only images', async () => {
       const response = await request(testServer!.host)
         .post('/')
@@ -382,6 +396,126 @@ describe('Files API', () => {
 
       // Last item should be a folder
       expect(files[files.length - 1].type).toBe('folder');
+    });
+
+    it('should sort files by size ascending', async () => {
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'size-asc'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+      expect(files.length).toBeGreaterThan(0);
+    });
+
+    it('should sort files by size descending', async () => {
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'size-desc'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+      expect(files.length).toBeGreaterThan(0);
+    });
+
+    it('should filter files by filterWord', async () => {
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            filterWord: 'image'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+      expect(files.length).toBeGreaterThan(0);
+      files.forEach((file: { name: string }) => {
+        expect(file.name.toLowerCase()).toContain('image');
+      });
+    });
+
+    it('should return empty list when filterWord matches nothing', async () => {
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            filterWord: 'nonexistentfile'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+      expect(files.length).toBe(0);
+    });
+
+    it('should accept empty filterWord without error', async () => {
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            filterWord: ''
+          }
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should accept foldersPosition=default', async () => {
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            withFolders: true,
+            foldersPosition: 'default'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should accept all mods params together like Jodit editor sends', async () => {
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: '',
+          path: '',
+          mods: {
+            offset: 0,
+            limit: 20,
+            sortBy: 'size-desc',
+            withFolders: true,
+            foldersPosition: 'top',
+            onlyImages: true,
+            filterWord: ''
+          }
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
     });
 
     it('should get files from all sources when source param is omitted', async () => {

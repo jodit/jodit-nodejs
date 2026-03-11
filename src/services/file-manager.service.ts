@@ -58,6 +58,7 @@ export class FileManagerService extends BaseSource {
       limit: number;
       sortBy: string;
       foldersPosition: 'default' | 'top' | 'bottom';
+      filterWord: string;
     }
   ): Promise<ISourceItem> {
     return fm.items(this.getContext(), relativePath, options);

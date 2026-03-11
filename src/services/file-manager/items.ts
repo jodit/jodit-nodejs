@@ -22,6 +22,7 @@ export async function items(
     limit: number;
     sortBy: string;
     foldersPosition: 'default' | 'top' | 'bottom';
+    filterWord: string;
   }
 ): Promise<ISourceItem> {
   const fullPathDirectory = await ctx.getPath(relativePath);
@@ -70,6 +71,12 @@ export async function items(
     const apiFile = await filterFile(ctx, file, options);
 
     if (apiFile) {
+      if (
+        options.filterWord &&
+        !apiFile.name.toLowerCase().includes(options.filterWord.toLowerCase())
+      ) {
+        continue;
+      }
       fileList.push(apiFile);
     }
   }

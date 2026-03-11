@@ -42,8 +42,8 @@ export function sortByMode(
         switch (sortBy) {
           case 'changed-desc':
           case 'changed-asc': {
-            const a = fileA.stat.lastModifiedMs || 0;
-            const b = fileB.stat.lastModifiedMs || 0;
+            const a = fileA.mtime || 0;
+            const b = fileB.mtime || 0;
 
             if (a === b) {
               const m = sortBy === 'changed-asc' ? 1 : -1;

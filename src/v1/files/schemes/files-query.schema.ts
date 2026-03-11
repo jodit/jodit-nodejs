@@ -10,7 +10,14 @@ export const FilesModsSchema = z.object({
     .optional()
     .transform(val => val === true || val === 'true'),
   sortBy: z
-    .enum(['name-asc', 'name-desc', 'changed-asc', 'changed-desc'])
+    .enum([
+      'name-asc',
+      'name-desc',
+      'changed-asc',
+      'changed-desc',
+      'size-asc',
+      'size-desc'
+    ])
     .optional()
     .describe('Sort order'),
   limit: z
@@ -25,7 +32,8 @@ export const FilesModsSchema = z.object({
     .union([z.boolean(), z.string()])
     .optional()
     .transform(val => val === true || val === 'true'),
-  foldersPosition: z.enum(['top', 'bottom']).optional()
+  foldersPosition: z.enum(['default', 'top', 'bottom']).optional(),
+  filterWord: z.string().optional()
 });
 
 // Files action query schema
