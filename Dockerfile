@@ -10,6 +10,7 @@ WORKDIR /usr/src/app
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
        chromium \
+       tini \
        ca-certificates \
        fonts-liberation fonts-noto-cjk fonts-noto-core \
        libasound2 libatk1.0-0 libatk-bridge2.0-0 \
@@ -54,4 +55,7 @@ RUN mkdir -p /usr/src/app/files
 # Set environment variable to read config from file
 ENV CONFIG_FILE=/usr/src/app/config.json
 
+# Run under tini (PID 1) so orphaned Chromium children (renderers, crashpad
+# helpers) get reaped instead of piling up as zombie processes.
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "--env-file=.env", "dist/run.js"]

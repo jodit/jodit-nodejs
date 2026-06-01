@@ -340,6 +340,68 @@ describe('Files API', () => {
       expect(offsetFiles[1].file).toBe(allFiles[2].file);
     });
 
+    it('should generate SVG thumbnail for docx files', async () => {
+      await fs.writeFile(
+        path.join(testFilesPath, 'report.docx'),
+        'fake docx content'
+      );
+
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'name-asc'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+      const docxFile = files.find(
+        (f: { name: string }) => f.name === 'report.docx'
+      );
+      expect(docxFile).toBeDefined();
+      expect(docxFile.thumb).toBeDefined();
+      expect(docxFile.thumb).toMatch(/\.svg$/);
+
+      // Verify SVG file actually exists on disk
+      const thumbFullPath = path.join(testFilesPath, docxFile.thumb);
+      const thumbExists = await fs
+        .access(thumbFullPath)
+        .then(() => true)
+        .catch(() => false);
+      expect(thumbExists).toBe(true);
+
+      // Verify it contains valid SVG
+      const svgContent = await fs.readFile(thumbFullPath, 'utf-8');
+      expect(svgContent).toContain('<svg');
+      expect(svgContent).toContain('docx');
+    });
+
+    it('should generate SVG thumbnail for docx files via URL-encoded POST', async () => {
+      await fs.writeFile(
+        path.join(testFilesPath, 'document.docx'),
+        'fake docx content'
+      );
+
+      const response = await request(testServer!.host)
+        .post('/')
+        .type('form')
+        .send(
+          'action=files&source=test&path=&mods%5BsortBy%5D=name-asc&mods%5BwithFolders%5D=false&mods%5BonlyImages%5D=false&mods%5BfilterWord%5D='
+        );
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+      const docxFile = files.find(
+        (f: { name: string }) => f.name === 'document.docx'
+      );
+      expect(docxFile).toBeDefined();
+      expect(docxFile.thumb).toBeDefined();
+      expect(docxFile.thumb).toMatch(/\.svg$/);
+    });
+
     it('should combine sorting, filtering, and limiting', async () => {
       const response = await request(testServer!.host)
         .post('/')

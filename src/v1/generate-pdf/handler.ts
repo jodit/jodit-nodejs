@@ -60,9 +60,13 @@ export async function generatePdfHandler(
       const page = await browser.newPage();
 
       try {
-        // Set content
+        // Set content. Cap the wait: a single pooled browser serves all PDF
+        // requests, so an HTML page that references unreachable resources must
+        // not block it for the default 30s (these timeouts were filling the
+        // logs and serializing other requests).
         await page.setContent(query.html, {
-          waitUntil: 'networkidle0'
+          waitUntil: 'networkidle0',
+          timeout: 15000
         });
 
         // Generate PDF with options
