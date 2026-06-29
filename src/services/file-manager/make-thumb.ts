@@ -60,13 +60,35 @@ export async function makeThumb(
         path.relative(root, fullPath),
         {}
       );
-      const buffer = await sharp(fileBuffer)
-        .resize(ctx.config.params.thumbSize, ctx.config.params.thumbSize, {
+      // Encode the thumbnail in the SAME format as the source so its bytes
+      // match the `.<ext>` thumb filename. Previously every thumb was JPEG, so
+      // a ".webp" thumb actually held JPEG bytes and webp thumbnails came out
+      // broken. Formats sharp can't write (bmp, ico, …) fall back to JPEG.
+      const quality = ctx.config.params.quality;
+      let pipeline = sharp(fileBuffer).resize(
+        ctx.config.params.thumbSize,
+        ctx.config.params.thumbSize,
+        {
           fit: 'inside',
           withoutEnlargement: true
-        })
-        .jpeg({ quality: ctx.config.params.quality })
-        .toBuffer();
+        }
+      );
+
+      switch (ext) {
+        case 'webp':
+          pipeline = pipeline.webp({ quality });
+          break;
+        case 'png':
+          pipeline = pipeline.png();
+          break;
+        case 'gif':
+          pipeline = pipeline.gif();
+          break;
+        default:
+          pipeline = pipeline.jpeg({ quality });
+      }
+
+      const buffer = await pipeline.toBuffer();
 
       await ctx.storage.write(
         path.relative(root, thumbName),

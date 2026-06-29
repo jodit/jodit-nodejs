@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import request from 'supertest';
+import sharp from 'sharp';
 import {
   startTestServer,
   stopTestServer,
@@ -377,6 +378,47 @@ describe('Files API', () => {
       const svgContent = await fs.readFile(thumbFullPath, 'utf-8');
       expect(svgContent).toContain('<svg');
       expect(svgContent).toContain('docx');
+    });
+
+    it('should generate a webp thumbnail whose bytes are actually webp', async () => {
+      // A real webp source image. The bug was that every thumbnail was encoded
+      // as JPEG regardless of the source, so a ".webp" thumb held JPEG bytes
+      // and rendered broken.
+      const webpSource = await sharp({
+        create: {
+          width: 600,
+          height: 400,
+          channels: 3,
+          background: { r: 10, g: 120, b: 200 }
+        }
+      })
+        .webp()
+        .toBuffer();
+      await fs.writeFile(path.join(testFilesPath, 'photo.webp'), webpSource);
+
+      const response = await request(testServer!.host)
+        .post('/')
+        .send({
+          action: 'files',
+          source: 'test',
+          mods: {
+            sortBy: 'name-asc'
+          }
+        });
+
+      expect(response.status).toBe(200);
+      const files = response.body.data.sources[0].files;
+      const webpFile = files.find(
+        (f: { name: string }) => f.name === 'photo.webp'
+      );
+      expect(webpFile).toBeDefined();
+      expect(webpFile.thumb).toMatch(/\.webp$/);
+
+      // The thumbnail must exist and its bytes must be a real webp image.
+      const thumbFullPath = path.join(testFilesPath, webpFile.thumb);
+      const thumbBuffer = await fs.readFile(thumbFullPath);
+      const thumbMeta = await sharp(thumbBuffer).metadata();
+      expect(thumbMeta.format).toBe('webp');
     });
 
     it('should generate SVG thumbnail for docx files via URL-encoded POST', async () => {
