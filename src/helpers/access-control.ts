@@ -30,6 +30,7 @@ export const DEFAULT_RULES = {
   IMAGE_RESIZE: true,
   IMAGE_CROP: true,
   IMAGE_SAVE: true,
+  IMAGE_LOAD: true,
 
   GENERATE_PDF: true,
   GENERATE_DOCX: true

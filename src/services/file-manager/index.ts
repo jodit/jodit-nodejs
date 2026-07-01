@@ -13,6 +13,7 @@ export * from './upload-file-from-url';
 export * from './crop-image';
 export * from './resize-image';
 export * from './save-image';
+export * from './load-image';
 export * from './folders';
 export * from './make-folder';
 export * from './folder-remove';

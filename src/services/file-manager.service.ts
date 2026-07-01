@@ -166,4 +166,11 @@ export class FileManagerService extends BaseSource {
       relativePath
     );
   }
+
+  async loadImage(
+    name: string,
+    relativePath?: string
+  ): Promise<{ dataUrl: string; name: string }> {
+    return fm.loadImage(this.getContext(), name, relativePath);
+  }
 }

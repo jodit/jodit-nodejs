@@ -239,6 +239,31 @@ curl -X POST "http://localhost:8081/?action=imageSave&source=test&newname=photo-
   -F "files[0]=@edited.png;type=image/png"
 ```
 
+## POST /?action=imageLoad
+
+Return an image file as a base64 **data URL** through the CORS-enabled JSON API.
+The raw file host often serves images without CORS headers, so a browser on a
+different origin (a dev server, the image editor) can't `fetch()` them directly;
+this routes the bytes through the connector API instead.
+
+**Parameters:**
+- `action` (required) - action name ("imageLoad")
+- `source` (optional) - source name
+- `path` (optional) - path within source
+- `name` (required) - image file name
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "code": 220,
+    "content": "data:image/jpeg;base64,/9j/4AAQ…",
+    "name": "photo.jpg"
+  }
+}
+```
+
 ## POST /?action=generatePdf
 
 Generate PDF from HTML content.
