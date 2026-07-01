@@ -119,4 +119,15 @@ describe('Image Save (POST /?action=imageSave)', () => {
 
     expect(response.status).toBe(400);
   });
+
+  it('should reject a GET request (POST only)', async () => {
+    const response = await request(testServer!.host).get('/').query({
+      action: 'imageSave',
+      source: 'test',
+      newname: 'x.png'
+    });
+
+    expect(response.status).toBe(405);
+    expect(response.body.success).not.toBe(true);
+  });
 });

@@ -11,6 +11,12 @@ export async function imageLoadHandler(
   req: Request,
   res: Response
 ): Promise<void> {
+  // POST only: a GET could otherwise be embedded (<img>, link, cache, logs) and
+  // abuse the connector as an open proxy for reading files.
+  if (req.method !== 'POST') {
+    throw Boom.methodNotAllowed('imageLoad requires a POST request');
+  }
+
   const config = req.app.locals.config;
 
   const queryValidation = ImageLoadQuerySchema.safeParse(req.context.data);

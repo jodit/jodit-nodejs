@@ -17,6 +17,12 @@ export async function imageSaveHandler(
   req: Request,
   res: Response
 ): Promise<void> {
+  // POST only: this mutates a file and carries a multipart body; a GET must
+  // never reach it.
+  if (req.method !== 'POST') {
+    throw Boom.methodNotAllowed('imageSave requires a POST request');
+  }
+
   const config = req.app.locals.config;
 
   const queryValidation = ImageSaveQuerySchema.safeParse(req.context.data);

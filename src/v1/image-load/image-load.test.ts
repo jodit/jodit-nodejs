@@ -81,4 +81,27 @@ describe('Image Load (POST /?action=imageLoad)', () => {
 
     expect(response.status).toBe(400);
   });
+
+  it('should reject a GET request (POST only, no proxy abuse)', async () => {
+    const png = await sharp({
+      create: {
+        width: 8,
+        height: 8,
+        channels: 3,
+        background: { r: 1, g: 2, b: 3 }
+      }
+    })
+      .png()
+      .toBuffer();
+    await fs.writeFile(path.join(testFilesPath, 'photo.png'), png);
+
+    const response = await request(testServer!.host).get('/').query({
+      action: 'imageLoad',
+      source: 'test',
+      name: 'photo.png'
+    });
+
+    expect(response.status).toBe(405);
+    expect(response.body.success).not.toBe(true);
+  });
 });
