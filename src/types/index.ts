@@ -132,6 +132,12 @@ export interface AppConfig {
   roleSessionVar: string;
   defaultRole: string;
   allowReplaceSourceFile: boolean;
+  /**
+   * Allow `fileUploadRemote` to download from loopback / private / link-local
+   * hosts. Off by default (SSRF protection); enable only for trusted internal
+   * setups.
+   */
+  allowPrivateNetworkUploads?: boolean;
   baseurl: string;
   root: string;
   extensions: string[];

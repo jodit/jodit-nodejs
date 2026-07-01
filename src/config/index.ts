@@ -50,6 +50,7 @@ export const config: AppConfig = {
   roleSessionVar: 'JoditUserRole',
   defaultRole: 'guest',
   allowReplaceSourceFile: true,
+  allowPrivateNetworkUploads: false,
   baseurl: '',
   root: path.join(process.cwd(), './files'),
   extensions: [

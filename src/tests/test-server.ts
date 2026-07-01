@@ -26,6 +26,9 @@ export async function startTestServer(
 
   const app = createApp({
     defaultFilesKey: 'files',
+    // Tests mock remote files on localhost, so allow private hosts by default;
+    // the SSRF test flips this off to exercise the guard.
+    allowPrivateNetworkUploads: true,
     sources: {
       test: {
         name: 'test',

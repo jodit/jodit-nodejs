@@ -4,6 +4,7 @@ import bytes from 'bytes';
 import { Readable } from 'node:stream';
 import sanitize from 'sanitize-filename';
 import type { FileManagerContext } from './types';
+import { assertPublicHttpUrl } from '../../helpers/ssrf';
 
 /**
  * Upload a file from remote URL
@@ -32,6 +33,12 @@ export async function uploadFileFromUrl(
     parsedUrl = new URL(url);
   } catch {
     throw Boom.badRequest('Invalid URL');
+  }
+
+  // SSRF guard: http/https only, and never a loopback/private/link-local host
+  // (unless explicitly allowed for a trusted internal setup).
+  if (!ctx.config.params.allowPrivateNetworkUploads) {
+    await assertPublicHttpUrl(url);
   }
 
   // Extract filename from URL

@@ -91,6 +91,12 @@ Upload file from remote URL.
 - `path` (optional) - destination path
 - `url` (required) - remote file URL
 
+> **SSRF protection:** `url` must be `http`/`https`, and its host must not resolve
+> to a loopback / private / link-local address (`127.0.0.0/8`, `10/8`,
+> `172.16/12`, `192.168/16`, `169.254/16`, `::1`, `fc00::/7`, `localhost`, …).
+> Set `allowPrivateNetworkUploads: true` in the config to permit private hosts on
+> a trusted internal setup.
+
 ## POST /?action=fileRemove
 
 Remove one or more files.

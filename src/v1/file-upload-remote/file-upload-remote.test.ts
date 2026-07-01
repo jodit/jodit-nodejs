@@ -388,4 +388,63 @@ describe('File Upload Remote (GET /?action=fileUploadRemote)', () => {
       expect(response.body.data.messages).toContain('Access denied');
     });
   });
+
+  describe('SSRF protection', () => {
+    let ssrfServer: TestServer | null = null;
+
+    afterEach(async () => {
+      if (ssrfServer) {
+        await stopTestServer(ssrfServer);
+        ssrfServer = null;
+      }
+    });
+
+    it('should block loopback/private hosts when protection is on', async () => {
+      ssrfServer = await startTestServer({
+        allowPrivateNetworkUploads: false
+      });
+
+      for (const url of [
+        `http://127.0.0.1:${mockServerPort}/test-image.png`,
+        `http://localhost:${mockServerPort}/test-image.png`
+      ]) {
+        const response = await request(ssrfServer!.host)
+          .get('/')
+          .query({ action: 'fileUploadRemote', source: 'test', url });
+
+        expect(response.status).toBe(403);
+        expect(response.body.success).toBe(false);
+      }
+    });
+
+    it('should reject non-http(s) schemes', async () => {
+      ssrfServer = await startTestServer({
+        allowPrivateNetworkUploads: false
+      });
+
+      const response = await request(ssrfServer!.host).get('/').query({
+        action: 'fileUploadRemote',
+        source: 'test',
+        url: 'file:///etc/passwd'
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should still allow private hosts when explicitly enabled', async () => {
+      ssrfServer = await startTestServer({
+        allowPrivateNetworkUploads: true
+      });
+
+      const response = await request(ssrfServer!.host).get('/').query({
+        action: 'fileUploadRemote',
+        source: 'test',
+        url: `http://localhost:${mockServerPort}/test-image.png`
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+  });
 });
