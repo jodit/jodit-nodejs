@@ -30,6 +30,9 @@ describe('File Upload Remote (GET /?action=fileUploadRemote)', () => {
       } else if (req.url === '/forbidden.php') {
         res.writeHead(200, { 'Content-Type': 'application/x-php' });
         res.end('<?php echo "test"; ?>');
+      } else if (req.url === '/redirect-image.png') {
+        res.writeHead(302, { Location: '/test-image.png' });
+        res.end();
       } else if (req.url === '/not-found') {
         res.writeHead(404);
         res.end('Not Found');
@@ -443,6 +446,23 @@ describe('File Upload Remote (GET /?action=fileUploadRemote)', () => {
         url: `http://localhost:${mockServerPort}/test-image.png`
       });
 
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it('should follow redirects through the manual (guarded) loop', async () => {
+      ssrfServer = await startTestServer({
+        allowPrivateNetworkUploads: true
+      });
+
+      const response = await request(ssrfServer!.host).get('/').query({
+        action: 'fileUploadRemote',
+        source: 'test',
+        url: `http://localhost:${mockServerPort}/redirect-image.png`
+      });
+
+      // A 302 that is not followed would yield "File was not loaded"; success
+      // proves the redirect was resolved and downloaded.
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
     });

@@ -119,3 +119,44 @@ export async function assertPublicHttpUrl(rawUrl: string): Promise<void> {
     }
   }
 }
+
+/**
+ * Fetch a URL without letting redirects escape the SSRF guard.
+ *
+ * Redirects are handled manually (`redirect: 'manual'`) and every hop —
+ * including the redirect targets — is re-validated with {@link assertPublicHttpUrl},
+ * so a public URL that 302s to `http://169.254.169.254/…` is still blocked.
+ * When `validate` is false the guard is skipped (trusted internal setup) but
+ * redirects are still followed manually.
+ */
+export async function fetchGuardedAgainstSsrf(
+  rawUrl: string,
+  validate: boolean,
+  maxRedirects = 5
+): Promise<Response> {
+  let currentUrl = rawUrl;
+
+  for (let hop = 0; ; hop++) {
+    if (validate) {
+      await assertPublicHttpUrl(currentUrl);
+    }
+
+    const response = await fetch(currentUrl, { redirect: 'manual' });
+
+    const isRedirect =
+      response.status >= 300 &&
+      response.status < 400 &&
+      response.headers.has('location');
+
+    if (!isRedirect) {
+      return response;
+    }
+
+    if (hop >= maxRedirects) {
+      throw Boom.badRequest('Too many redirects');
+    }
+
+    const location = response.headers.get('location') as string;
+    currentUrl = new URL(location, currentUrl).toString();
+  }
+}

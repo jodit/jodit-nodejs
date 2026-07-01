@@ -4,7 +4,7 @@ import bytes from 'bytes';
 import { Readable } from 'node:stream';
 import sanitize from 'sanitize-filename';
 import type { FileManagerContext } from './types';
-import { assertPublicHttpUrl } from '../../helpers/ssrf';
+import { fetchGuardedAgainstSsrf } from '../../helpers/ssrf';
 
 /**
  * Upload a file from remote URL
@@ -35,12 +35,6 @@ export async function uploadFileFromUrl(
     throw Boom.badRequest('Invalid URL');
   }
 
-  // SSRF guard: http/https only, and never a loopback/private/link-local host
-  // (unless explicitly allowed for a trusted internal setup).
-  if (!ctx.config.params.allowPrivateNetworkUploads) {
-    await assertPublicHttpUrl(url);
-  }
-
   // Extract filename from URL
   const urlPath = parsedUrl.pathname;
   const fileName = path.basename(urlPath) || 'downloaded-file';
@@ -50,10 +44,14 @@ export async function uploadFileFromUrl(
     throw Boom.badRequest('Cannot extract valid filename from URL');
   }
 
-  // Download file
+  // Download file. Redirects are followed manually and every hop is re-checked
+  // against the SSRF guard (unless private hosts are explicitly allowed).
   let fileContent: Buffer;
   try {
-    const response = await fetch(url);
+    const response = await fetchGuardedAgainstSsrf(
+      url,
+      !ctx.config.params.allowPrivateNetworkUploads
+    );
 
     if (!response.ok) {
       throw Boom.badRequest(`File was not loaded: HTTP ${response.status}`);
