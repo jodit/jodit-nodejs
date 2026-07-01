@@ -14,6 +14,7 @@ import { foldersHandler } from './folders/handler';
 import { permissionsHandler } from './permissions/handler';
 import { imageResizeHandler } from './image-resize/handler';
 import { imageCropHandler } from './image-crop/handler';
+import { imageSaveHandler } from './image-save/handler';
 import { generateDocxHandler } from './generate-docx/handler';
 import { generatePdfHandler } from './generate-pdf/handler';
 
@@ -34,6 +35,7 @@ export const actions = {
   permissions: permissionsHandler,
   imageResize: imageResizeHandler,
   imageCrop: imageCropHandler,
+  imageSave: imageSaveHandler,
   generateDocx: generateDocxHandler,
   generatePdf: generatePdfHandler
 } as const;

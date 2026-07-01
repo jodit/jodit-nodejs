@@ -205,6 +205,40 @@ Crop an image.
 - `newname` (optional) - new file name (default: overwrites original)
 - `box` (required) - crop coordinates "x,y,width,height"
 
+## POST /?action=imageSave
+
+Save a client-side edited image. Unlike `imageResize`/`imageCrop` (which
+re-process an existing server file from box parameters), this accepts the final
+edited image **bytes** — crop, filters, finetune and annotations already baked
+in — as a multipart file field and writes them verbatim. Used by the client-side
+image editor.
+
+**Parameters:**
+- `action` (required) - action name ("imageSave")
+- `source` (optional) - source name
+- `path` (optional) - path within source
+- `name` (optional) - original file name; overwritten in place when `newname` is omitted
+- `newname` (optional) - target file name to "save as"; when omitted, `name` is overwritten
+- file field (required) - the edited image bytes, sent as multipart `files` (or `files[0]`)
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "code": 220,
+    "newPath": "http://localhost:8081/files/test/photo-edited.png",
+    "name": "photo-edited.png"
+  }
+}
+```
+
+**Example:**
+```bash
+curl -X POST "http://localhost:8081/?action=imageSave&source=test&newname=photo-edited.png" \
+  -F "files[0]=@edited.png;type=image/png"
+```
+
 ## POST /?action=generatePdf
 
 Generate PDF from HTML content.

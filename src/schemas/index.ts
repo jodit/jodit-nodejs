@@ -17,5 +17,6 @@ export * from '../v1/folders/schemes';
 export * from '../v1/permissions/schemes';
 export * from '../v1/image-resize/schemes';
 export * from '../v1/image-crop/schemes';
+export * from '../v1/image-save/schemes';
 export * from '../v1/generate-docx/schemes';
 export * from '../v1/generate-pdf/schemes';

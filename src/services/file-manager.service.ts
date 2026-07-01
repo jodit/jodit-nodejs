@@ -151,4 +151,19 @@ export class FileManagerService extends BaseSource {
   ): Promise<string> {
     return fm.resizeImage(this.getContext(), name, box, newName, relativePath);
   }
+
+  async saveImage(
+    imageBuffer: Buffer,
+    name: string,
+    newName?: string,
+    relativePath?: string
+  ): Promise<string> {
+    return fm.saveImage(
+      this.getContext(),
+      imageBuffer,
+      name,
+      newName,
+      relativePath
+    );
+  }
 }
