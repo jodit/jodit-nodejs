@@ -96,6 +96,39 @@ describe('Image Save (POST /?action=imageSave)', () => {
     expect(meta.height).toBe(150);
   });
 
+  it('should delete the stale cached thumbnail when overwriting a file', async () => {
+    // Seed an original file and a cached thumbnail (as the file browser would
+    // have generated on a previous listing).
+    const original = await createImageBuffer(50, 50, { r: 255, g: 0, b: 0 });
+    await fs.writeFile(path.join(testFilesPath, 'orig.png'), original);
+
+    const thumbsDir = path.join(testFilesPath, '_thumbs');
+    await fs.mkdir(thumbsDir, { recursive: true });
+    const thumbPath = path.join(thumbsDir, 'orig.png');
+    await fs.writeFile(thumbPath, original);
+
+    // Sanity: the stale thumbnail exists before the edit.
+    await expect(fs.access(thumbPath)).resolves.toBeUndefined();
+
+    const edited = await createImageBuffer(200, 150, { r: 0, g: 0, b: 255 });
+
+    const response = await request(testServer!.host)
+      .post('/')
+      .field('action', 'imageSave')
+      .field('source', 'test')
+      .field('name', 'orig.png')
+      .attach('files[0]', edited, {
+        filename: 'orig.png',
+        contentType: 'image/png'
+      });
+
+    expect(response.status).toBe(200);
+
+    // The stale thumbnail must be gone so the browser regenerates a fresh one
+    // from the just-saved bytes on the next listing.
+    await expect(fs.access(thumbPath)).rejects.toThrow();
+  });
+
   it('should return 400 when no image is uploaded', async () => {
     const response = await request(testServer!.host)
       .post('/')

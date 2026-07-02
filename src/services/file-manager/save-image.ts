@@ -1,6 +1,7 @@
 import path from 'node:path';
 import sharp from 'sharp';
 import Boom from '@hapi/boom';
+import slugify from 'slugify';
 import { Readable } from 'node:stream';
 import sanitize from 'sanitize-filename';
 import type { FileManagerContext } from './types';
@@ -100,5 +101,35 @@ export async function saveImage(
     );
   }
 
+  // Drop the stale cached thumbnail so the file browser regenerates it from the
+  // just-saved bytes — without this an edited image keeps showing the old
+  // thumbnail (the `?_tmst=` cache-buster re-fetches the same stale file).
+  await removeThumb(ctx, destRelative);
+
   return destRelative;
+}
+
+/**
+ * Delete the cached thumbnail for a file (if it exists), matching the naming
+ * used by {@link makeThumb}: `<dir>/<thumbFolder>/<slug(basename)>.<ext>`.
+ * Best-effort — thumbnail cleanup must never fail the save.
+ */
+async function removeThumb(
+  ctx: FileManagerContext,
+  fileRelative: string
+): Promise<void> {
+  try {
+    const ext = ctx.getExtension(fileRelative);
+    const thumbRelative = path.join(
+      path.dirname(fileRelative),
+      ctx.config.params.thumbFolderName,
+      slugify(path.basename(fileRelative, '.' + ext)) + '.' + ext
+    );
+
+    if (await ctx.storage.fileExists(thumbRelative, {}).catch(() => false)) {
+      await ctx.storage.deleteFile(thumbRelative, {}).catch(() => {});
+    }
+  } catch {
+    // Ignore — a missing/uncleanable thumbnail is not a save failure.
+  }
 }
