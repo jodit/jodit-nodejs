@@ -111,8 +111,10 @@ export async function saveImage(
 
 /**
  * Delete the cached thumbnail for a file (if it exists), matching the naming
- * used by {@link makeThumb}: `<dir>/<thumbFolder>/<slug(basename)>.<ext>`.
- * Best-effort — thumbnail cleanup must never fail the save.
+ * used by {@link makeThumb}: `<dir>/<thumbFolder>/<slug(basename)>.<ext>` —
+ * plus the raw (unslugified) name, under which a thumbnail may have been
+ * stored by another connector sharing the same folder (the PHP one slugifies
+ * differently). Best-effort — thumbnail cleanup must never fail the save.
  */
 async function removeThumb(
   ctx: FileManagerContext,
@@ -120,14 +122,19 @@ async function removeThumb(
 ): Promise<void> {
   try {
     const ext = ctx.getExtension(fileRelative);
-    const thumbRelative = path.join(
-      path.dirname(fileRelative),
-      ctx.config.params.thumbFolderName,
-      slugify(path.basename(fileRelative, '.' + ext)) + '.' + ext
-    );
+    const base = path.basename(fileRelative, '.' + ext);
+    const names = new Set([slugify(base) + '.' + ext, base + '.' + ext]);
 
-    if (await ctx.storage.fileExists(thumbRelative, {}).catch(() => false)) {
-      await ctx.storage.deleteFile(thumbRelative, {}).catch(() => {});
+    for (const name of names) {
+      const thumbRelative = path.join(
+        path.dirname(fileRelative),
+        ctx.config.params.thumbFolderName,
+        name
+      );
+
+      if (await ctx.storage.fileExists(thumbRelative, {}).catch(() => false)) {
+        await ctx.storage.deleteFile(thumbRelative, {}).catch(() => {});
+      }
     }
   } catch {
     // Ignore — a missing/uncleanable thumbnail is not a save failure.

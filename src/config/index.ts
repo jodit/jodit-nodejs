@@ -23,7 +23,10 @@ export const config: AppConfig = {
         `http://localhost:${process.env.PORT}/files/`
     }
   },
-  datetimeFormat: 'M/D/YYYY h:mm A',
+  // Includes seconds: the file browser uses `changed` as the thumbnail
+  // cache-buster, so a minute-only format made two edits within the same
+  // minute serve the previous (cached) thumbnail.
+  datetimeFormat: 'M/D/YYYY h:mm:ss A',
   quality: 90,
   countInChunk: 1000000,
   defaultSortBy: 'changed-desc',
