@@ -18,5 +18,6 @@ export * from './folders';
 export * from './make-folder';
 export * from './folder-remove';
 export * from './move-path';
+export * from './copy-path';
 export * from './rename-path';
 export * from './resolve-file-by-url';

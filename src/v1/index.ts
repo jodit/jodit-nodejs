@@ -2,6 +2,7 @@ import { filesHandler } from './files/handler';
 import { fileUploadHandler } from './file-upload/handler';
 import { fileRemoveHandler } from './file-remove/handler';
 import { fileMoveHandler } from './file-move/handler';
+import { fileCopyHandler } from './file-copy/handler';
 import { fileRenameHandler } from './file-rename/handler';
 import { fileDownloadHandler } from './file-download/handler';
 import { getLocalFileByUrlHandler } from './get-local-file-by-url/handler';
@@ -9,6 +10,7 @@ import { fileUploadRemoteHandler } from './file-upload-remote/handler';
 import { folderCreateHandler } from './folder-create/handler';
 import { folderRemoveHandler } from './folder-remove/handler';
 import { folderMoveHandler } from './folder-move/handler';
+import { folderCopyHandler } from './folder-copy/handler';
 import { folderRenameHandler } from './folder-rename/handler';
 import { foldersHandler } from './folders/handler';
 import { permissionsHandler } from './permissions/handler';
@@ -24,6 +26,7 @@ export const actions = {
   fileUpload: fileUploadHandler,
   fileRemove: fileRemoveHandler,
   fileMove: fileMoveHandler,
+  fileCopy: fileCopyHandler,
   fileRename: fileRenameHandler,
   fileDownload: fileDownloadHandler,
   getLocalFileByUrl: getLocalFileByUrlHandler,
@@ -31,6 +34,7 @@ export const actions = {
   folderCreate: folderCreateHandler,
   folderRemove: folderRemoveHandler,
   folderMove: folderMoveHandler,
+  folderCopy: folderCopyHandler,
   folderRename: folderRenameHandler,
   folders: foldersHandler,
   permissions: permissionsHandler,

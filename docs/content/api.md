@@ -120,6 +120,16 @@ Move files to another location.
 - `dest` (required) - destination path
 - `name` (required) - file name or array of file names
 
+## POST /?action=fileCopy
+
+Copy a file to another location. A name clash is resolved with a " (N)" suffix, so copying into the same folder duplicates the file.
+
+**Parameters:**
+- `action` (required) - action name ("fileCopy")
+- `source` (optional) - source name
+- `from` (required) - source file path relative to source root
+- `path` (optional) - destination directory path (default "/")
+
 ## POST /?action=fileRename
 
 Rename a file.
@@ -161,6 +171,16 @@ Move a folder.
 - `path` (optional) - source path
 - `dest` (required) - destination path
 - `name` (required) - folder name
+
+## POST /?action=folderCopy
+
+Recursively copy a folder to another location. A name clash is resolved with a " (N)" suffix. Copying a folder into itself or its own subtree is rejected.
+
+**Parameters:**
+- `action` (required) - action name ("folderCopy")
+- `source` (optional) - source name
+- `from` (required) - source folder path relative to source root
+- `path` (optional) - destination directory path (default "/")
 
 ## POST /?action=folderRename
 

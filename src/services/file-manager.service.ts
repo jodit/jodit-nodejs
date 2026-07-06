@@ -68,6 +68,10 @@ export class FileManagerService extends BaseSource {
     return fm.movePath(this.getContext(), from, toPath);
   }
 
+  async copyPath(from: string, toPath?: string): Promise<void> {
+    return fm.copyPath(this.getContext(), from, toPath);
+  }
+
   async fileDownload(
     target: string,
     relativePath?: string
