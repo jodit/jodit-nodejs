@@ -943,7 +943,7 @@ class CustomAccessControl implements IAccessControl {
 - **Used**: yes
 - **Purpose**: Restrict API to only accept POST requests
 - **Usage**: When `true`, all GET requests will be blocked with 405 Method Not Allowed
-- **Security**: Useful for preventing CSRF attacks and ensuring all API calls use POST method
+- **Security**: helps prevent CSRF attacks that rely on GET requests
 
 **Example**:
 ```typescript

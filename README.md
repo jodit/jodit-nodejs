@@ -104,7 +104,7 @@ await start({
 
 ### Security: POST-only Mode
 
-For enhanced security, you can restrict the API to only accept POST requests:
+You can restrict the API to accept only POST requests:
 
 ```typescript
 import { start } from 'jodit-nodejs';
@@ -125,14 +125,11 @@ await start({
 });
 ```
 
-When `onlyPOST` is enabled:
-- All GET requests return 405 Method Not Allowed
-- Provides protection against CSRF attacks
-- Prevents parameter leakage in server logs
+When `onlyPOST` is enabled, all GET requests return 405 Method Not Allowed. This protects against GET-based CSRF attacks and keeps request parameters out of web server access logs.
 
 ## Documentation
 
-📖 **[Complete Documentation](https://jodit.github.io/jodit-nodejs/)** - Full documentation with guides and API reference
+**[Complete Documentation](https://jodit.github.io/jodit-nodejs/)** - Full documentation with guides and API reference
 
 **Quick Links:**
 - [Getting Started](https://jodit.github.io/jodit-nodejs/) - Installation and quick start
@@ -145,45 +142,45 @@ When `onlyPOST` is enabled:
 - [API Reference](https://jodit.github.io/jodit-nodejs/api-reference/) - Complete API endpoints
 
 **OpenAPI Specification:**
-- 📄 [OpenAPI YAML](https://jodit.github.io/jodit-nodejs/openapi.yaml)
-- 📄 [OpenAPI JSON](https://jodit.github.io/jodit-nodejs/openapi.json)
+- [OpenAPI YAML](https://jodit.github.io/jodit-nodejs/openapi.yaml)
+- [OpenAPI JSON](https://jodit.github.io/jodit-nodejs/openapi.json)
 
 ## Key Features
 
-- ✅ **Full file management** - browse, upload, rename, move, delete
-- ✅ **Folder operations** - create, rename, move, delete, tree view
-- ✅ **Image processing** - resize, crop, thumbnail generation
-- ✅ **Document generation** - PDF and DOCX from HTML
-- ✅ **Access control** - role-based permissions, path restrictions
-- ✅ **Authentication** - cookie, JWT, express-session support
-- ✅ **Security** - POST-only mode, CSRF protection
-- ✅ **Express integration** - standalone or integrate with existing apps
-- ✅ **Custom storage** - local filesystem, S3, Azure, Google Cloud, etc.
-- ✅ **TypeScript** - full type safety with strict typing
-- ✅ **Validation** - Zod schemas for runtime validation
-- ✅ **Testing** - comprehensive test suite with Jest + Supertest
-- ✅ **Docker** - multi-stage build for production deployment
+- **Full file management** - browse, upload, rename, move, delete
+- **Folder operations** - create, rename, move, delete, tree view
+- **Image processing** - resize, crop, thumbnail generation
+- **Document generation** - PDF and DOCX from HTML
+- **Access control** - role-based permissions, path restrictions
+- **Authentication** - cookie, JWT, express-session support
+- **Security** - POST-only mode, CSRF protection
+- **Express integration** - standalone or integrate with existing apps
+- **Custom storage** - local filesystem, S3, Azure, Google Cloud, etc.
+- **TypeScript** - full type safety with strict typing
+- **Validation** - Zod schemas for runtime validation
+- **Testing** - Jest + Supertest test suite
+- **Docker** - multi-stage build for production deployment
 
 ## Implemented Functions
 
-- ✅ **actionFiles** - get list of files
-- ✅ **actionFileUpload** - upload files
-- ✅ **actionFileUploadRemote** - upload file from remote URL
-- ✅ **actionFileRemove** - remove files
-- ✅ **actionFileMove** - move files
-- ✅ **actionFileRename** - rename files
-- ✅ **actionFileDownload** - download file
-- ✅ **actionGetLocalFileByUrl** - resolve local file by URL
-- ✅ **actionFolderCreate** - create folders
-- ✅ **actionFolderRemove** - remove folders
-- ✅ **actionFolderMove** - move folders
-- ✅ **actionFolderRename** - rename folders
-- ✅ **actionFolders** - get folder tree
-- ✅ **actionPermissions** - get permissions
-- ✅ **actionImageResize** - resize images
-- ✅ **actionImageCrop** - crop images
-- ✅ **actionGenerateDocx** - generate DOCX documents from HTML
-- ✅ **actionGeneratePdf** - generate PDF documents from HTML
+- **actionFiles** - get list of files
+- **actionFileUpload** - upload files
+- **actionFileUploadRemote** - upload file from remote URL
+- **actionFileRemove** - remove files
+- **actionFileMove** - move files
+- **actionFileRename** - rename files
+- **actionFileDownload** - download file
+- **actionGetLocalFileByUrl** - resolve local file by URL
+- **actionFolderCreate** - create folders
+- **actionFolderRemove** - remove folders
+- **actionFolderMove** - move folders
+- **actionFolderRename** - rename folders
+- **actionFolders** - get folder tree
+- **actionPermissions** - get permissions
+- **actionImageResize** - resize images
+- **actionImageCrop** - crop images
+- **actionGenerateDocx** - generate DOCX documents from HTML
+- **actionGeneratePdf** - generate PDF documents from HTML
 
 ## Examples
 

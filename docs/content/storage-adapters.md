@@ -7,13 +7,13 @@ description: How to create and use custom storage adapters in Jodit Connector No
 
 ## Overview
 
-Jodit Connector supports custom storage adapters, allowing you to store files in any backend storage system (AWS S3, Azure Blob Storage, Google Cloud Storage, in-memory, database, etc.) instead of the default local filesystem.
+Jodit Connector supports custom storage adapters, so you can store files in any backend storage system (AWS S3, Azure Blob Storage, Google Cloud Storage, in-memory, database, etc.) instead of the default local filesystem.
 
 Storage adapters provide a unified interface for file operations, so storage backends can be switched without changing application code.
 
 ## How Storage Adapters Work
 
-The connector uses the `@flystorage/file-storage` library, which provides a standardized `StorageAdapter` interface. All file operations (read, write, delete, list, etc.) go through this interface, allowing you to plug in any compatible adapter.
+The connector uses the `@flystorage/file-storage` library, which provides a standardized `StorageAdapter` interface. All file operations (read, write, delete, list, etc.) go through this interface, so you can plug in any compatible adapter.
 
 ### Architecture
 
