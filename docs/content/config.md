@@ -1,11 +1,11 @@
 ---
 title: Configuration Reference
-description: Comprehensive reference for all configuration options in Jodit Connector Node.js, including file handling, image processing, thumbnails, access control, and source-level overrides.
+description: Reference for all configuration options in Jodit Connector Node.js, including file handling, image processing, thumbnails, access control, and source-level overrides.
 ---
 
 # Configuration Reference
 
-This document provides a comprehensive reference for all configuration options available in Jodit Connector Node.js.
+All configuration options for Jodit Connector Node.js.
 
 ## Table of Contents
 
@@ -63,7 +63,7 @@ CONFIG_FILE=/path/to/config.json npm start
 ### `debug`
 - **Type**: `boolean`
 - **Default**: `true`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Controls error logging verbosity
 - **Usage**: When `true`, detailed error messages with stack traces are logged. In production, set to `false`.
 
@@ -77,13 +77,13 @@ CONFIG_FILE=/path/to/config.json npm start
 ### `title`
 - **Type**: `string`
 - **Default**: `""`
-- **Used**: ⚠️ Not currently used
+- **Used**: not currently used
 - **Purpose**: Application title (reserved for future use)
 
 ### `defaultFilesKey`
 - **Type**: `string`
 - **Default**: `"default"`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Default field name for file uploads when source-specific key is not set
 - **Usage**: Used as fallback when `SourceConfig.defaultFilesKey` is not specified
 
@@ -101,7 +101,7 @@ CONFIG_FILE=/path/to/config.json npm start
 ### `sources`
 - **Type**: `Record<string, SourceConfig>`
 - **Default**: Single "default" source
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Defines available file storage locations
 - **Required**: Yes
 
@@ -158,7 +158,7 @@ CONFIG_FILE=/path/to/config.json npm start
 
 ## Source-Level Configuration Overrides
 
-**New Feature**: Each source can override any global configuration setting (except `sources` itself). This allows you to have different configurations for different file storage locations.
+Each source can override any global configuration setting except `sources` itself, so different storage locations can use different settings.
 
 ### How It Works
 
@@ -375,15 +375,11 @@ The source-level overrides are implemented using JavaScript Proxy:
    - Otherwise, returns the global `config.params.someProperty`
 3. The `sources` property is explicitly blocked from being overridden
 
-This approach provides:
-- **Zero overhead**: No performance impact, Proxy is very fast
-- **Type safety**: Full TypeScript support
-- **Transparency**: Code doesn't need to know about overrides
-- **Flexibility**: Any property can be overridden
+The Proxy check adds negligible overhead, TypeScript types are preserved, code reading the configuration does not need to know about overrides, and any property can be overridden.
 
 ### Testing
 
-Comprehensive tests are available in `src/tests/integration/source-config-override.test.ts` covering:
+Tests are in `src/tests/integration/source-config-override.test.ts`, covering:
 - File extension overrides
 - Upload size and strategy overrides
 - Thumbnail settings overrides
@@ -402,7 +398,7 @@ npm test -- source-config-override.test.ts
 ### `extensions`
 - **Type**: `string[]`
 - **Default**: `['jpg', 'png', 'gif', 'pdf', 'doc', 'txt', 'zip', ...]`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Whitelist of allowed file extensions
 - **Usage**: Files with extensions not in this list will be rejected
 
@@ -416,7 +412,7 @@ npm test -- source-config-override.test.ts
 ### `maxUploadFileSize`
 - **Type**: `string`
 - **Default**: `"8mb"`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Maximum allowed size for uploaded files
 - **Format**: Number + unit (e.g., "8mb", "100kb", "1gb")
 
@@ -430,13 +426,13 @@ npm test -- source-config-override.test.ts
 ### `maxFileSize`
 - **Type**: `string`
 - **Default**: `"8mb"`
-- **Used**: ⚠️ Not currently used
+- **Used**: not currently used
 - **Note**: Use `maxUploadFileSize` instead
 
 ### `saveSameFileNameStrategy`
 - **Type**: `string`
 - **Default**: `"addNumber"`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Strategy for handling duplicate filenames during upload
 - **Values**:
   - `"error"` - Reject upload if file exists
@@ -453,7 +449,7 @@ npm test -- source-config-override.test.ts
 ### `defaultPermission`
 - **Type**: `number`
 - **Default**: `0o775`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Unix file permissions for newly created folders
 - **Format**: Octal number
 
@@ -467,7 +463,7 @@ npm test -- source-config-override.test.ts
 ### `datetimeFormat`
 - **Type**: `string`
 - **Default**: `"M/D/YYYY h:mm A"`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Format string for file modification dates in listings
 - **Format**: Uses [Day.js format tokens](https://day.js.org/docs/en/display/format)
 
@@ -481,7 +477,7 @@ npm test -- source-config-override.test.ts
 ### `defaultSortBy`
 - **Type**: `string`
 - **Default**: `"changed-desc"`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Default sort order for file listings
 - **Values**: `"name-asc"`, `"name-desc"`, `"size-asc"`, `"size-desc"`, `"changed-asc"`, `"changed-desc"`
 
@@ -495,7 +491,7 @@ npm test -- source-config-override.test.ts
 ### `countInChunk`
 - **Type**: `number`
 - **Default**: `1000000`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Default pagination limit for file listings
 
 **Example**:
@@ -508,7 +504,7 @@ npm test -- source-config-override.test.ts
 ### `excludeDirectoryNames`
 - **Type**: `string[]`
 - **Default**: `['.tmb', '.quarantine']`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: List of directory names to exclude from file listings
 
 **Example**:
@@ -525,7 +521,7 @@ npm test -- source-config-override.test.ts
 ### `imageExtensions`
 - **Type**: `string[]`
 - **Default**: `['jpg', 'png', 'gif', 'jpeg', 'bmp', 'svg', 'ico', 'webp']`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: File extensions that should be treated as images
 - **Usage**: Used for thumbnail generation and image-specific operations
 
@@ -539,7 +535,7 @@ npm test -- source-config-override.test.ts
 ### `quality`
 - **Type**: `number`
 - **Default**: `90`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: JPEG quality for thumbnail generation (1-100)
 
 **Example**:
@@ -552,13 +548,13 @@ npm test -- source-config-override.test.ts
 ### `maxImageWidth`
 - **Type**: `number`
 - **Default**: `1900`
-- **Used**: ⚠️ Not currently enforced
+- **Used**: not currently enforced
 - **Purpose**: Maximum allowed image width in pixels (reserved for future validation)
 
 ### `maxImageHeight`
 - **Type**: `number`
 - **Default**: `1900`
-- **Used**: ⚠️ Not currently enforced
+- **Used**: not currently enforced
 - **Purpose**: Maximum allowed image height in pixels (reserved for future validation)
 
 ---
@@ -568,7 +564,7 @@ npm test -- source-config-override.test.ts
 ### `createThumb`
 - **Type**: `boolean`
 - **Default**: `true`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Enable/disable thumbnail generation for images
 
 **Example**:
@@ -581,7 +577,7 @@ npm test -- source-config-override.test.ts
 ### `thumbSize`
 - **Type**: `number`
 - **Default**: `250`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Thumbnail dimensions in pixels (both width and height)
 
 **Example**:
@@ -594,7 +590,7 @@ npm test -- source-config-override.test.ts
 ### `thumbFolderName`
 - **Type**: `string`
 - **Default**: `"_thumbs"`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Name of the folder where thumbnails are stored
 
 **Example**:
@@ -607,7 +603,7 @@ npm test -- source-config-override.test.ts
 ### `generateSvgThumbs`
 - **Type**: `boolean`
 - **Default**: `true`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Enable/disable SVG thumbnail generation for non-image files (folders and documents)
 - **Usage**: When `true`, generates colored SVG icons for files and folders that are not images. When `false`, returns the original file path without generating SVG thumbnails.
 
@@ -621,7 +617,7 @@ npm test -- source-config-override.test.ts
 ### `svgThumbWidth`
 - **Type**: `number`
 - **Default**: `100`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Width of generated SVG thumbnails in pixels
 - **Usage**: Only applies when `generateSvgThumbs` is `true`. Controls the width attribute of the SVG element.
 
@@ -635,7 +631,7 @@ npm test -- source-config-override.test.ts
 ### `svgThumbHeight`
 - **Type**: `number`
 - **Default**: `100`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Height of generated SVG thumbnails in pixels
 - **Usage**: Only applies when `generateSvgThumbs` is `true`. Controls the height attribute of the SVG element.
 
@@ -649,7 +645,7 @@ npm test -- source-config-override.test.ts
 ### `svgGenerator`
 - **Type**: `(file: StatEntry, width: number, height: number) => string`
 - **Default**: `undefined` (uses built-in generator)
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Custom function to generate SVG thumbnails for non-image files
 - **Usage**: Allows complete customization of SVG thumbnail appearance. Receives file information, desired width/height, and must return SVG string.
 
@@ -771,7 +767,7 @@ import path from 'path';
 ### `safeThumbsCountInOneTime`
 - **Type**: `number`
 - **Default**: `20`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Maximum number of thumbnails to generate in a single request
 - **Usage**: Prevents performance issues when listing large directories
 
@@ -789,7 +785,7 @@ import path from 'path';
 ### `accessControl`
 - **Type**: `AccessControlRule[] | (() => AccessControlRule[]) | (() => Promise<AccessControlRule[]>)`
 - **Default**: `[]` (no restrictions)
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Define role-based permissions for actions
 - **Documentation**: See [authentication.md](./authentication.md)
 
@@ -856,7 +852,7 @@ The `accessControl` can be provided in three ways:
 ### `accessControlInstance`
 - **Type**: `IAccessControl`
 - **Default**: `undefined`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Provide a custom AccessControl implementation
 - **Use case**: Complete control over permission logic
 
@@ -910,7 +906,7 @@ class CustomAccessControl implements IAccessControl {
 ### `defaultRole`
 - **Type**: `string`
 - **Default**: `"guest"`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Default user role when no authentication is provided
 - **Usage**: Used as fallback when `checkAuthentication` callback is not set
 
@@ -924,13 +920,13 @@ class CustomAccessControl implements IAccessControl {
 ### `roleSessionVar`
 - **Type**: `string`
 - **Default**: `"JoditUserRole"`
-- **Used**: ⚠️ Not currently used
+- **Used**: not currently used
 - **Note**: Authentication uses `checkAuthentication` callback instead
 
 ### `allowCrossOrigin`
 - **Type**: `boolean`
 - **Default**: `false`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Enable/disable CORS headers
 - **Usage**: When `true`, adds `Access-Control-Allow-*` headers
 
@@ -944,7 +940,7 @@ class CustomAccessControl implements IAccessControl {
 ### `onlyPOST`
 - **Type**: `boolean`
 - **Default**: `false`
-- **Used**: ✅ Yes
+- **Used**: yes
 - **Purpose**: Restrict API to only accept POST requests
 - **Usage**: When `true`, all GET requests will be blocked with 405 Method Not Allowed
 - **Security**: Useful for preventing CSRF attacks and ensuring all API calls use POST method
@@ -991,7 +987,7 @@ Jodit.make('#editor', {
 ### `allowReplaceSourceFile`
 - **Type**: `boolean`
 - **Default**: `true`
-- **Used**: ⚠️ Not currently used
+- **Used**: not currently used
 - **Note**: Reserved for future use
 
 ---
@@ -1001,13 +997,13 @@ Jodit.make('#editor', {
 ### `memoryLimit`
 - **Type**: `string`
 - **Default**: `"256M"`
-- **Used**: ⚠️ Not currently used
+- **Used**: not currently used
 - **Note**: Reserved for future use (Node.js memory limits are set via `--max-old-space-size`)
 
 ### `timeoutLimit`
 - **Type**: `number`
 - **Default**: `60`
-- **Used**: ⚠️ Not currently used
+- **Used**: not currently used
 - **Note**: Reserved for future use (HTTP timeouts are configured at server level)
 
 ---
@@ -1016,7 +1012,7 @@ Jodit.make('#editor', {
 
 ### `pdf`
 - **Type**: `PdfConfig`
-- **Used**: ⚠️ Not currently used
+- **Used**: not currently used
 - **Note**: PDF generation uses Puppeteer directly with options from query parameters
 
 The `pdf` configuration object has the following properties (all unused):
@@ -1206,7 +1202,7 @@ The following parameters are defined in the configuration but are **not currentl
 
 ## Environment Variables
 
-The default configuration uses environment variables for easy customization:
+The default configuration reads the following environment variables:
 
 - `SOURCE_NAME` - Display name for default source (default: "Test Files")
 - `SOURCE_ROOT` - Root directory for default source (default: "./files/")

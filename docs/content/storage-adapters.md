@@ -1,6 +1,6 @@
 ---
 title: Custom Storage Adapters
-description: Complete guide to creating and using custom storage adapters in Jodit Connector Node.js for AWS S3, Azure Blob, Google Cloud Storage, and other backends.
+description: How to create and use custom storage adapters in Jodit Connector Node.js for AWS S3, Azure Blob, Google Cloud Storage, and other backends.
 ---
 
 # Custom Storage Adapters
@@ -9,7 +9,7 @@ description: Complete guide to creating and using custom storage adapters in Jod
 
 Jodit Connector supports custom storage adapters, allowing you to store files in any backend storage system (AWS S3, Azure Blob Storage, Google Cloud Storage, in-memory, database, etc.) instead of the default local filesystem.
 
-Storage adapters provide a unified interface for file operations, making it easy to switch between different storage backends without changing your application code.
+Storage adapters provide a unified interface for file operations, so storage backends can be switched without changing application code.
 
 ## How Storage Adapters Work
 
@@ -701,10 +701,10 @@ async *list(path: string, options: { deep: boolean }): AsyncGenerator<StatEntry>
 Different systems use different path separators. Always normalize:
 
 ```typescript
-// ❌ Wrong
+// Wrong:
 this.files.set(path, buffer);
 
-// ✅ Correct
+// Correct:
 this.files.set(this.normalizePath(path), buffer);
 ```
 

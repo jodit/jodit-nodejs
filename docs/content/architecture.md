@@ -141,10 +141,7 @@ export function createApp(
 
 ### Benefits
 
-- **Testability**: Easy to create isolated app instances for testing
-- **Flexibility**: Can integrate with existing Express apps
-- **Reusability**: Multiple instances with different configs
-- **Middleware isolation**: Each router has its own middleware stack
+The factory makes it easy to create isolated app instances for tests, integrate with an existing Express app, and run several instances with different configs. Each router keeps its own middleware stack.
 
 ## Middleware Architecture
 
@@ -215,10 +212,7 @@ const filesSchema = z.object({
 });
 ```
 
-Benefits:
-- Single source of truth
-- Always in sync with validation
-- Type-safe
+The Zod schemas are the single source of truth, so the documentation never drifts out of sync with the actual validation.
 
 Generate docs:
 ```bash

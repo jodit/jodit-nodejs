@@ -1,11 +1,11 @@
 ---
 title: Authentication
-description: Complete guide to implementing authentication in Jodit Connector Node.js, including cookie-based auth, JWT tokens, and express-session integration.
+description: How Jodit Connector Node.js authenticates requests, covering cookie-based auth, JWT tokens, and express-session integration.
 ---
 
 # Authentication
 
-This document provides a comprehensive guide to implementing authentication in Jodit Connector Node.js.
+Jodit Connector Node.js authenticates each request through a `checkAuthentication` callback that returns the user's role.
 
 ## Table of Contents
 
@@ -93,11 +93,7 @@ await start({
 
 ### Important Notes
 
-- **Called for EVERY request**: The callback runs on each API call
-- **Synchronous or asynchronous**: Can return a role directly or a Promise
-- **Per-user**: Different users can have different roles simultaneously
-- **No global state**: Each request is independent
-- **Error handling**: Throwing an error rejects the request with 401
+The callback runs on every API call and can return a role either directly or as a Promise. Different users can hold different roles at the same time; each request is authenticated independently, with no global state. Throwing an error inside the callback rejects the request with 401.
 
 ## Authentication Methods
 

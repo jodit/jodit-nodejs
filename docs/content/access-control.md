@@ -1,11 +1,11 @@
 ---
 title: Access Control (ACL)
-description: Complete guide to implementing role-based access control in Jodit Connector Node.js, including static rules, dynamic rules, and advanced permissions.
+description: Role-based access control in Jodit Connector Node.js, covering static rules, dynamic rules, and advanced permissions.
 ---
 
 # Access Control (ACL)
 
-This document provides a comprehensive guide to implementing access control rules in Jodit Connector Node.js.
+Jodit Connector Node.js checks every request against a list of access control rules before executing it.
 
 ## Table of Contents
 
@@ -106,11 +106,7 @@ const config = {
 
 ## Rule Matching
 
-- **Order matters**: Rules are processed in order (general → specific)
-- **Later rules override earlier ones** for the same role/action
-- **Role matching**: Exact match or wildcard (`'*'`)
-- **Path matching**: Checks if request path starts with rule path
-- **Extension matching**: Filters by file extension
+Rules are processed in order, from general to specific, and later rules override earlier ones for the same role and action. A rule's role matches exactly or via the wildcard (`'*'`). Path matching checks whether the request path starts with the rule path, and extension matching filters by file extension.
 
 ## Dynamic Rules with Functions
 
@@ -155,10 +151,7 @@ Access control rules can be loaded dynamically from external sources like databa
   ]
 }
 ```
-- ✅ Simple and fast
-- ✅ No database calls
-- ❌ Fixed at startup
-- ❌ Requires restart to update
+Static rules are simple and fast, with no database calls, but they are fixed at startup: updating them requires a restart.
 
 **Dynamic rules** (async function):
 ```typescript
@@ -169,10 +162,7 @@ Access control rules can be loaded dynamically from external sources like databa
   }
 }
 ```
-- ✅ Fresh rules on every check
-- ✅ No restart needed for updates
-- ✅ Centralized rule management
-- ⚠️ Adds latency (use caching!)
+Dynamic rules are loaded fresh on every check, so updates take effect without a restart and the rules can be managed centrally. Loading them adds latency to every request, so use caching.
 
 ### Loading Rules from Database
 
@@ -364,13 +354,13 @@ await start({
 
 ### Best Practices for Dynamic Rules
 
-1. **Always implement caching** for database/API calls to avoid performance issues
-2. **Set appropriate TTL** (cache lifetime) based on how often rules change
-3. **Provide fallback rules** in case loading fails
-4. **Monitor performance** - async rule loading adds latency to every request
-5. **Use sync functions** when rules depend only on application state
-6. **Log rule changes** for audit and debugging
-7. **Test failure scenarios** (database down, API timeout, etc.)
+1. Cache database/API calls to avoid performance issues
+2. Set the cache TTL based on how often rules change
+3. Provide fallback rules in case loading fails
+4. Monitor performance: async rule loading adds latency to every request
+5. Use sync functions when rules depend only on application state
+6. Log rule changes for audit and debugging
+7. Test failure scenarios (database down, API timeout, etc.)
 
 ### Complete Example with Error Handling
 

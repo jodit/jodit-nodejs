@@ -5,7 +5,7 @@ description: Complete API usage examples for TypeScript, CommonJS, and ES Module
 
 # API Usage
 
-This guide shows how to use Jodit Connector Node.js in your applications.
+Jodit Connector Node.js exposes `start`, `stop`, and `createApp` functions that work from TypeScript, CommonJS, and ES Modules.
 
 ## TypeScript
 

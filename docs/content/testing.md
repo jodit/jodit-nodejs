@@ -5,7 +5,7 @@ description: Testing guide for Jodit Connector Node.js - running tests, test arc
 
 # Testing
 
-Jodit Connector Node.js uses Jest and Supertest for comprehensive integration testing.
+Jodit Connector Node.js uses Jest and Supertest for integration testing.
 
 ## Running Tests
 

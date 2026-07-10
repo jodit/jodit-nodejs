@@ -1,6 +1,6 @@
 ---
 title: Docker Deployment
-description: Complete guide for deploying Jodit Connector Node.js using Docker.
+description: How to run Jodit Connector Node.js in Docker, with compose examples and image build notes.
 ---
 
 # Docker Deployment

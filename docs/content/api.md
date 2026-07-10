@@ -237,8 +237,8 @@ Crop an image.
 
 Save a client-side edited image. Unlike `imageResize`/`imageCrop` (which
 re-process an existing server file from box parameters), this accepts the final
-edited image **bytes** — crop, filters, finetune and annotations already baked
-in — as a multipart file field and writes them verbatim. Used by the client-side
+edited image **bytes** (crop, filters, finetune and annotations already baked
+in) as a multipart file field and writes them verbatim. Used by the client-side
 image editor.
 
 **Parameters:**

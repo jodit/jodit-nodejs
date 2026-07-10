@@ -1,6 +1,6 @@
 ---
 title: Deployment Guide
-description: Comprehensive guide for deploying Jodit Connector Node.js, including GitHub Actions CI/CD, Docker deployment, npm publishing, and troubleshooting.
+description: How to deploy Jodit Connector Node.js with GitHub Actions CI/CD, Docker, and npm publishing, plus troubleshooting.
 ---
 
 # Deployment Guide
@@ -67,10 +67,10 @@ For automated publishing to npm and DockerHub, add the following secrets in **Se
    ```
 
 3. **GitHub Actions will automatically**:
-   - ✅ Run tests and linter
-   - ✅ Build Docker image
-   - ✅ Push Docker image to DockerHub as `latest` and `<version>`
-   - ✅ Publish package to npm registry with provenance
+   - Run tests and linter
+   - Build Docker image
+   - Push Docker image to DockerHub as `latest` and `<version>`
+   - Publish package to npm registry with provenance
 
 ### Manual Release
 
