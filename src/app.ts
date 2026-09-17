@@ -14,6 +14,7 @@ import { logger } from './helpers/logger';
 import { pingHandler } from './v1/ping/handler';
 import { corsMiddleware } from './middlewares/cors';
 import { authMiddleware } from './middlewares/auth';
+import { dynamicSourcesMiddleware } from './middlewares/dynamic-sources';
 import { AppConfigSchema } from './schemas';
 import { actions } from './v1';
 import { Config } from './config/config';
@@ -117,8 +118,9 @@ export function createApp(
     next();
   });
 
-  // Apply middlewares to router
+  // Apply middlewares to router: CORS → per-request sources → role
   router.use(corsMiddleware);
+  router.use(dynamicSourcesMiddleware);
   router.use(authMiddleware);
 
   // Routes

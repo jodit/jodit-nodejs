@@ -4,6 +4,7 @@ import Boom from '@hapi/boom';
 import type { SourceConfig } from '../types';
 import type { Config } from '../config/config';
 import { StatEntry } from '@flystorage/file-storage';
+import { isLocalStorageSource } from '../storage/registry';
 
 export abstract class BaseSource {
   readonly name: string;
@@ -17,6 +18,15 @@ export abstract class BaseSource {
   }
 
   abstract isDirectory(pathname: string): Promise<boolean>;
+
+  /**
+   * Remote adapters (S3, custom instances) work on a virtual root: paths
+   * are still confined to `root`, but the local filesystem is never asked
+   * about symlinks because nothing lives there.
+   */
+  isVirtualRoot(): boolean {
+    return !isLocalStorageSource(this.sourceConfig);
+  }
 
   async getRoot(): Promise<string> {
     if (this.sourceConfig.root) {
@@ -39,7 +49,9 @@ export abstract class BaseSource {
     }
 
     // Verify symlinks don't escape root
-    await verifyRealPath(pathname, root);
+    if (!this.isVirtualRoot()) {
+      await verifyRealPath(pathname, root);
+    }
 
     return pathname;
   }
@@ -96,7 +108,8 @@ function normalizePath(path: string): string {
  * Prevents prefix collision attacks like "/var/uploads-evil" matching "/var/uploads".
  */
 export function isPathWithinRoot(pathname: string, root: string): boolean {
-  return pathname === root || pathname.startsWith(root + path.sep);
+  const base = root.endsWith(path.sep) ? root : root + path.sep;
+  return pathname === root || pathname.startsWith(base);
 }
 
 /**

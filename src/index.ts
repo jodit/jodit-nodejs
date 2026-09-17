@@ -1,6 +1,11 @@
 import type { Server } from 'http';
 import type {
   AppConfig,
+  SourceConfig,
+  ResolvedSources,
+  SourcesResolver,
+  DynamicSourcesCacheOptions,
+  AllowedOrigins,
   SvgGenerator,
   IAccessControl,
   AccessControlConfig,
@@ -10,6 +15,18 @@ import type { AuthCallback } from './middlewares/auth';
 import packageJson from '../package.json' with { type: 'json' };
 import { logger } from './helpers/logger';
 import { createApp } from './app';
+import {
+  S3StorageAdapter,
+  normalizeS3Path,
+  type S3SourceOptions,
+  type S3Credentials
+} from './storage/s3';
+import {
+  registerStorageAdapter,
+  createStorageAdapter,
+  getRegisteredStorageAdapters,
+  type StorageAdapterFactory
+} from './storage/registry';
 
 const { version } = packageJson;
 
@@ -17,9 +34,24 @@ let server: Server | null = null;
 
 // Re-export createApp for direct use
 export { createApp };
+export {
+  S3StorageAdapter,
+  normalizeS3Path,
+  registerStorageAdapter,
+  createStorageAdapter,
+  getRegisteredStorageAdapters
+};
 export type {
   AuthCallback,
   AppConfig,
+  SourceConfig,
+  ResolvedSources,
+  SourcesResolver,
+  DynamicSourcesCacheOptions,
+  AllowedOrigins,
+  S3SourceOptions,
+  S3Credentials,
+  StorageAdapterFactory,
   SvgGenerator,
   IAccessControl,
   AccessControlConfig,

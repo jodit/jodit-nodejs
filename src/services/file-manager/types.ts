@@ -42,6 +42,10 @@ export interface FileManagerContext {
    * Source name
    */
   name: string;
+  /**
+   * True for remote adapters: `root` is a virtual path, not a directory on disk
+   */
+  virtualRoot: boolean;
 }
 
 /**

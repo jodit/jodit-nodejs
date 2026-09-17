@@ -55,6 +55,20 @@ docker run --rm -p 8081:8081 \
   jodit-nodejs
 ```
 
+### Against an S3 bucket
+
+No files volume is needed when the source is a bucket. Credentials go in as environment variables, the bucket in the config file:
+
+```bash
+docker run --rm -p 8081:8081 \
+  -e AWS_ACCESS_KEY_ID=AKIA... \
+  -e AWS_SECRET_ACCESS_KEY=... \
+  -v $(pwd)/config.s3.example.json:/usr/src/app/config.json \
+  jodit-nodejs
+```
+
+`config.s3.example.json` in the repository is a ready starting point. Options and S3-compatible endpoints (MinIO, R2, Yandex) are described in [AWS S3 and S3-compatible storage](./aws-s3.md).
+
 ### With Inline JSON Config
 
 ```bash

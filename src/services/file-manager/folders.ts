@@ -43,6 +43,13 @@ export async function folders(
   const storageRelativePath =
     relativeCalcPath === path.sep ? '' : relativeCalcPath;
 
+  if (
+    storageRelativePath !== '' &&
+    !(await ctx.storage.directoryExists(storageRelativePath, {}))
+  ) {
+    throw Boom.notFound('Path does not exist');
+  }
+
   try {
     for await (const entry of ctx.storage.list(storageRelativePath, {
       deep: false

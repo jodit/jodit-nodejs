@@ -1,4 +1,6 @@
 import type { StorageAdapter, StatEntry } from '@flystorage/file-storage';
+import type { Request } from 'express';
+import type { S3SourceOptions } from '../storage/s3';
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -16,14 +18,53 @@ export interface ErrorResponse {
 export interface SourceConfig {
   title?: string | undefined;
   name: string;
-  root: string;
+  /**
+   * Root directory. Required for the local filesystem; for every other
+   * adapter it is a virtual root that defaults to `/`.
+   */
+  root?: string | undefined;
   baseurl: string;
   defaultFilesKey?: string | undefined;
-  storageAdapter?: 'local' | StorageAdapter; // 'local' or custom StorageAdapter instance
+  /**
+   * `'local'` (default), `'s3'`, the name of an adapter registered with
+   * `registerStorageAdapter()`, or a StorageAdapter instance.
+   */
+  storageAdapter?: 'local' | 's3' | string | StorageAdapter | undefined;
+  /** Options for `storageAdapter: 's3'` */
+  s3?: S3SourceOptions | undefined;
   // Allow any AppConfig property to be overridden at source level (except sources)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
+
+/**
+ * Sources resolved for one request by `AppConfig.resolveSources`.
+ * `id` identifies the tenant: requests with the same id reuse the already
+ * built sources until the cache entry expires.
+ */
+export interface ResolvedSources {
+  id: string;
+  sources: Record<string, SourceConfig>;
+}
+
+export type SourcesResolver = (
+  req: Request
+) =>
+  | Promise<ResolvedSources | null | undefined>
+  | ResolvedSources
+  | null
+  | undefined;
+
+export interface DynamicSourcesCacheOptions {
+  /** Maximum number of tenants kept in memory (least recently used are evicted) */
+  max: number;
+  /** How long resolved sources stay valid, in milliseconds */
+  ttlMs: number;
+}
+
+export type AllowedOrigins =
+  | string[]
+  | ((origin: string, req: Request) => boolean | Promise<boolean>);
 
 export interface PdfConfig {
   defaultFont: string;
@@ -106,6 +147,13 @@ export interface AppConfig {
   saveSameFileNameStrategy: string;
   debug: boolean;
   sources: Record<string, SourceConfig>;
+  /**
+   * Resolve sources per request (multi-tenant mode). When it returns a
+   * value, those sources replace the static `sources` for that request.
+   */
+  resolveSources?: SourcesResolver | undefined;
+  /** Cache for sources built by `resolveSources`. Default: 200 tenants, 60 s. */
+  dynamicSourcesCache?: DynamicSourcesCacheOptions | undefined;
   datetimeFormat: string;
   quality: number;
   countInChunk: number;
@@ -124,6 +172,11 @@ export interface AppConfig {
   memoryLimit: string;
   timeoutLimit: number;
   allowCrossOrigin: boolean;
+  /**
+   * Origins allowed by CORS when `allowCrossOrigin` is on. A list of exact
+   * origins or a predicate. Unset = every origin is echoed back.
+   */
+  allowedOrigins?: AllowedOrigins | undefined;
   onlyPOST: boolean;
   safeThumbsCountInOneTime: number;
   sourceClassName: string;

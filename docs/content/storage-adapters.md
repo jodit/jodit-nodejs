@@ -1,13 +1,13 @@
 ---
 title: Custom Storage Adapters
-description: How to create and use custom storage adapters in Jodit Connector Node.js for AWS S3, Azure Blob, Google Cloud Storage, and other backends.
+description: How storage adapters work in Jodit Connector Node.js, the built-in local and s3 adapters, registering adapters by name, and writing your own for Azure, Google Cloud or any other backend.
 ---
 
 # Custom Storage Adapters
 
 ## Overview
 
-Jodit Connector supports custom storage adapters, so you can store files in any backend storage system (AWS S3, Azure Blob Storage, Google Cloud Storage, in-memory, database, etc.) instead of the default local filesystem.
+Jodit Connector stores files through storage adapters. Two are built in: the local filesystem (default) and [S3](./aws-s3.md). Any other backend (Azure Blob Storage, Google Cloud Storage, in-memory, a database) can be plugged in as a custom adapter, either as an instance or registered under a name.
 
 Storage adapters provide a unified interface for file operations, so storage backends can be switched without changing application code.
 
@@ -50,9 +50,9 @@ The connector uses the `@flystorage/file-storage` library, which provides a stan
 By default, sources use the local filesystem:
 
 ```typescript
-import { startServer } from 'jodit-nodejs';
+import { start } from 'jodit-nodejs';
 
-await startServer({
+await start({
   sources: {
     default: {
       name: 'default',
@@ -67,7 +67,7 @@ await startServer({
 You can also explicitly specify local filesystem:
 
 ```typescript
-await startServer({
+await start({
   sources: {
     default: {
       name: 'default',
@@ -84,14 +84,14 @@ await startServer({
 To use a custom storage adapter, pass an instance of `StorageAdapter`:
 
 ```typescript
-import { startServer } from 'jodit-nodejs';
+import { start } from 'jodit-nodejs';
 import { MyCustomAdapter } from './my-custom-adapter';
 
 const customAdapter = new MyCustomAdapter({
   // Your adapter configuration
 });
 
-await startServer({
+await start({
   sources: {
     custom: {
       name: 'custom',
@@ -452,36 +452,33 @@ export class InMemoryStorageAdapter implements StorageAdapter {
 
 ## Real-World Examples
 
-### AWS S3 Adapter
+### AWS S3 (built in)
+
+S3 needs no custom adapter: `storageAdapter: 's3'` is built in and works with MinIO, Cloudflare R2, Yandex Object Storage and other S3-compatible services.
 
 ```typescript
-import { AwsS3StorageAdapter } from '@flystorage/aws-s3';
-import { S3Client } from '@aws-sdk/client-s3';
+import { start } from 'jodit-nodejs';
 
-const s3Client = new S3Client({
-  region: 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
-  }
-});
-
-const s3Adapter = new AwsS3StorageAdapter(s3Client, {
-  bucket: 'my-bucket',
-  prefix: 'uploads/'
-});
-
-await startServer({
-  sources: {
-    s3: {
-      name: 's3',
-      root: '/uploads',
-      baseurl: 'https://my-bucket.s3.amazonaws.com/uploads',
-      storageAdapter: s3Adapter
+await start({
+  config: {
+    sources: {
+      s3: {
+        name: 's3',
+        title: 'S3 bucket',
+        baseurl: 'https://my-bucket.s3.amazonaws.com/uploads/',
+        storageAdapter: 's3',
+        s3: {
+          bucket: 'my-bucket',
+          region: 'us-east-1',
+          prefix: 'uploads'
+        }
+      }
     }
   }
 });
 ```
+
+Options, credentials, bucket policies and S3-compatible endpoints are covered in [AWS S3 and S3-compatible storage](./aws-s3.md).
 
 ### Azure Blob Storage Adapter
 
@@ -497,7 +494,7 @@ const containerClient = blobServiceClient.getContainerClient('uploads');
 
 const azureAdapter = new AzureBlobStorageAdapter(containerClient);
 
-await startServer({
+await start({
   sources: {
     azure: {
       name: 'azure',
@@ -514,41 +511,71 @@ await startServer({
 You can mix local and remote storage in a single application:
 
 ```typescript
-import { AwsS3StorageAdapter } from '@flystorage/aws-s3';
-import { S3Client } from '@aws-sdk/client-s3';
+import { start } from 'jodit-nodejs';
 
-const s3Client = new S3Client({
-  region: 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
-  }
-});
-
-const s3Adapter = new AwsS3StorageAdapter(s3Client, {
-  bucket: 'my-bucket',
-  prefix: 'public/'
-});
-
-await startServer({
-  sources: {
-    // Local filesystem for temporary files
-    temp: {
-      name: 'temp',
-      root: '/tmp/uploads',
-      baseurl: '/files/temp',
-      storageAdapter: 'local'
-    },
-    // S3 for permanent storage
-    permanent: {
-      name: 'permanent',
-      root: '/public',
-      baseurl: 'https://my-bucket.s3.amazonaws.com/public',
-      storageAdapter: s3Adapter
+await start({
+  config: {
+    sources: {
+      local: {
+        name: 'local',
+        title: 'Local Files',
+        root: '/var/www/uploads',
+        baseurl: 'https://example.com/uploads/'
+      },
+      s3: {
+        name: 's3',
+        title: 'Cloud Storage',
+        baseurl: 'https://my-bucket.s3.amazonaws.com/uploads/',
+        storageAdapter: 's3',
+        s3: { bucket: 'my-bucket', prefix: 'uploads' }
+      },
+      memory: {
+        name: 'memory',
+        title: 'Temporary',
+        baseurl: 'https://example.com/temp/',
+        storageAdapter: new InMemoryStorageAdapter()
+      }
     }
   }
 });
 ```
+
+### Registering an adapter by name
+
+Adapter instances are fine from code, but a JSON config file cannot hold an instance. `registerStorageAdapter()` binds a factory to a name so JSON configs (and the Docker image) can refer to it:
+
+```typescript
+import { start, registerStorageAdapter } from 'jodit-nodejs';
+import { AzureBlobStorageAdapter } from '@flystorage/azure-blob';
+import { BlobServiceClient } from '@azure/storage-blob';
+
+registerStorageAdapter('azure', source => {
+  const client = BlobServiceClient.fromConnectionString(
+    process.env.AZURE_STORAGE_CONNECTION_STRING!
+  );
+  return new AzureBlobStorageAdapter(
+    client.getContainerClient(source.azure.container)
+  );
+});
+
+await start({
+  config: {
+    sources: {
+      docs: {
+        name: 'docs',
+        title: 'Documents',
+        baseurl: 'https://myaccount.blob.core.windows.net/uploads/',
+        storageAdapter: 'azure',
+        azure: { container: 'uploads' }
+      }
+    }
+  }
+});
+```
+
+The factory receives the whole `SourceConfig`, so any extra keys on the source (here `azure`) are available to it. `local` and `s3` are registered out of the box; `getRegisteredStorageAdapters()` lists what is currently known.
+
+Sources with a non-local adapter do not need `root`. They get a virtual root (`/`) and the connector skips the filesystem symlink checks for them.
 
 ## Testing Your Adapter
 
@@ -764,10 +791,13 @@ async *list(path: string, options: { deep: boolean }): AsyncGenerator<StatEntry>
 
 ## Available Adapters
 
-The `@flystorage` ecosystem provides ready-to-use adapters:
+Built into `jodit-nodejs`:
 
-- **[@flystorage/local-fs](https://github.com/duna-oss/flystorage/tree/main/packages/local-fs)** - Local filesystem (default)
-- **[@flystorage/aws-s3](https://github.com/duna-oss/flystorage/tree/main/packages/aws-s3)** - Amazon S3
+- **`local`** - Local filesystem (default), backed by `@flystorage/local-fs`
+- **`s3`** - AWS S3 and S3-compatible services, see [AWS S3 and S3-compatible storage](./aws-s3.md)
+
+The `@flystorage` ecosystem provides more adapters that can be passed as instances or registered by name:
+
 - **[@flystorage/azure-blob](https://github.com/duna-oss/flystorage/tree/main/packages/azure-blob)** - Azure Blob Storage
 - **[@flystorage/google-cloud-storage](https://github.com/duna-oss/flystorage/tree/main/packages/google-cloud-storage)** - Google Cloud Storage
 - **[@flystorage/ftp](https://github.com/duna-oss/flystorage/tree/main/packages/ftp)** - FTP/FTPS

@@ -1,15 +1,36 @@
 import os from 'os';
 import { AsyncLocalStorage } from 'async_hooks';
+import type { Request } from 'express';
 import { AccessControl } from '../helpers/access-control';
 import { FileManagerService } from '../services/file-manager.service';
 import type { AppConfig, SourceConfig, IAccessControl } from '../types';
 import Boom from '@hapi/boom';
 import { logger } from '../helpers/logger';
-import { LocalStorageAdapter } from '@flystorage/local-fs';
 import { FileStorage } from '@flystorage/file-storage';
+import {
+  createStorageAdapter,
+  isLocalStorageSource
+} from '../storage/registry';
+
+export type SourcesPool = { [key: string]: Promise<FileManagerService> };
+
+export interface RequestStore {
+  userRole: string;
+  /** Sources resolved for this request by `resolveSources` (multi-tenant mode) */
+  sources?: SourcesPool | undefined;
+}
 
 // AsyncLocalStorage for storing request-specific context
-export const requestStorage = new AsyncLocalStorage<{ userRole: string }>();
+export const requestStorage = new AsyncLocalStorage<RequestStore>();
+
+const VIRTUAL_ROOT = '/';
+const DEFAULT_DYNAMIC_CACHE_MAX = 200;
+const DEFAULT_DYNAMIC_CACHE_TTL_MS = 60_000;
+
+interface DynamicCacheEntry {
+  expiresAt: number;
+  sources: SourcesPool;
+}
 
 /**
  * Create a proxied config that allows source-specific overrides.
@@ -75,34 +96,31 @@ export class Config {
   access: IAccessControl;
   private accessInitialized: Promise<void>;
 
-  private sources: { [key: string]: Promise<FileManagerService> } = {};
+  private sources: SourcesPool = {};
+  private readonly dynamicCache = new Map<string, DynamicCacheEntry>();
 
   async makeSource(
     sourceConfig: SourceConfig,
     config: Config,
     name: string
   ): Promise<FileManagerService> {
-    // Determine which storage adapter to use
-    let storageAdapter;
+    // Remote adapters work on a virtual root; only the local one needs a real directory
+    const effectiveConfig: SourceConfig = isLocalStorageSource(sourceConfig)
+      ? sourceConfig
+      : { ...sourceConfig, root: sourceConfig.root ?? VIRTUAL_ROOT };
 
-    if (
-      !sourceConfig.storageAdapter ||
-      sourceConfig.storageAdapter === 'local'
-    ) {
-      // Default: use LocalStorageAdapter
-      storageAdapter = new LocalStorageAdapter(sourceConfig.root);
-    } else {
-      // Use custom storage adapter provided by user
-      storageAdapter = sourceConfig.storageAdapter;
-    }
-
-    const storage = new FileStorage(storageAdapter);
+    const storage = new FileStorage(createStorageAdapter(effectiveConfig));
 
     // Create a proxied config that allows source-specific overrides
-    const proxiedConfig = createProxiedConfig(config, sourceConfig);
+    const proxiedConfig = createProxiedConfig(config, effectiveConfig);
 
     // Create FileManagerService with the storage adapter and proxied config
-    return new FileManagerService(sourceConfig, proxiedConfig, storage, name);
+    return new FileManagerService(
+      effectiveConfig,
+      proxiedConfig,
+      storage,
+      name
+    );
   }
 
   constructor(public readonly params: AppConfig) {
@@ -126,14 +144,8 @@ export class Config {
     this.accessInitialized = Promise.resolve();
 
     if (this.params.sources != null) {
-      for (const sourceConfigName in this.params.sources) {
-        this.sources[sourceConfigName] = this.makeSource(
-          this.params.sources[sourceConfigName]!,
-          this,
-          sourceConfigName
-        );
-      }
-    } else {
+      this.sources = this.buildSources(this.params.sources);
+    } else if (this.params.resolveSources === undefined) {
       this.sources['default'] = this.makeSource(
         {
           title: 'Default',
@@ -147,6 +159,75 @@ export class Config {
     }
   }
 
+  private buildSources(configs: Record<string, SourceConfig>): SourcesPool {
+    const pool: SourcesPool = {};
+
+    for (const sourceConfigName in configs) {
+      pool[sourceConfigName] = this.makeSource(
+        configs[sourceConfigName]!,
+        this,
+        sourceConfigName
+      );
+    }
+
+    return pool;
+  }
+
+  /**
+   * Run `resolveSources` for the request and return the sources to use for
+   * it, building and caching them per tenant id. Returns `null` when no
+   * resolver is configured or the resolver declined (static sources apply).
+   */
+  async resolveRequestSources(req: Request): Promise<SourcesPool | null> {
+    const resolver = this.params.resolveSources;
+
+    if (resolver === undefined) {
+      return null;
+    }
+
+    const resolved = await resolver(req);
+
+    if (resolved == null) {
+      return null;
+    }
+
+    const now = Date.now();
+    const cached = this.dynamicCache.get(resolved.id);
+
+    if (cached !== undefined && cached.expiresAt > now) {
+      // Refresh LRU position
+      this.dynamicCache.delete(resolved.id);
+      this.dynamicCache.set(resolved.id, cached);
+      return cached.sources;
+    }
+
+    const cacheOptions = this.params.dynamicSourcesCache;
+    const ttlMs = cacheOptions?.ttlMs ?? DEFAULT_DYNAMIC_CACHE_TTL_MS;
+    const max = cacheOptions?.max ?? DEFAULT_DYNAMIC_CACHE_MAX;
+
+    const sources = this.buildSources(resolved.sources);
+
+    this.dynamicCache.delete(resolved.id);
+    this.dynamicCache.set(resolved.id, { expiresAt: now + ttlMs, sources });
+
+    for (const [id, entry] of this.dynamicCache) {
+      if (this.dynamicCache.size <= max && entry.expiresAt > now) {
+        continue;
+      }
+
+      if (id !== resolved.id) {
+        this.dynamicCache.delete(id);
+      }
+    }
+
+    return sources;
+  }
+
+  /** Drop every cached tenant (e.g. after credentials changed). */
+  clearDynamicSources(): void {
+    this.dynamicCache.clear();
+  }
+
   async getSources(options: {
     source?: string;
     action: string;
@@ -154,7 +235,9 @@ export class Config {
     // Wait for access control to be initialized
     await this.accessInitialized;
 
-    let sources = await Promise.all(Object.values(this.sources));
+    const pool = requestStorage.getStore()?.sources ?? this.sources;
+
+    let sources = await Promise.all(Object.values(pool));
     if (options.source) {
       sources = sources.filter(source => source.name === options.source);
 

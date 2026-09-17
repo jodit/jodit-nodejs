@@ -1,11 +1,65 @@
 import { z } from 'zod';
 
-// Source configuration schema
-export const SourceConfigSchema = z.object({
-  title: z.string().describe('Display title for the source'),
-  root: z.string().describe('Absolute path to the root directory'),
-  baseurl: z.url().describe('Base URL for accessing files')
+// S3 adapter options schema
+export const S3SourceOptionsSchema = z.object({
+  bucket: z.string().min(1).describe('Bucket name'),
+  region: z.string().optional().describe('AWS region'),
+  endpoint: z
+    .url()
+    .optional()
+    .describe('Custom endpoint for S3-compatible services'),
+  forcePathStyle: z
+    .boolean()
+    .optional()
+    .describe('Use path-style URLs (endpoint/bucket/key)'),
+  prefix: z.string().optional().describe('Key prefix used as the source root'),
+  credentials: z
+    .object({
+      accessKeyId: z.string().min(1),
+      secretAccessKey: z.string().min(1),
+      sessionToken: z.string().optional()
+    })
+    .optional()
+    .describe('Static credentials; omit to use the AWS default chain'),
+  publicBaseUrl: z
+    .url()
+    .optional()
+    .describe('Base URL for publicUrl(); defaults to the bucket URL'),
+  client: z.any().optional().describe('Pre-configured S3Client instance')
 });
+
+// Source configuration schema
+export const SourceConfigSchema = z
+  .object({
+    title: z.string().describe('Display title for the source'),
+    root: z
+      .string()
+      .optional()
+      .describe(
+        'Absolute path to the root directory (required for local storage)'
+      ),
+    baseurl: z.url().describe('Base URL for accessing files'),
+    storageAdapter: z
+      .union([z.string(), z.any()])
+      .optional()
+      .describe(
+        'Storage adapter: "local" (default), "s3", a registered name or an adapter instance'
+      ),
+    s3: S3SourceOptionsSchema.optional().describe(
+      'Options for storageAdapter: "s3"'
+    )
+  })
+  .refine(
+    source =>
+      source.storageAdapter !== undefined && source.storageAdapter !== 'local'
+        ? true
+        : typeof source.root === 'string' && source.root.length > 0,
+    { message: 'root is required for local storage', path: ['root'] }
+  )
+  .refine(source => source.storageAdapter !== 's3' || source.s3 !== undefined, {
+    message: 's3 options are required for storageAdapter "s3"',
+    path: ['s3']
+  });
 
 // PDF configuration schema
 export const PdfConfigSchema = z.object({
@@ -50,6 +104,17 @@ export const AppConfigSchema = z.object({
     .record(z.string(), SourceConfigSchema)
     .describe('File sources configuration')
     .nullable(),
+  resolveSources: z
+    .function()
+    .optional()
+    .describe('Per-request sources resolver (multi-tenant mode)'),
+  dynamicSourcesCache: z
+    .object({
+      max: z.number().int().positive(),
+      ttlMs: z.number().int().positive()
+    })
+    .optional()
+    .describe('Cache settings for resolved sources'),
   datetimeFormat: z.string().describe('Format for datetime display'),
   quality: z.number().describe('Image quality (1-100)'),
   countInChunk: z.number().describe('Number of files to process in one chunk'),
@@ -77,6 +142,10 @@ export const AppConfigSchema = z.object({
   memoryLimit: z.string().describe('PHP-style memory limit (e.g., "256M")'),
   timeoutLimit: z.number().describe('Request timeout in seconds'),
   allowCrossOrigin: z.boolean().describe('Enable CORS'),
+  allowedOrigins: z
+    .union([z.array(z.string()), z.function()])
+    .optional()
+    .describe('Origins allowed by CORS: a list or a predicate'),
   onlyPOST: z
     .boolean()
     .describe('Only allow POST requests, disable GET endpoints'),

@@ -120,7 +120,7 @@ CONFIG_FILE=/path/to/config.json npm start
 
 #### `sources[name].root`
 - **Type**: `string`
-- **Required**: Yes
+- **Required**: For the local filesystem. Remote adapters get a virtual root (`/`).
 - **Purpose**: Absolute path to the root directory for file storage
 
 #### `sources[name].baseurl`
@@ -132,6 +132,17 @@ CONFIG_FILE=/path/to/config.json npm start
 - **Type**: `string`
 - **Required**: No
 - **Purpose**: Source-specific field name for file uploads (overrides global `defaultFilesKey`)
+
+#### `sources[name].storageAdapter`
+- **Type**: `'local' | 's3' | string | StorageAdapter`
+- **Required**: No
+- **Default**: `'local'`
+- **Purpose**: Where the files live. `'s3'` is built in; other names come from `registerStorageAdapter()`; an adapter instance is accepted from code. See [Storage Adapters](./storage-adapters.md).
+
+#### `sources[name].s3`
+- **Type**: `S3SourceOptions`
+- **Required**: When `storageAdapter` is `'s3'`
+- **Purpose**: Bucket, region, endpoint, prefix and credentials. See [AWS S3 and S3-compatible storage](./aws-s3.md).
 
 **Example**:
 ```typescript
@@ -153,6 +164,18 @@ CONFIG_FILE=/path/to/config.json npm start
   }
 }
 ```
+
+---
+
+### `resolveSources`
+- **Type**: `(req) => ResolvedSources | null | Promise<...>`
+- **Required**: No
+- **Purpose**: Resolve sources per request instead of from `sources` (multi-tenant mode). See [Dynamic sources](./dynamic-sources.md).
+
+### `dynamicSourcesCache`
+- **Type**: `{ max: number; ttlMs: number }`
+- **Default**: `{ max: 200, ttlMs: 60000 }`
+- **Purpose**: How many resolved tenants to keep and for how long.
 
 ---
 
@@ -922,6 +945,11 @@ class CustomAccessControl implements IAccessControl {
 - **Default**: `"JoditUserRole"`
 - **Used**: not currently used
 - **Note**: Authentication uses `checkAuthentication` callback instead
+
+### `allowedOrigins`
+- **Type**: `string[] | (origin, req) => boolean | Promise<boolean>`
+- **Required**: No
+- **Purpose**: Restrict CORS to these origins when `allowCrossOrigin` is on. Unset means every origin is echoed back. Preflights from other origins get `403`.
 
 ### `allowCrossOrigin`
 - **Type**: `boolean`

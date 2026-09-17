@@ -24,10 +24,11 @@ export function authMiddleware(
   const config = req.app.locals.config;
   const checkAuthentication = req.app.locals.checkAuthentication;
 
-  // Helper to run next() within AsyncLocalStorage context
+  // Helper to run next() within AsyncLocalStorage context. Keeps whatever
+  // the dynamic-sources middleware already put in the store.
   const runWithRole = (role: string): void => {
     req.userRole = role;
-    requestStorage.run({ userRole: role }, () => {
+    requestStorage.run({ ...requestStorage.getStore(), userRole: role }, () => {
       next();
     });
   };

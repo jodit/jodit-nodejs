@@ -64,10 +64,7 @@ export async function saveImage(
     safeName += ext;
   }
 
-  const destinationPath = await validatePath(
-    ctx,
-    path.join(dirPath, safeName)
-  );
+  const destinationPath = await validatePath(ctx, path.join(dirPath, safeName));
 
   if (!isPathWithinRoot(destinationPath, dirPath)) {
     throw Boom.notFound('Path does not exist');
@@ -96,9 +93,7 @@ export async function saveImage(
       await ctx.storage.write(destRelative, Readable.from(imageBuffer), {});
     }
   } catch (err) {
-    throw Boom.badRequest(
-      `Unable to save image: ${(err as Error).message}`
-    );
+    throw Boom.badRequest(`Unable to save image: ${(err as Error).message}`);
   }
 
   // Drop the stale cached thumbnail so the file browser regenerates it from the

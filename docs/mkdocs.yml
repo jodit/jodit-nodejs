@@ -64,6 +64,8 @@ nav:
       - Access Control: access-control.md
       - Configuration: config.md
       - Storage Adapters: storage-adapters.md
+      - AWS S3 & S3-compatible: aws-s3.md
+      - Dynamic Sources (multi-tenant): dynamic-sources.md
   - Development:
       - Testing: testing.md
       - Architecture: architecture.md

@@ -19,7 +19,8 @@ Jodit Connector Node.js provides a complete file management backend for the Jodi
 - **Document generation** - PDF and DOCX from HTML
 - **Authentication & ACL** - role-based permissions, path restrictions
 - **Express integration** - standalone or integrate with existing apps
-- **Custom storage** - local filesystem, S3, Azure, Google Cloud, etc.
+- **Storage** - local filesystem or [AWS S3 / S3-compatible](./aws-s3.md) out of the box, custom adapters for anything else
+- **Multi-tenant** - [resolve sources per request](./dynamic-sources.md) to serve many buckets from one instance
 
 ## Quick Installation
 

@@ -1,9 +1,6 @@
 import path from 'node:path';
 import Boom from '@hapi/boom';
-import {
-  isPathWithinRoot,
-  verifyRealPath
-} from '../../helpers/base-source';
+import { isPathWithinRoot, verifyRealPath } from '../../helpers/base-source';
 import type { FileManagerContext } from './types';
 
 /**
@@ -24,8 +21,10 @@ export async function validatePath(
     throw Boom.notFound('Path does not exist');
   }
 
-  // Verify symlinks don't escape root
-  await verifyRealPath(normalized, root);
+  // Verify symlinks don't escape root (virtual roots have no filesystem to ask)
+  if (!ctx.virtualRoot) {
+    await verifyRealPath(normalized, root);
+  }
 
   return normalized;
 }

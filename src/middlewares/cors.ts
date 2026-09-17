@@ -1,4 +1,24 @@
 import type { Request, Response, NextFunction } from 'express';
+import type { AllowedOrigins } from '../types';
+
+const ALLOWED_HEADERS =
+  'Origin,X-Requested-With,Content-Type,Accept,Authorization';
+
+async function isOriginAllowed(
+  origin: string,
+  allowedOrigins: AllowedOrigins | undefined,
+  req: Request
+): Promise<boolean> {
+  if (allowedOrigins === undefined) {
+    return true;
+  }
+
+  if (typeof allowedOrigins === 'function') {
+    return allowedOrigins(origin, req);
+  }
+
+  return allowedOrigins.includes(origin);
+}
 
 export function corsMiddleware(
   req: Request,
@@ -14,24 +34,41 @@ export function corsMiddleware(
   }
 
   const origin = req.headers.origin;
-  if (typeof origin === 'string' && origin.length > 0) {
-    res.header('Access-Control-Allow-Origin', origin);
-  } else {
-    res.header('Access-Control-Allow-Origin', '*');
-  }
+  const hasOrigin = typeof origin === 'string' && origin.length > 0;
 
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin,X-Requested-With,Content-Type,Accept'
-  );
-  res.header('Access-Control-Max-Age', '86400');
+  const apply = (allowed: boolean): void => {
+    if (!allowed) {
+      // Not an allowed origin: answer without CORS headers so the browser
+      // blocks the response, and refuse the preflight outright.
+      if (req.method === 'OPTIONS') {
+        res.sendStatus(403);
+        return;
+      }
 
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.sendStatus(200);
+      next();
+      return;
+    }
+
+    res.header('Access-Control-Allow-Origin', hasOrigin ? origin : '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Headers', ALLOWED_HEADERS);
+    res.header('Access-Control-Max-Age', '86400');
+
+    if (req.method === 'OPTIONS') {
+      res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.sendStatus(200);
+      return;
+    }
+
+    next();
+  };
+
+  if (!hasOrigin) {
+    apply(true);
     return;
   }
 
-  next();
+  isOriginAllowed(origin, config.params.allowedOrigins, req)
+    .then(apply)
+    .catch(next);
 }

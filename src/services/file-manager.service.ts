@@ -41,7 +41,8 @@ export class FileManagerService extends BaseSource {
       isGoodFile: this.isGoodFile.bind(this),
       isSafeFile: this.isSafeFile.bind(this),
       isImage: this.isImage.bind(this),
-      name: this.name
+      name: this.name,
+      virtualRoot: this.isVirtualRoot()
     };
   }
 

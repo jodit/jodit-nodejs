@@ -102,6 +102,29 @@ await start({
 });
 ```
 
+### Storing files in S3
+
+```typescript
+import { start } from 'jodit-nodejs';
+
+await start({
+  port: 8081,
+  config: {
+    sources: {
+      media: {
+        name: 'media',
+        title: 'Media',
+        baseurl: 'https://my-bucket.s3.eu-central-1.amazonaws.com/media/',
+        storageAdapter: 's3',
+        s3: { bucket: 'my-bucket', region: 'eu-central-1', prefix: 'media' }
+      }
+    }
+  }
+});
+```
+
+Credentials come from the AWS default chain (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, profiles, instance roles) unless `s3.credentials` is set. MinIO, Cloudflare R2, Yandex Object Storage and other S3-compatible services work with `endpoint` (and `forcePathStyle` where needed). See the [S3 guide](https://jodit.github.io/jodit-nodejs/aws-s3/).
+
 ### Security: POST-only Mode
 
 You can restrict the API to accept only POST requests:
@@ -137,7 +160,9 @@ When `onlyPOST` is enabled, all GET requests return 405 Method Not Allowed. This
 - [Access Control](https://jodit.github.io/jodit-nodejs/access-control/) - ACL rules and permissions
 - [Configuration](https://jodit.github.io/jodit-nodejs/config/) - All configuration options
 - [Express Integration](https://jodit.github.io/jodit-nodejs/express-integration/) - Integration patterns
-- [Storage Adapters](https://jodit.github.io/jodit-nodejs/storage-adapters/) - AWS S3, Azure, Google Cloud
+- [AWS S3 & S3-compatible](https://jodit.github.io/jodit-nodejs/aws-s3/) - Built-in S3 adapter, MinIO, R2, Yandex
+- [Storage Adapters](https://jodit.github.io/jodit-nodejs/storage-adapters/) - Custom adapters, registering by name
+- [Dynamic Sources](https://jodit.github.io/jodit-nodejs/dynamic-sources/) - Multi-tenant: resolve sources per request
 - [Docker Deployment](https://jodit.github.io/jodit-nodejs/docker/) - Docker guide
 - [API Reference](https://jodit.github.io/jodit-nodejs/api-reference/) - Complete API endpoints
 
@@ -155,7 +180,8 @@ When `onlyPOST` is enabled, all GET requests return 405 Method Not Allowed. This
 - **Authentication** - cookie, JWT, express-session support
 - **Security** - POST-only mode, CSRF protection
 - **Express integration** - standalone or integrate with existing apps
-- **Custom storage** - local filesystem, S3, Azure, Google Cloud, etc.
+- **Storage** - local filesystem or AWS S3 / S3-compatible out of the box, custom adapters for the rest
+- **Multi-tenant** - resolve sources per request, one instance for many buckets
 - **TypeScript** - full type safety with strict typing
 - **Validation** - Zod schemas for runtime validation
 - **Testing** - Jest + Supertest test suite
@@ -213,6 +239,12 @@ docker run --rm -p 8081:8081 jodit-nodejs
 docker run --rm -p 8081:8081 \
   -v /host/path/to/config.json:/usr/src/app/config.json \
   -v /host/path/to/files:/usr/src/app/files \
+  jodit-nodejs
+
+# Against an S3 bucket (see config.s3.example.json)
+docker run --rm -p 8081:8081 \
+  -e AWS_ACCESS_KEY_ID=... -e AWS_SECRET_ACCESS_KEY=... \
+  -v $(pwd)/config.s3.example.json:/usr/src/app/config.json \
   jodit-nodejs
 ```
 
