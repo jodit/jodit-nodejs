@@ -76,6 +76,12 @@ describe('Dynamic sources (resolveSources)', () => {
     );
   };
 
+  it('answers /ping without resolving a tenant or a role', async () => {
+    const response = await request(testServer.host).get('/ping');
+    expect(response.status).toBe(200);
+    expect(resolverCalls).not.toContain('ping');
+  });
+
   it('serves each tenant its own storage', async () => {
     expect(await listNames('a')).toEqual(['a.txt']);
     expect(await listNames('b')).toEqual(['b.txt']);

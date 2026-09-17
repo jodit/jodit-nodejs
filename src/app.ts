@@ -118,13 +118,14 @@ export function createApp(
     next();
   });
 
+  // Liveness probe: answers before CORS, tenant resolution and auth, so a
+  // healthcheck needs no key, origin or token.
+  router.get('/ping', pingHandler);
+
   // Apply middlewares to router: CORS → per-request sources → role
   router.use(corsMiddleware);
   router.use(dynamicSourcesMiddleware);
   router.use(authMiddleware);
-
-  // Routes
-  router.get('/ping', pingHandler);
 
   const actionHandler = async (
     req: Request,
