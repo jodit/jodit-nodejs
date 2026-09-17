@@ -3,14 +3,19 @@
   "displayName": "Jodit Connector API for Node.js",
   "version": "1.0.37",
   "description": "Jodit FileBrowser and Uploader connector for Node.js",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -76,6 +81,7 @@
     "mime-types": "^3.0.2",
     "multer": "^2.0.2",
     "puppeteer": "^24.25.0",
+    "qs": "^6.16.0",
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.34.4",
     "slugify": "^1.6.6",
@@ -90,6 +96,7 @@
     "@types/mime-types": "^3.0.1",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.8.1",
+    "@types/qs": "^6.15.1",
     "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",
