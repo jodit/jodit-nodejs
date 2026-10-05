@@ -3,7 +3,10 @@ import Boom from '@hapi/boom';
 import { GeneratePdfQuerySchema, PdfOptionsSchema } from '../../schemas';
 import { logger } from '../../helpers/logger';
 import { withBrowser } from '../../helpers/browser-pool';
+import { checkRemoteResource } from '../../helpers/remote-resources';
 import type { PdfOptions } from './schemes/generate-pdf.schema';
+import type { RemoteResourcesConfig } from '../../types';
+import type { Config } from '../../config/config';
 
 /**
  * Handler for generating PDF documents from HTML using Puppeteer
@@ -52,6 +55,10 @@ export async function generatePdfHandler(
     }
   }
 
+  const appConfig = req.app.locals.config as Config | undefined;
+  const remotePolicy: RemoteResourcesConfig =
+    appConfig?.params.remoteResources ?? {};
+
   logger.debug('Generating PDF document from HTML using Puppeteer');
 
   try {
@@ -60,6 +67,39 @@ export async function generatePdfHandler(
       const page = await browser.newPage();
 
       try {
+        // The HTML comes from the client, so every URL in it is attacker
+        // controlled: without this the renderer fetches whatever it is pointed
+        // at and returns the response inside the PDF, which is a read/write
+        // SSRF into anything the container can reach.
+        await page.setRequestInterception(true);
+
+        page.on('request', request => {
+          void (async (): Promise<void> => {
+            const url = request.url();
+            const reason = await checkRemoteResource(url, remotePolicy);
+
+            try {
+              if (reason === null) {
+                await request.continue();
+                return;
+              }
+
+              logger.warn(
+                `Blocked a resource while rendering PDF: ${url} (${reason})`
+              );
+              await request.abort('blockedbyclient');
+            } catch (error) {
+              // The request can be gone already (navigation, closed page);
+              // nothing to do, the renderer just won't get that resource.
+              logger.debug(
+                `Could not settle an intercepted request: ${
+                  error instanceof Error ? error.message : 'unknown error'
+                }`
+              );
+            }
+          })();
+        });
+
         // Set content. Cap the wait: a single pooled browser serves all PDF
         // requests, so an HTML page that references unreachable resources must
         // not block it for the default 30s (these timeouts were filling the

@@ -66,6 +66,30 @@ export type AllowedOrigins =
   | string[]
   | ((origin: string, req: Request) => boolean | Promise<boolean>);
 
+/**
+ * Which resources a document rendered from user-supplied HTML may load.
+ *
+ * The renderers (`generatePdf`, `generateDocx`) are handed HTML by the client,
+ * so every URL inside it is attacker-controlled. By default only public
+ * `http`/`https` addresses are fetched: loopback, private and link-local
+ * targets such as the cloud metadata service are refused.
+ *
+ * `allow` and `deny` are URL masks where `*` matches any run of characters,
+ * for example `https://cdn.example.com/*`. An empty `allow` means "every
+ * public address"; a non-empty one means nothing outside it is loaded.
+ */
+export interface RemoteResourcesConfig {
+  /**
+   * Let the renderers reach loopback / private / link-local hosts. Off by
+   * default; turn it on only for a trusted internal setup.
+   */
+  allowPrivateNetwork?: boolean;
+  /** URL masks that may be loaded. Empty = any public address. */
+  allow?: string[];
+  /** URL masks that are never loaded. Checked before `allow`. */
+  deny?: string[];
+}
+
 export interface PdfConfig {
   defaultFont: string;
   isRemoteEnabled: boolean;
@@ -191,6 +215,17 @@ export interface AppConfig {
    * setups.
    */
   allowPrivateNetworkUploads?: boolean;
+  /**
+   * Which resources the `generatePdf` / `generateDocx` renderers may load from
+   * the HTML they are given. See {@link RemoteResourcesConfig}.
+   */
+  remoteResources: RemoteResourcesConfig;
+  /**
+   * Strip scripting out of uploaded SVG files (event handlers, `script`,
+   * `javascript:` links, external references). On by default: an SVG is served
+   * as `image/svg+xml` and runs in the origin that serves it.
+   */
+  sanitizeSvgUploads: boolean;
   baseurl: string;
   root: string;
   extensions: string[];

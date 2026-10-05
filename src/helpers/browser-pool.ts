@@ -15,6 +15,57 @@ interface BrowserPoolOptions {
 }
 
 /**
+ * Chromium flags used when the caller does not pass its own `launchOptions`.
+ *
+ * The renderers are fed HTML by the client, so the Chromium sandbox is what
+ * keeps a renderer bug from turning into code execution inside the container.
+ * It is off by default only because Docker's default seccomp profile blocks
+ * the syscalls the sandbox needs, and a container that cannot start Chromium
+ * at all is worse than one that renders without it.
+ *
+ * Set `CHROMIUM_SANDBOX=1` to keep the sandbox, and run the container with a
+ * seccomp profile that allows it, for example the one shipped next to the
+ * Dockerfile:
+ *
+ * ```
+ * docker run --security-opt seccomp=./docker/chromium-seccomp.json ...
+ * ```
+ *
+ * The image already runs as a non-root user, which the sandbox also requires.
+ *
+ * `CHROMIUM_BLOCKED_HOSTS` is an optional comma-separated list of host names
+ * or addresses that must not resolve inside the renderer, for example
+ * `169.254.169.254,metadata.google.internal`. It is empty by default and is
+ * not the protection against SSRF: every request the page makes is already
+ * checked against {@link checkRemoteResource}, which resolves the host and
+ * refuses private, loopback and link-local addresses whatever they are called.
+ * This list only helps with what request interception cannot see, such as
+ * Chromium's own speculative DNS lookups, and what a host really must never
+ * reach is better blocked for the whole container at the network level.
+ */
+export function defaultChromiumArgs(): string[] {
+  const sandbox = process.env.CHROMIUM_SANDBOX === '1';
+
+  const blockedHosts = (process.env.CHROMIUM_BLOCKED_HOSTS ?? '')
+    .split(',')
+    .map(host => host.trim())
+    .filter(host => host.length > 0);
+
+  return [
+    ...(sandbox ? [] : ['--no-sandbox', '--disable-setuid-sandbox']),
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    ...(blockedHosts.length > 0
+      ? [
+          `--host-resolver-rules=${blockedHosts
+            .map(host => `MAP ${host} ~NOTFOUND`)
+            .join(',')}`
+        ]
+      : [])
+  ];
+}
+
+/**
  * Browser pool that reuses a single browser instance across requests
  * and automatically closes it after a period of inactivity
  */
@@ -30,12 +81,7 @@ class BrowserPool {
     this.idleTimeout = options.idleTimeout ?? 30000; // 30 seconds default
     this.launchOptions = options.launchOptions ?? {
       headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ]
+      args: defaultChromiumArgs()
     };
   }
 
@@ -155,18 +201,11 @@ class BrowserPool {
   }
 }
 
-// Export singleton instance
+// Export singleton instance. It deliberately does NOT pass `launchOptions`:
+// the defaults live in the constructor, and a second copy here silently won
+// over them (that is how `--no-sandbox` survived being removed once already).
 export const browserPool = new BrowserPool({
-  idleTimeout: 30000, // 30 seconds
-  launchOptions: {
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu'
-    ]
-  }
+  idleTimeout: 30000 // 30 seconds
 });
 
 /**

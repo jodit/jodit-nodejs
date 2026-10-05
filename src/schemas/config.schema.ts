@@ -79,6 +79,24 @@ export const PdfConfigSchema = z.object({
     .describe('Paper configuration')
 });
 
+// Remote resources policy for the generatePdf / generateDocx renderers
+export const RemoteResourcesSchema = z
+  .object({
+    allowPrivateNetwork: z
+      .boolean()
+      .optional()
+      .describe('Allow loopback / private / link-local targets'),
+    allow: z
+      .array(z.string())
+      .optional()
+      .describe('URL masks that may be loaded; empty = any public address'),
+    deny: z
+      .array(z.string())
+      .optional()
+      .describe('URL masks that are never loaded')
+  })
+  .describe('Which resources a rendered document may load');
+
 // Access Control Rule schema
 export const AccessControlRuleSchema = z
   .object({
@@ -171,6 +189,17 @@ export const AppConfigSchema = z.object({
   allowReplaceSourceFile: z
     .boolean()
     .describe('Allow replacing existing files'),
+  allowPrivateNetworkUploads: z
+    .boolean()
+    .optional()
+    .describe('Allow fileUploadRemote to download from private hosts'),
+  remoteResources: RemoteResourcesSchema.optional().describe(
+    'Resources the generatePdf / generateDocx renderers may load'
+  ),
+  sanitizeSvgUploads: z
+    .boolean()
+    .optional()
+    .describe('Strip scripting out of uploaded SVG files'),
   baseurl: z.string().describe('Base URL for the application'),
   root: z.string().describe('Root directory for files'),
   extensions: z.array(z.string()).describe('Allowed file extensions'),

@@ -3,6 +3,7 @@ import type {
   AccessControlRule,
   IAccessControl
 } from '../types';
+import { posix } from 'node:path';
 import * as changeCase from 'change-case';
 import Boom from '@hapi/boom';
 
@@ -38,8 +39,19 @@ export const DEFAULT_RULES = {
   GENERATE_DOCX: true
 };
 
-function normalizePath(path: string): string {
-  return path.replace(/\\/g, '/').replace(/\/+/g, '/');
+/**
+ * Bring a path to the one spelling the rules are written in.
+ *
+ * The request carries whatever the client sent, and `private`, `./private` and
+ * `/public/../private` all name the same folder as `/private`. Comparing the
+ * raw strings let a rule for `/private` be stepped around by sending one of
+ * the other spellings, so every path is made absolute and its `.` and `..`
+ * segments are resolved before anything is matched.
+ */
+function normalizePath(pathname: string): string {
+  const slashed = pathname.replace(/\\/g, '/').replace(/\/+/g, '/');
+
+  return posix.resolve('/', slashed);
 }
 
 export class AccessControl implements IAccessControl {

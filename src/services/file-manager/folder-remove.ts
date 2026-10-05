@@ -29,6 +29,13 @@ export async function folderRemove(
     throw Boom.notFound('Path does not exist');
   }
 
+  // "Within the current directory" used to include the directory itself, so a
+  // name resolving back to it (`.`, or `sub/..`) deleted the folder being
+  // browsed, recursively. With path=/ that is the entire source.
+  if (path.resolve(targetPath) === path.resolve(dirPath)) {
+    throw Boom.notFound('Path does not exist');
+  }
+
   // Convert to relative path for storage
   const folderRelative = targetPath.replace(root, '').replace(/^\//, '');
 

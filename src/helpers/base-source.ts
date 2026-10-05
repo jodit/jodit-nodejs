@@ -121,22 +121,57 @@ export async function verifyRealPath(
   root: string
 ): Promise<void> {
   try {
-    const realRoot = await fs.realpath(root);
-    const realPathname = await fs.realpath(pathname);
+    // The root is resolved the same way: a source directory that has not been
+    // created yet is normal (the first upload makes it), and requiring it to
+    // exist would turn that into a 404.
+    const realRoot = await resolveExistingAncestor(root);
+    const realPathname = await resolveExistingAncestor(pathname);
 
     if (!isPathWithinRoot(realPathname, realRoot)) {
       throw Boom.notFound('Path does not exist');
     }
   } catch (err) {
-    if ((err as { code?: string }).code === 'ENOENT') {
-      // Path doesn't exist on disk yet — logical check above is sufficient
-      return;
-    }
-
     if (Boom.isBoom(err)) {
       throw err;
     }
 
     throw Boom.notFound('Path does not exist');
+  }
+}
+
+/**
+ * Where a path will end up, for a path that does not exist yet.
+ *
+ * `fs.realpath` only works on something that is already there, and skipping
+ * the check for everything else was enough to walk out of the root: with a
+ * symlinked folder inside it (`root/link -> /etc`), `/link` was refused but
+ * `/link/new` was not, so a folder, an upload or the target of a rename could
+ * be created behind the link. Resolving the deepest part that does exist and
+ * re-attaching the rest gives the real location of a path about to be created.
+ */
+async function resolveExistingAncestor(pathname: string): Promise<string> {
+  const missing: string[] = [];
+  let current = path.resolve(pathname);
+
+  for (;;) {
+    try {
+      const real = await fs.realpath(current);
+
+      return missing.length === 0 ? real : path.join(real, ...missing);
+    } catch (err) {
+      if ((err as { code?: string }).code !== 'ENOENT') {
+        throw err;
+      }
+    }
+
+    const parent = path.dirname(current);
+
+    if (parent === current) {
+      // Walked up to the filesystem root without finding anything that exists.
+      return path.resolve(pathname);
+    }
+
+    missing.unshift(path.basename(current));
+    current = parent;
   }
 }

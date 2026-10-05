@@ -54,8 +54,18 @@ export const config: AppConfig = {
   defaultRole: 'guest',
   allowReplaceSourceFile: true,
   allowPrivateNetworkUploads: false,
+  remoteResources: {
+    allowPrivateNetwork: false,
+    allow: [],
+    deny: []
+  },
+  sanitizeSvgUploads: true,
   baseurl: '',
   root: path.join(process.cwd(), './files'),
+  // `html`, `htm` and `js` are deliberately absent: uploads are served by a
+  // plain web server from `baseurl`, so an uploaded page runs its script in
+  // whatever origin serves it. A source that really needs them lists them in
+  // its own `extensions`.
   extensions: [
     'jpg',
     'png',
@@ -71,9 +81,6 @@ export const config: AppConfig = {
     'ai',
     'txt',
     'css',
-    'html',
-    'js',
-    'htm',
     'ini',
     'xml',
     'zip',

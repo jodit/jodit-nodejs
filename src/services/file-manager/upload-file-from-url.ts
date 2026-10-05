@@ -4,7 +4,11 @@ import bytes from 'bytes';
 import { Readable } from 'node:stream';
 import sanitize from 'sanitize-filename';
 import type { FileManagerContext } from './types';
-import { fetchGuardedAgainstSsrf } from '../../helpers/ssrf';
+import {
+  fetchGuardedAgainstSsrf,
+  readBodyWithLimit
+} from '../../helpers/ssrf';
+import { sanitizeUploadBuffer } from '../../helpers/sanitize-upload';
 
 /**
  * Upload a file from remote URL
@@ -50,15 +54,27 @@ export async function uploadFileFromUrl(
   try {
     const response = await fetchGuardedAgainstSsrf(
       url,
-      !ctx.config.params.allowPrivateNetworkUploads
+      !ctx.config.params.allowPrivateNetworkUploads,
+      5,
+      ctx.config.params.timeoutLimit * 1000
     );
 
-    if (!response.ok) {
+    if (response.status < 200 || response.status >= 300) {
       throw Boom.badRequest(`File was not loaded: HTTP ${response.status}`);
     }
 
-    const arrayBuffer = await response.arrayBuffer();
-    fileContent = Buffer.from(arrayBuffer);
+    // Enforced while the body streams in: reading it whole first would let a
+    // multi-gigabyte answer exhaust memory before anyone checks the size.
+    fileContent = await readBodyWithLimit(
+      response,
+      bytes(ctx.config.params.maxUploadFileSize) ?? 0
+    );
+
+    fileContent = sanitizeUploadBuffer(
+      fileContent,
+      safeFileName,
+      ctx.config.params.sanitizeSvgUploads
+    );
   } catch (err) {
     if (Boom.isBoom(err)) {
       throw err;

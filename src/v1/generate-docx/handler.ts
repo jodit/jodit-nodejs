@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import Boom from '@hapi/boom';
 import HTMLtoDOCX from '@turbodocx/html-to-docx';
-import * as cheerio from 'cheerio';
 import { GenerateDocxQuerySchema } from '../../schemas';
 import { logger } from '../../helpers/logger';
+import { prepareDocxHtml } from './prepare-html';
+import type { RemoteResourcesConfig } from '../../types';
+import type { Config } from '../../config/config';
 
 export async function generateDocxHandler(
   req: Request,
@@ -28,13 +30,14 @@ export async function generateDocxHandler(
     throw boomError;
   }
 
+  const appConfig = req.app.locals.config as Config | undefined;
+  const remotePolicy: RemoteResourcesConfig =
+    appConfig?.params.remoteResources ?? {};
+
   logger.debug('Generating DOCX document from HTML');
 
   try {
-    // Strip <style> and <script> tags — DOCX doesn't support them and they render as plain text
-    const $ = cheerio.load(query.html);
-    $('style, script').remove();
-    const cleanHtml = $.html();
+    const cleanHtml = await prepareDocxHtml(query.html, remotePolicy);
 
     // Convert HTML to DOCX using turbodocx
     const docxResult = await HTMLtoDOCX(

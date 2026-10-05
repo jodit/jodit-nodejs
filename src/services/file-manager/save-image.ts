@@ -7,6 +7,7 @@ import sanitize from 'sanitize-filename';
 import type { FileManagerContext } from './types';
 import { validatePath } from './validate-path';
 import { isPathWithinRoot } from '../../helpers/base-source';
+import { sanitizeUploadBuffer } from '../../helpers/sanitize-upload';
 
 /**
  * Save an already-edited image (raw bytes coming from the client-side image
@@ -64,6 +65,22 @@ export async function saveImage(
     safeName += ext;
   }
 
+  // The bytes decoding as an image says nothing about the name they are stored
+  // under: a valid GIF with a PHP or HTML payload appended, saved as
+  // `shell.php`, is code execution on a file host that runs PHP. The name goes
+  // through the same whitelist an upload would.
+  const extension = path.extname(safeName).replace(/^\./, '').toLowerCase();
+
+  if (!ctx.config.params.extensions.includes(extension)) {
+    throw Boom.forbidden('File type is not in white list');
+  }
+
+  const bytesToWrite = sanitizeUploadBuffer(
+    imageBuffer,
+    safeName,
+    ctx.config.params.sanitizeSvgUploads
+  );
+
   const destinationPath = await validatePath(ctx, path.join(dirPath, safeName));
 
   if (!isPathWithinRoot(destinationPath, dirPath)) {
@@ -86,11 +103,11 @@ export async function saveImage(
     if (exists) {
       // Overwrite via a temp file so a failed write never corrupts the target.
       const tmpRelative = destRelative + '.tmp';
-      await ctx.storage.write(tmpRelative, Readable.from(imageBuffer), {});
+      await ctx.storage.write(tmpRelative, Readable.from(bytesToWrite), {});
       await ctx.storage.deleteFile(destRelative, {});
       await ctx.storage.moveFile(tmpRelative, destRelative, {});
     } else {
-      await ctx.storage.write(destRelative, Readable.from(imageBuffer), {});
+      await ctx.storage.write(destRelative, Readable.from(bytesToWrite), {});
     }
   } catch (err) {
     throw Boom.badRequest(`Unable to save image: ${(err as Error).message}`);

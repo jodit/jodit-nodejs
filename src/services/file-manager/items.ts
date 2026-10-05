@@ -113,9 +113,7 @@ export async function items(
         file: file.name,
         name: file.name,
         type: 'folder',
-        thumb: thumbPath
-          ? path.relative(fullPathDirectory, thumbPath)
-          : undefined
+        thumb: relativeThumb(fullPathDirectory, thumbPath)
       };
     } else {
       item = {
@@ -125,13 +123,38 @@ export async function items(
         isImage: file.isImage,
         size: bytes.format(file.size),
         changed: dayjs(file.mtime).format(ctx.config.params.datetimeFormat),
-        thumb: thumbPath
-          ? path.relative(fullPathDirectory, thumbPath)
-          : undefined
+        thumb: relativeThumb(fullPathDirectory, thumbPath)
       };
     }
     sourceData.files.push(item);
   }
 
   return sourceData;
+}
+
+/**
+ * The thumbnail path as the browser should see it, relative to the folder
+ * being listed.
+ *
+ * When no thumbnail could be made, `makeThumb` hands back a path that is not
+ * under this folder at all, and the plain relative form of that is a chain of
+ * `../..` revealing the directory layout above the server's working directory
+ * (and useless to the browser besides). Only a path that really sits inside
+ * the folder is passed on.
+ */
+function relativeThumb(
+  directory: string,
+  thumbPath: string | undefined
+): string | undefined {
+  if (thumbPath === undefined || thumbPath === '') {
+    return undefined;
+  }
+
+  const relative = path.relative(directory, thumbPath);
+
+  if (relative === '' || relative.startsWith('..') || path.isAbsolute(relative)) {
+    return path.basename(thumbPath);
+  }
+
+  return relative;
 }

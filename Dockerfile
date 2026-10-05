@@ -10,6 +10,10 @@ WORKDIR /usr/src/app
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
        chromium \
+       # The SUID helper Chromium needs to sandbox its renderers. Debian ships
+       # it separately, and without it Chromium refuses to start unless it is
+       # told --no-sandbox, which is exactly what we do not want here.
+       chromium-sandbox \
        tini \
        ca-certificates \
        fonts-liberation fonts-noto-cjk fonts-noto-core \
@@ -50,10 +54,16 @@ COPY ./.env /usr/src/app/
 COPY ./config.example.json /usr/src/app/config.json
 
 # Create files directory
-RUN mkdir -p /usr/src/app/files
+RUN mkdir -p /usr/src/app/files && chown -R node:node /usr/src/app
 
 # Set environment variable to read config from file
 ENV CONFIG_FILE=/usr/src/app/config.json
+
+# The PDF/DOCX renderers run Chromium over HTML supplied by the client, so the
+# Chromium sandbox has to stay on. Chrome refuses to sandbox itself when it
+# runs as root, which is the usual reason people reach for --no-sandbox; the
+# `node` user (uid 1000, shipped by the base image) removes that reason.
+USER node
 
 # Run under tini (PID 1) so orphaned Chromium children (renderers, crashpad
 # helpers) get reaped instead of piling up as zombie processes.

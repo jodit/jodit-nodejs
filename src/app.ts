@@ -16,6 +16,7 @@ import { corsMiddleware } from './middlewares/cors';
 import { authMiddleware } from './middlewares/auth';
 import { dynamicSourcesMiddleware } from './middlewares/dynamic-sources';
 import { AppConfigSchema } from './schemas';
+import { collectRoots, redactPaths } from './helpers/redact-paths';
 import { actions } from './v1';
 import { Config } from './config/config';
 import { requestContext } from './middlewares/request-context';
@@ -170,6 +171,12 @@ export function createApp(
         logger.error(err);
       }
 
+      // Operating system errors name absolute paths, which would tell the
+      // caller where the files live on the server.
+      const roots = collectRoots(configInstance?.params);
+      const redact = (messages: string[]): string[] =>
+        messages.map(message => redactPaths(message, roots));
+
       // Check if it's a Boom error
       if (Boom.isBoom(err)) {
         const statusCode = err.output.statusCode;
@@ -180,7 +187,7 @@ export function createApp(
           success: false,
           data: {
             code: statusCode,
-            messages
+            messages: redact(messages)
           }
         });
         return;
@@ -191,7 +198,7 @@ export function createApp(
         success: false,
         data: {
           code: 500,
-          messages: [err.message]
+          messages: redact([err.message])
         }
       });
     }
