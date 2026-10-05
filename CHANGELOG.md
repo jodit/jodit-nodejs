@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.0
+## 2.0.0
 
 A security release. Every item below was reachable on a default configuration,
 so updating is strongly recommended. Reported by Yaseen Royqk (the PDF renderer
