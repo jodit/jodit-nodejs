@@ -35,6 +35,36 @@ export function isDockerAvailable(): boolean {
   }
 }
 
+export const MINIO_IMAGE = process.env.MINIO_IMAGE ?? 'quay.io/minio/minio:latest';
+
+/**
+ * Whether the MinIO image is actually obtainable.
+ *
+ * MinIO stopped serving its images anonymously, so on a machine without
+ * credentials (CI, a fresh checkout) the pull fails and every test in the
+ * suite reports a Docker error that has nothing to do with the code. Checking
+ * first lets the suite skip itself the way it already does without Docker.
+ * Point `MINIO_IMAGE` at a mirror, or log in to the registry, to run it.
+ */
+export function isMinioImageAvailable(): boolean {
+  try {
+    execSync(`docker image inspect ${MINIO_IMAGE}`, { stdio: 'ignore' });
+    return true;
+  } catch {
+    // Not cached locally; a pull is the only way to know.
+  }
+
+  try {
+    execSync(`docker pull ${MINIO_IMAGE}`, {
+      stdio: 'ignore',
+      timeout: 120000
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function startMinio(bucket: string): Promise<MinioFixture> {
   // Colima / rootless daemons expose the socket at a user path that cannot
   // be bind-mounted into the reaper; the same overrides the sibling
@@ -42,9 +72,7 @@ export async function startMinio(bucket: string): Promise<MinioFixture> {
   process.env.TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE ||= '/var/run/docker.sock';
   process.env.TESTCONTAINERS_RYUK_DISABLED ||= 'true';
 
-  const container = await new GenericContainer(
-    process.env.MINIO_IMAGE ?? 'quay.io/minio/minio:latest'
-  )
+  const container = await new GenericContainer(MINIO_IMAGE)
     .withEnvironment({
       MINIO_ROOT_USER: MINIO_USER,
       MINIO_ROOT_PASSWORD: MINIO_PASSWORD

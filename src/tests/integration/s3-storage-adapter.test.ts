@@ -11,6 +11,7 @@ import {
   objectExists,
   putObject,
   startMinio,
+  isMinioImageAvailable,
   type MinioFixture
 } from '../helpers/minio';
 
@@ -21,7 +22,8 @@ const JPEG_FIXTURE = path.join(
   'files/pexels-yuri-manei-2337448.jpg'
 );
 
-const describeWithDocker = isDockerAvailable() ? describe : describe.skip;
+const describeWithDocker =
+  isDockerAvailable() && isMinioImageAvailable() ? describe : describe.skip;
 
 jest.setTimeout(180_000);
 
